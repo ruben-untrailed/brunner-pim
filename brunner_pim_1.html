@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brunner PIM</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #0f0f0f;
+    --surface: #1a1a1a;
+    --surface2: #222222;
+    --border: #2e2e2e;
+    --accent: #e8c547;
+    --accent2: #4a9eff;
+    --text: #f0ede8;
+    --text2: #888;
+    --text3: #555;
+    --green: #4caf7d;
+    --red: #e05252;
+    --radius: 6px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+  }
+
+  /* LAYOUT */
+  .app { display: grid; grid-template-columns: 280px 1fr; height: 100vh; overflow: hidden; }
+
+  /* SIDEBAR */
+  .sidebar {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .sidebar-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+
+  .logo-sub {
+    font-size: 11px;
+    color: var(--text3);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .search-wrap { padding: 12px 16px; border-bottom: 1px solid var(--border); }
+
+  .search-wrap input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px 12px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    outline: none;
+    transition: border-color .15s;
+  }
+  .search-wrap input:focus { border-color: var(--accent); }
+  .search-wrap input::placeholder { color: var(--text3); }
+
+  .product-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 0;
+  }
+  .product-list::-webkit-scrollbar { width: 4px; }
+  .product-list::-webkit-scrollbar-track { background: transparent; }
+  .product-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .product-item {
+    padding: 10px 16px;
+    cursor: pointer;
+    border-left: 2px solid transparent;
+    transition: all .1s;
+  }
+  .product-item:hover { background: var(--surface2); }
+  .product-item.active { background: var(--surface2); border-left-color: var(--accent); }
+
+  .product-item-name {
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 2px;
+  }
+
+  .product-item-meta {
+    font-size: 11px;
+    color: var(--text3);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .completeness-bar {
+    height: 2px;
+    background: var(--border);
+    border-radius: 1px;
+    margin-top: 5px;
+    overflow: hidden;
+  }
+  .completeness-fill {
+    height: 100%;
+    border-radius: 1px;
+    transition: width .3s;
+  }
+
+  /* MAIN */
+  .main {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .main-header {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface);
+    gap: 12px;
+    flex-shrink: 0;
+  }
+
+  .main-header-left { min-width: 0; }
+
+  .product-title {
+    font-size: 16px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .product-ean {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text3);
+    margin-top: 2px;
+  }
+
+  .btn {
+    padding: 7px 16px;
+    border-radius: var(--radius);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all .15s;
+    white-space: nowrap;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #000;
+  }
+  .btn-primary:hover { background: #f0d060; }
+  .btn-primary:disabled { opacity: .4; cursor: not-allowed; }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text2);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { border-color: var(--text2); color: var(--text); }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    gap: 0;
+    padding: 0 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    flex-shrink: 0;
+  }
+
+  .tab {
+    padding: 12px 16px;
+    font-size: 13px;
+    cursor: pointer;
+    color: var(--text2);
+    border-bottom: 2px solid transparent;
+    transition: all .15s;
+    white-space: nowrap;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* CONTENT */
+  .content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+  }
+  .content::-webkit-scrollbar { width: 4px; }
+  .content::-webkit-scrollbar-track { background: transparent; }
+  .content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* EMPTY STATE */
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--text3);
+    gap: 8px;
+  }
+  .empty-state-icon { font-size: 32px; opacity: .3; }
+  .empty-state-text { font-size: 14px; }
+
+  /* FORM */
+  .section {
+    margin-bottom: 28px;
+  }
+
+  .section-title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--text3);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .fields-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 12px;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .field-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text2);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .field-required {
+    color: var(--accent);
+    font-size: 10px;
+  }
+
+  .field input, .field textarea, .field select {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px 10px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    outline: none;
+    transition: border-color .15s;
+    width: 100%;
+  }
+  .field input:focus, .field textarea:focus, .field select:focus {
+    border-color: var(--accent2);
+  }
+  .field input::placeholder, .field textarea::placeholder { color: var(--text3); }
+  .field textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
+  .field select { cursor: pointer; }
+  .field select option { background: var(--surface2); }
+
+  .field-full { grid-column: 1 / -1; }
+
+  /* MARKETPLACE TABS */
+  .mp-selector {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+
+  .mp-btn {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text2);
+    transition: all .15s;
+  }
+  .mp-btn:hover { border-color: var(--text2); color: var(--text); }
+  .mp-btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
+
+  /* CATEGORY SELECT */
+  .cat-select-wrap {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .cat-select-label {
+    font-size: 12px;
+    color: var(--text2);
+    white-space: nowrap;
+  }
+
+  .cat-select-wrap select {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 7px 10px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    outline: none;
+    cursor: pointer;
+  }
+  .cat-select-wrap select option { background: var(--surface); }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    font-size: 13px;
+    z-index: 1000;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all .25s;
+    max-width: 320px;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { border-color: var(--green); color: var(--green); }
+  .toast.error { border-color: var(--red); color: var(--red); }
+
+  /* BADGE */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .badge-bol { background: #fff3; color: #4a9eff; }
+  .badge-obelink { background: #fff3; color: #f0a050; }
+  .badge-decathlon { background: #fff3; color: #4caf7d; }
+  .badge-amazon { background: #fff3; color: #f0c040; }
+
+  .loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--text3);
+    font-size: 13px;
+  }
+
+  .stats-row {
+    display: flex;
+    gap: 12px;
+    padding: 12px 16px;
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .stat {
+    font-size: 11px;
+    color: var(--text3);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .stat span { color: var(--text2); }
+
+  .image-preview {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+  }
+
+  .image-thumb {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    cursor: pointer;
+  }
+
+  .no-product {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 12px;
+    color: var(--text3);
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">Brunner PIM</div>
+      <div class="logo-sub">Product Informatie Systeem</div>
+    </div>
+    <div class="search-wrap">
+      <input type="text" id="searchInput" placeholder="Zoek op naam, EAN, MPN..." autocomplete="off">
+    </div>
+    <div class="product-list" id="productList">
+      <div class="loading">Producten laden...</div>
+    </div>
+    <div class="stats-row">
+      <div class="stat">Totaal: <span id="statTotal">—</span></div>
+      <div class="stat">Geladen: <span id="statLoaded">—</span></div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div id="noProduct" class="no-product">
+      <div style="font-size:32px;opacity:.2">◈</div>
+      <div style="font-size:14px">Selecteer een product</div>
+    </div>
+
+    <div id="productEditor" style="display:none; display:none; flex-direction:column; height:100%; overflow:hidden;">
+      <div class="main-header">
+        <div class="main-header-left">
+          <div class="product-title" id="editorTitle">—</div>
+          <div class="product-ean" id="editorEan">—</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <span id="saveStatus" style="font-size:12px;color:var(--text3);"></span>
+          <button class="btn btn-ghost" onclick="discardChanges()">Annuleer</button>
+          <button class="btn btn-primary" id="saveBtn" onclick="saveProduct()">Opslaan</button>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab('basis', this)">Basisinfo</div>
+        <div class="tab" onclick="switchTab('attributen', this)">Attributen</div>
+        <div class="tab" onclick="switchTab('marketplaces', this)">Marketplaces</div>
+        <div class="tab" onclick="switchTab('amazon', this)">Amazon teksten</div>
+      </div>
+
+      <div class="content" id="tabContent">
+        <div class="loading">Product laden...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL = 'https://furblfnwplmpnqlbxbcm.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ1cmJsZm53cGxtcG5xbGJ4YmNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3NTUzNTUsImV4cCI6MjA5MjMzMTM1NX0.tRbB2rbkjUm0Fsi0xP0eZXZZ379o6a0Dy3SKipTlEy4';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let allProducts = [];
+let filteredProducts = [];
+let currentProduct = null;
+let currentAttrs = null;
+let currentCats = null;
+let currentTab = 'basis';
+let isDirty = false;
+let pendingChanges = {};
+let allTemplates = {};
+
+// Init
+(async () => {
+  await loadProducts();
+  await loadTemplates();
+})();
+
+async function loadProducts() {
+  const { data, error } = await sb
+    .from('products')
+    .select('id, ean, naam_nl, mpn, serie, merk')
+    .order('naam_nl');
+  if (error) { showToast('Fout bij laden producten', 'error'); return; }
+  allProducts = data || [];
+  document.getElementById('statTotal').textContent = allProducts.length;
+  document.getElementById('statLoaded').textContent = allProducts.length;
+  renderProductList(allProducts);
+}
+
+async function loadTemplates() {
+  const { data } = await sb
+    .from('category_templates')
+    .select('id, marketplace, categorie_naam');
+  if (!data) return;
+  allTemplates = {};
+  data.forEach(t => {
+    if (!allTemplates[t.marketplace]) allTemplates[t.marketplace] = [];
+    allTemplates[t.marketplace].push(t);
+  });
+}
+
+let templateFieldsCache = {};
+
+async function getTemplateFields(marketplace, categorie_naam) {
+  const cacheKey = `${marketplace}::${categorie_naam}`;
+  if (templateFieldsCache[cacheKey]) return templateFieldsCache[cacheKey];
+  const template = (allTemplates[marketplace] || []).find(t => t.categorie_naam === categorie_naam);
+  if (!template) return [];
+  const { data } = await sb
+    .from('category_template_fields')
+    .select('master_veld, verplicht, volgorde')
+    .eq('template_id', template.id)
+    .order('volgorde');
+  const fields = data || [];
+  templateFieldsCache[cacheKey] = fields;
+  return fields;
+}
+
+async function getActiveTemplateFields() {
+  // Combineer velden van alle gekoppelde marketplaces voor dit product
+  const c = currentCats;
+  const mpMappings = [
+    { mp: 'bol', catKey: 'cat_bol' },
+    { mp: 'obelink', catKey: 'cat_obelink' },
+    { mp: 'decathlon', catKey: 'cat_decathlon' },
+  ];
+  let allFields = {};
+  let hasAnyTemplate = false;
+  for (const { mp, catKey } of mpMappings) {
+    const cat = c[catKey];
+    if (!cat) continue;
+    const fields = await getTemplateFields(mp, cat);
+    if (fields.length) hasAnyTemplate = true;
+    fields.forEach(f => {
+      if (!allFields[f.master_veld]) {
+        allFields[f.master_veld] = { verplicht: f.verplicht, volgorde: f.volgorde };
+      } else if (f.verplicht) {
+        allFields[f.master_veld].verplicht = true;
+      }
+    });
+  }
+  return { fields: allFields, hasAnyTemplate };
+}
+
+function renderProductList(products) {
+  const list = document.getElementById('productList');
+  if (!products.length) {
+    list.innerHTML = '<div style="padding:16px;color:var(--text3);font-size:13px;text-align:center;">Geen producten gevonden</div>';
+    return;
+  }
+  list.innerHTML = products.map(p => `
+    <div class="product-item ${currentProduct?.id === p.id ? 'active' : ''}"
+         onclick="selectProduct('${p.id}')">
+      <div class="product-item-name">${p.naam_nl || '—'}</div>
+      <div class="product-item-meta">${p.mpn || p.ean || '—'}</div>
+    </div>
+  `).join('');
+}
+
+// Search
+document.getElementById('searchInput').addEventListener('input', e => {
+  const q = e.target.value.toLowerCase().trim();
+  if (!q) { filteredProducts = allProducts; }
+  else {
+    filteredProducts = allProducts.filter(p =>
+      (p.naam_nl || '').toLowerCase().includes(q) ||
+      (p.ean || '').includes(q) ||
+      (p.mpn || '').toLowerCase().includes(q)
+    );
+  }
+  renderProductList(filteredProducts.length ? filteredProducts : allProducts.filter(p =>
+    (p.naam_nl || '').toLowerCase().includes(q) ||
+    (p.ean || '').includes(q) ||
+    (p.mpn || '').toLowerCase().includes(q)
+  ));
+});
+
+async function selectProduct(id) {
+  if (isDirty && !confirm('Je hebt onopgeslagen wijzigingen. Doorgaan?')) return;
+  isDirty = false;
+  pendingChanges = {};
+
+  // Laad volledig product
+  const [pRes, aRes, cRes] = await Promise.all([
+    sb.from('products').select('*').eq('id', id).single(),
+    sb.from('product_attributes').select('*').eq('product_id', id).single(),
+    sb.from('product_categories').select('*').eq('product_id', id).single(),
+  ]);
+
+  currentProduct = pRes.data;
+  currentAttrs = aRes.data || {};
+  currentCats = cRes.data || {};
+
+  document.getElementById('noProduct').style.display = 'none';
+  const editor = document.getElementById('productEditor');
+  editor.style.display = 'flex';
+
+  document.getElementById('editorTitle').textContent = currentProduct.naam_nl || '—';
+  document.getElementById('editorEan').textContent = `EAN: ${currentProduct.ean || '—'} · MPN: ${currentProduct.mpn || '—'}`;
+  document.getElementById('saveStatus').textContent = '';
+
+  renderProductList(filteredProducts.length ? filteredProducts : allProducts);
+  switchTab(currentTab, document.querySelector('.tab.active'));
+}
+
+function switchTab(tab, el) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  if (el) el.classList.add('active');
+  renderTab();
+}
+
+function renderTab() {
+  const content = document.getElementById('tabContent');
+  if (!currentProduct) return;
+
+  if (currentTab === 'basis') renderBasis(content);
+  else if (currentTab === 'attributen') renderAttributen(content);
+  else if (currentTab === 'marketplaces') renderMarketplaces(content);
+  else if (currentTab === 'amazon') renderAmazon(content);
+}
+
+// Na opslaan van marketplace categorie: invalideer template cache en herlaad attributen
+function onCategorySaved() {
+  templateFieldsCache = {};
+}
+
+function field(key, label, value, type='text', source='product', required=false, fullWidth=false) {
+  const val = value ?? '';
+  const fw = fullWidth ? ' field-full' : '';
+  if (type === 'textarea') {
+    return `<div class="field${fw}">
+      <label class="field-label">${label}${required ? ' <span class="field-required">●</span>' : ''}</label>
+      <textarea rows="4" data-key="${key}" data-source="${source}" onchange="markDirty(this)">${escHtml(val)}</textarea>
+    </div>`;
+  }
+  return `<div class="field${fw}">
+    <label class="field-label">${label}${required ? ' <span class="field-required">●</span>' : ''}</label>
+    <input type="${type}" data-key="${key}" data-source="${source}" value="${escHtml(val)}" oninput="markDirty(this)" placeholder="—">
+  </div>`;
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function markDirty(el) {
+  isDirty = true;
+  const source = el.dataset.source;
+  const key = el.dataset.key;
+  if (!pendingChanges[source]) pendingChanges[source] = {};
+  pendingChanges[source][key] = el.value;
+  document.getElementById('saveStatus').textContent = '● Niet opgeslagen';
+}
+
+function renderBasis(content) {
+  const p = currentProduct;
+  const imgs = (p.afbeeldingen || '').split(',').map(s => s.trim()).filter(Boolean);
+
+  content.innerHTML = `
+    <div class="section">
+      <div class="section-title">Productnaam & beschrijving</div>
+      <div class="fields-grid">
+        ${field('naam_nl', 'Naam NL', p.naam_nl, 'text', 'product', true, true)}
+        ${field('naam_de', 'Naam DE', p.naam_de, 'text', 'product', false, true)}
+        ${field('naam_en', 'Naam EN', p.naam_en, 'text', 'product', false, true)}
+        ${field('beschrijving_nl', 'Beschrijving NL', p.beschrijving_nl, 'textarea', 'product', true, true)}
+        ${field('beschrijving_de', 'Beschrijving DE', p.beschrijving_de, 'textarea', 'product', false, true)}
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-title">Identificatie</div>
+      <div class="fields-grid">
+        ${field('ean', 'EAN', p.ean, 'text', 'product')}
+        ${field('mpn', 'MPN / Artikelnummer fabrikant', p.mpn, 'text', 'product')}
+        ${field('merk', 'Merk', p.merk, 'text', 'product')}
+        ${field('serie', 'Serie', p.serie, 'text', 'product')}
+        ${field('bol_custom_titel', 'BOL custom titel', p.bol_custom_titel, 'text', 'product', false, true)}
+      </div>
+    </div>
+    ${imgs.length ? `
+    <div class="section">
+      <div class="section-title">Afbeeldingen</div>
+      <div class="image-preview">
+        ${imgs.map(url => `<img class="image-thumb" src="${url}" onclick="window.open('${url}')" onerror="this.style.display='none'">`).join('')}
+      </div>
+      <div style="margin-top:8px;">
+        ${field('afbeeldingen', 'Afbeelding URLs (komma gescheiden)', p.afbeeldingen, 'text', 'product', false, true)}
+      </div>
+    </div>` : `
+    <div class="section">
+      <div class="section-title">Afbeeldingen</div>
+      ${field('afbeeldingen', 'Afbeelding URLs (komma gescheiden)', p.afbeeldingen, 'text', 'product', false, true)}
+    </div>`}
+  `;
+}
+
+async function renderAttributen(content) {
+  content.innerHTML = '<div class="loading">Velden laden...</div>';
+  const a = currentAttrs;
+  const { fields: templateFields, hasAnyTemplate } = await getActiveTemplateFields();
+
+  // Toggle: gefilterd of alles tonen
+  const showAll = document.getElementById('showAllToggle')?.checked || !hasAnyTemplate;
+
+  const isVisible = (key) => {
+    if (showAll || !hasAnyTemplate) return true;
+    return !!templateFields[key];
+  };
+  const isRequired = (key) => templateFields[key]?.verplicht || false;
+
+  const groepen = [
+    { titel: 'Kleur & Materiaal', velden: [
+      ['kleur_primair','Kleur primair'], ['kleur_secundair','Kleur secundair'],
+      ['materiaal','Materiaal'], ['materiaal_frame','Materiaal frame'],
+      ['materiaal_zitting','Materiaal zitting'], ['materiaal_blad','Materiaal blad'],
+      ['materiaal_grill','Materiaal grill'], ['materiaal_buitentent','Materiaal buitentent'],
+      ['materiaal_binnentent','Materiaal binnentent'], ['materiaal_grondzeil','Materiaal grondzeil'],
+      ['materiaal_voering','Materiaal voering'], ['materiaal_vulling','Materiaal vulling'],
+    ]},
+    { titel: 'Afmetingen product (cm)', velden: [
+      ['product_lengte_cm','Lengte'], ['product_breedte_cm','Breedte'],
+      ['product_hoogte_cm','Hoogte'], ['product_gewicht_kg','Gewicht (kg)'],
+      ['gevouwen_lengte_cm','Gevouwen lengte'], ['gevouwen_breedte_cm','Gevouwen breedte'],
+      ['gevouwen_hoogte_cm','Gevouwen hoogte'], ['gevouwen_afmeting','Gevouwen afmeting'],
+      ['tafelblad_afmeting','Tafelblad afmeting'], ['afmeting','Afmeting (algemeen)'],
+    ]},
+    { titel: 'Afmetingen verpakking', velden: [
+      ['verpakking_lengte_cm','Verpakking lengte (cm)'], ['verpakking_breedte_cm','Verpakking breedte (cm)'],
+      ['verpakking_hoogte_cm','Verpakking hoogte (cm)'], ['verpakking_gewicht_kg','Verpakking gewicht (kg)'],
+      ['stuks_per_verpakking','Stuks per verpakking'],
+    ]},
+    { titel: 'Stoel / Meubel', velden: [
+      ['zithoogte_cm','Zithoogte (cm)'], ['zitdiepte_cm','Zitdiepte (cm)'],
+      ['zitbreedte_cm','Zitbreedte (cm)'], ['ruglengte_cm','Ruglengte (cm)'],
+      ['draagvermogen_kg','Draagvermogen (kg)'], ['aantal_standen','Aantal standen'],
+      ['type_stoel','Type stoel'], ['bekleding_ademend','Bekleding ademend'],
+      ['bekleding_waterbestendig','Bekleding waterbestendig'], ['bekleding_sneldrogend','Bekleding sneldrogend'],
+      ['bekleding_gepolsterd','Bekleding gepolsterd'],
+    ]},
+    { titel: 'Tafel', velden: [
+      ['blad_hittebestendig','Hittebestendig blad'], ['blad_vochtbestendig','Vochtbestendig blad'],
+      ['tafel_lichtgewicht','Lichtgewicht tafel'],
+    ]},
+    { titel: 'Tent / Slaap', velden: [
+      ['stahoogte_cm','Stahoogte (cm)'], ['binnenbreedte_cm','Binnenbreedte (cm)'],
+      ['binnenlengte_cm','Binnenlengte (cm)'], ['palen_materiaal','Palen materiaal'],
+      ['cabines','Cabines'], ['aantal_personen','Aantal personen'],
+      ['raam_afdekking','Raam afdekking'], ['seizoensgebruik','Seizoensgebruik'],
+      ['temp_min_graden','Min. temperatuur (°C)'], ['temp_max_graden','Max. temperatuur (°C)'],
+      ['temperatuurbereik','Temperatuurbereik'],
+    ]},
+    { titel: 'BBQ / Koken', velden: [
+      ['type_barbecue','Type barbecue'], ['type_grill','Type grill'],
+      ['grilloppervlak','Grilloppervlak'], ['aantal_branders','Aantal branders'],
+      ['geschikte_warmtebronnen','Geschikte warmtebronnen'], ['gasverbruik_g_per_uur','Gasverbruik (g/u)'],
+    ]},
+    { titel: 'Servies / Keuken', velden: [
+      ['type_servies','Type servies'], ['diner_bord','Diner bord'],
+      ['ontbijt_bord','Ontbijt bord'], ['diep_bord','Diep bord'],
+      ['mok','Mok'], ['glas','Glas'], ['saladekom','Saladekom'],
+      ['type_pan','Type pan'], ['aantal_pannen','Aantal pannen'],
+      ['antikleeflaag','Antikleeflaag'], ['inclusief_deksel','Inclusief deksel'],
+    ]},
+    { titel: 'Technisch', velden: [
+      ['vermogen_watt','Vermogen (W)'], ['inhoud_liter','Inhoud (L)'],
+      ['koeltechnologie','Koeltechnologie'], ['koelbox_aansluiting','Koelbox aansluiting'],
+      ['lumen','Lumen'], ['type_lichtbron','Type lichtbron'], ['led','LED'],
+      ['batterijduur_uren','Batterijduur (uur)'], ['oplaadtijd_uren','Oplaadtijd (uur)'],
+    ]},
+    { titel: 'Overige eigenschappen', velden: [
+      ['opvouwbaar','Opvouwbaar'], ['verstelbaar','Verstelbaar'],
+      ['oprolbaar','Oprolbaar'], ['uitbreidbaar','Uitbreidbaar'],
+      ['inclusief_draagtas','Inclusief draagtas'], ['garantie_jaar','Garantie (jaar)'],
+      ['kenmerken','Kenmerken'], ['doelgroep','Doelgroep'],
+      ['geschikt_voor','Geschikt voor'], ['aanbevolen_voor','Aanbevolen voor'],
+      ['vorm','Vorm'], ['producttype','Producttype'],
+    ]},
+  ];
+
+  // Filter groepen op basis van template
+  const visibleGroepen = groepen.map(g => ({
+    ...g,
+    velden: g.velden.filter(([key]) => isVisible(key))
+  })).filter(g => g.velden.length > 0);
+
+  const toggleHtml = hasAnyTemplate ? `
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;padding:10px 12px;background:var(--surface2);border-radius:var(--radius);border:1px solid var(--border);">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text2);">
+        <input type="checkbox" id="showAllToggle" ${showAll ? 'checked' : ''} onchange="renderAttributen(document.getElementById('tabContent'))" style="cursor:pointer;">
+        Alle velden tonen (ook velden buiten de marketplace templates)
+      </label>
+      <span style="margin-left:auto;font-size:11px;color:var(--text3);">
+        ${showAll ? 'Alle velden' : Object.keys(templateFields).length + ' template velden'}
+      </span>
+    </div>` : `
+    <div style="padding:10px 12px;background:var(--surface2);border-radius:var(--radius);border:1px solid var(--border);font-size:12px;color:var(--text3);margin-bottom:16px;">
+      ℹ️ Koppel eerst een marketplace categorie (tabblad Marketplaces) om alleen de relevante velden te zien.
+    </div>`;
+
+  content.innerHTML = toggleHtml + (visibleGroepen.length ? visibleGroepen.map(g => `
+    <div class="section">
+      <div class="section-title">${g.titel}</div>
+      <div class="fields-grid">
+        ${g.velden.map(([key, label]) => field(key, label, a[key], 'text', 'attrs', isRequired(key))).join('')}
+      </div>
+    </div>
+  `).join('') : '<div style="color:var(--text3);font-size:13px;padding:20px 0;">Geen velden gevonden voor de gekoppelde categorieën.</div>');
+}
+
+function renderMarketplaces(content) {
+  const c = currentCats;
+  const marketplaces = [
+    { key: 'bol', label: 'BOL.com', badge: 'badge-bol', id_key: 'cat_bol_id' },
+    { key: 'obelink', label: 'Obelink', badge: 'badge-obelink', id_key: 'cat_obelink_id' },
+    { key: 'decathlon', label: 'Decathlon', badge: 'badge-decathlon', id_key: 'cat_decathlon_id' },
+    { key: 'amazon', label: 'Amazon', badge: 'badge-amazon', id_key: 'cat_amazon' },
+  ];
+
+  content.innerHTML = marketplaces.map(mp => {
+    const catKey = mp.key === 'amazon' ? 'cat_amazon' : `cat_${mp.key}`;
+    const currentCat = c[catKey] || '';
+    const templates = allTemplates[mp.key] || [];
+
+    let templateFields = '';
+    if (currentCat && mp.key !== 'amazon') {
+      templateFields = `
+        <div style="margin-top:8px;padding:8px 10px;background:var(--bg);border-radius:var(--radius);font-size:11px;color:var(--text3);">
+          Template actief: ${templates.find(t => t.categorie_naam === currentCat)?.categorie_naam || '—'}
+        </div>`;
+    }
+
+    if (mp.key === 'amazon') {
+      return `
+        <div class="section">
+          <div class="section-title"><span class="badge ${mp.badge}">${mp.label}</span></div>
+          <div class="fields-grid">
+            ${field('cat_amazon', 'Amazon categorie code', c.cat_amazon, 'text', 'cats', false, true)}
+          </div>
+        </div>`;
+    }
+
+    return `
+      <div class="section">
+        <div class="section-title"><span class="badge ${mp.badge}">${mp.label}</span></div>
+        <div class="cat-select-wrap">
+          <span class="cat-select-label">Categorie:</span>
+          <select data-key="${catKey}" data-source="cats" onchange="markDirty(this)">
+            <option value="">— Geen categorie —</option>
+            ${templates.map(t => `<option value="${escHtml(t.categorie_naam)}" ${t.categorie_naam === currentCat ? 'selected' : ''}>${escHtml(t.categorie_naam)}</option>`).join('')}
+          </select>
+        </div>
+        ${mp.key !== 'amazon' && c[`cat_${mp.key}_id`] ? `<div style="font-size:11px;color:var(--text3);margin-bottom:12px;font-family:'DM Mono',monospace;">ID: ${c[`cat_${mp.key}_id`]}</div>` : ''}
+        ${field(`cat_${mp.key}_id`, 'Categorie ID', c[`cat_${mp.key}_id`], 'text', 'cats')}
+        ${templateFields}
+      </div>`;
+  }).join('');
+}
+
+function renderAmazon(content) {
+  const p = currentProduct;
+  content.innerHTML = `
+    <div class="section">
+      <div class="section-title">Amazon bulletpoints</div>
+      <div class="fields-grid">
+        ${[1,2,3,4,5].map(i => field(`amazon_bulletpoint_${i}`, `Bulletpoint ${i}`, p[`amazon_bulletpoint_${i}`], 'text', 'product', false, true)).join('')}
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-title">Zoektrefwoorden</div>
+      <div class="fields-grid">
+        ${field('amazon_zoektrefwoorden', 'Zoektrefwoorden (puntkomma gescheiden)', p.amazon_zoektrefwoorden, 'textarea', 'product', false, true)}
+      </div>
+    </div>
+  `;
+}
+
+async function saveProduct() {
+  if (!currentProduct) return;
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true;
+  btn.textContent = 'Opslaan...';
+
+  try {
+    const updates = pendingChanges;
+
+    // Update products tabel
+    if (updates.product && Object.keys(updates.product).length) {
+      const { error } = await sb.from('products')
+        .update({ ...updates.product, bijgewerkt_op: new Date().toISOString() })
+        .eq('id', currentProduct.id);
+      if (error) throw error;
+      Object.assign(currentProduct, updates.product);
+    }
+
+    // Update product_attributes
+    if (updates.attrs && Object.keys(updates.attrs).length) {
+      if (currentAttrs.id) {
+        const { error } = await sb.from('product_attributes')
+          .update({ ...updates.attrs, bijgewerkt_op: new Date().toISOString() })
+          .eq('product_id', currentProduct.id);
+        if (error) throw error;
+      } else {
+        const { error } = await sb.from('product_attributes')
+          .insert({ product_id: currentProduct.id, ...updates.attrs });
+        if (error) throw error;
+      }
+      Object.assign(currentAttrs, updates.attrs);
+    }
+
+    // Update product_categories
+    if (updates.cats && Object.keys(updates.cats).length) {
+      if (currentCats.id) {
+        const { error } = await sb.from('product_categories')
+          .update({ ...updates.cats, bijgewerkt_op: new Date().toISOString() })
+          .eq('product_id', currentProduct.id);
+        if (error) throw error;
+      } else {
+        const { error } = await sb.from('product_categories')
+          .insert({ product_id: currentProduct.id, ...updates.cats });
+        if (error) throw error;
+      }
+      Object.assign(currentCats, updates.cats);
+      onCategorySaved(); // invalideer template velden cache
+    }
+
+    isDirty = false;
+    pendingChanges = {};
+    document.getElementById('saveStatus').textContent = '✓ Opgeslagen';
+    document.getElementById('editorTitle').textContent = currentProduct.naam_nl || '—';
+
+    // Update sidebar
+    const idx = allProducts.findIndex(p => p.id === currentProduct.id);
+    if (idx >= 0 && updates.product?.naam_nl) allProducts[idx].naam_nl = updates.product.naam_nl;
+    renderProductList(filteredProducts.length ? filteredProducts : allProducts);
+
+    showToast('Product opgeslagen', 'success');
+  } catch(e) {
+    showToast('Fout bij opslaan: ' + e.message, 'error');
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Opslaan';
+}
+
+function discardChanges() {
+  if (!isDirty || confirm('Wijzigingen weggooien?')) {
+    isDirty = false;
+    pendingChanges = {};
+    document.getElementById('saveStatus').textContent = '';
+    renderTab();
+  }
+}
+
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>
