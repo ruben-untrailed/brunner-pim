@@ -592,21 +592,8 @@ async function handleLogout() {
   document.getElementById('productEditor').style.display = 'none';
   document.getElementById('noProduct').style.display = 'flex';
 }
-let filteredProducts = [];
-let currentProduct = null;
-let currentAttrs = null;
-let currentCats = null;
-let currentTab = 'basis';
-let isDirty = false;
-let pendingChanges = {};
-let allTemplates = {};
 
-// Init
-(async () => {
-  await loadProducts();
-  await loadTemplates();
-  await loadFieldOptions();
-})();
+
 
 async function loadProducts() {
   document.getElementById('productList').innerHTML = '<div class="loading">Producten laden...</div>';
@@ -636,9 +623,7 @@ async function loadProducts() {
 }
 
 async function loadTemplates() {
-  const { data } = await sb
-    .from('category_templates')
-    .select('id, marketplace, categorie_naam');
+  const { data } = await sb.from('category_templates').select('id, marketplace, categorie_naam');
   if (!data) return;
   allTemplates = {};
   data.forEach(t => {
@@ -647,25 +632,32 @@ async function loadTemplates() {
   });
 }
 
-let templateFieldsCache = {};
+function renderProductList(products) {
+  const list = document.getElementById('productList');
+  if (!products.length) {
+    list.innerHTML = '<div style="padding:16px;color:var(--text3);font-size:13px;text-align:center;">Geen producten gevonden</div>';
+    return;
+  }
+  list.innerHTML = products.map(p => `
+    <div class="product-item ${currentProduct?.id === p.id ? 'active' : ''}"
+         onclick="selectProduct('${p.id}')">
+      <div class="product-item-name">${escHtml(p.naam_nl || '—')}</div>
+      <div class="product-item-meta">${escHtml(p.mpn || p.ean || '—')}</div>
+    </div>
+  `).join('');
+}
 
 async function getTemplateFields(marketplace, categorie_naam) {
   const cacheKey = `${marketplace}::${categorie_naam}`;
   if (templateFieldsCache[cacheKey]) return templateFieldsCache[cacheKey];
   const template = (allTemplates[marketplace] || []).find(t => t.categorie_naam === categorie_naam);
   if (!template) return [];
-  const { data } = await sb
-    .from('category_template_fields')
-    .select('master_veld, verplicht, volgorde')
-    .eq('template_id', template.id)
-    .order('volgorde');
-  const fields = data || [];
-  templateFieldsCache[cacheKey] = fields;
-  return fields;
+  const { data } = await sb.from('category_template_fields').select('master_veld, verplicht, volgorde').eq('template_id', template.id).order('volgorde');
+  templateFieldsCache[cacheKey] = data || [];
+  return data || [];
 }
 
 async function getActiveTemplateFields() {
-  // Combineer velden van alle gekoppelde marketplaces voor dit product
   const c = currentCats;
   const mpMappings = [
     { mp: 'bol', catKey: 'cat_bol' },
@@ -680,30 +672,13 @@ async function getActiveTemplateFields() {
     const fields = await getTemplateFields(mp, cat);
     if (fields.length) hasAnyTemplate = true;
     fields.forEach(f => {
-      if (!allFields[f.master_veld]) {
-        allFields[f.master_veld] = { verplicht: f.verplicht, volgorde: f.volgorde };
-      } else if (f.verplicht) {
-        allFields[f.master_veld].verplicht = true;
-      }
+      if (!allFields[f.master_veld]) allFields[f.master_veld] = { verplicht: f.verplicht, volgorde: f.volgorde };
+      else if (f.verplicht) allFields[f.master_veld].verplicht = true;
     });
   }
   return { fields: allFields, hasAnyTemplate };
 }
 
-function renderProductList(products) {
-  const list = document.getElementById('productList');
-  if (!products.length) {
-    list.innerHTML = '<div style="padding:16px;color:var(--text3);font-size:13px;text-align:center;">Geen producten gevonden</div>';
-    return;
-  }
-  list.innerHTML = products.map(p => `
-    <div class="product-item ${currentProduct?.id === p.id ? 'active' : ''}"
-         onclick="selectProduct('${p.id}')">
-      <div class="product-item-name">${p.naam_nl || '—'}</div>
-      <div class="product-item-meta">${p.mpn || p.ean || '—'}</div>
-    </div>
-  `).join('');
-}
 
 // Filters & Search
 document.getElementById('searchInput').addEventListener('input', applyFilters);
