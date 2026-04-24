@@ -802,19 +802,42 @@ function field(key, label, value, type='text', source='product', required=false,
   const opts = fieldOptions[key];
 
   if (opts && opts.multi) {
-    // Multi-select: tag checkboxes
     const selected = val ? val.split(' | ').map(s => s.trim()).filter(Boolean) : [];
-    const checkboxes = opts.opties.map(o => {
-      const checked = selected.includes(o) ? 'checked' : '';
-      const safeO = escHtml(o);
-      return `<label style="display:inline-flex;align-items:center;gap:4px;margin:2px 4px 2px 0;padding:3px 8px;background:var(--surface);border:1px solid var(--border);border-radius:4px;cursor:pointer;font-size:12px;">
-        <input type="checkbox" ${checked} data-key="${key}" data-source="${source}" data-multi="true"
-          onchange="markMulti(this, '${key}', '${source}')" style="cursor:pointer;"> ${safeO}
-      </label>`;
-    }).join('');
-    return `<div class="field${fw}">
+    const uid = 'ms_' + key + '_' + source;
+
+    if (opts.opties.length <= 6) {
+      // Weinig opties: gewone checkboxes
+      const checkboxes = opts.opties.map(o => {
+        const checked = selected.includes(o) ? 'checked' : '';
+        const safeO = escHtml(o);
+        return `<label style="display:inline-flex;align-items:center;gap:4px;margin:2px 4px 2px 0;padding:3px 8px;background:var(--surface);border:1px solid var(--border);border-radius:4px;cursor:pointer;font-size:12px;">
+          <input type="checkbox" ${checked} data-key="${key}" data-source="${source}" data-multi="true"
+            onchange="markMulti(this, '${key}', '${source}')" style="cursor:pointer;"> ${safeO}
+        </label>`;
+      }).join('');
+      return `<div class="field${fw}">
+        <label class="field-label">${escHtml(label)}${reqHtml}</label>
+        <div style="padding:6px 0;line-height:1.8;">${checkboxes}</div>
+      </div>`;
+    }
+
+    // Veel opties: doorzoekbare multi-select dropdown
+    const tagsHtml = selected.map(s =>
+      `<span class="ms-tag">${escHtml(s)}<span class="ms-tag-remove" onclick="msRemoveTag(this,'${uid}','${escHtml(key)}','${escHtml(source)}')" data-val="${escHtml(s)}">×</span></span>`
+    ).join('');
+    const allOptsJson = escHtml(JSON.stringify(opts.opties));
+    return `<div class="field${fw} ms-wrap" id="${uid}_wrap">
       <label class="field-label">${escHtml(label)}${reqHtml}</label>
-      <div style="padding:6px 0;line-height:1.8;">${checkboxes}</div>
+      <div class="ms-input" onclick="msFocus('${uid}')">
+        <span id="${uid}_tags">${tagsHtml}</span>
+        <input class="ms-search" id="${uid}_search" type="text" placeholder="${selected.length ? '' : 'Zoek of kies...'}"
+          oninput="msFilter('${uid}')"
+          onfocus="msOpen('${uid}')"
+          data-key="${escHtml(key)}" data-source="${escHtml(source)}"
+          data-opts="${allOptsJson}"
+          data-selected="${escHtml(selected.join(' | '))}">
+      </div>
+      <div class="ms-dropdown" id="${uid}_dd"></div>
     </div>`;
   }
 
@@ -846,7 +869,6 @@ function field(key, label, value, type='text', source='product', required=false,
 }
 
 function markMulti(el, key, source) {
-  // Verzamel alle aangevinkte opties voor dit veld
   const allCheckboxes = document.querySelectorAll(
     `input[type=checkbox][data-key="${key}"][data-source="${source}"]`
   );
@@ -858,6 +880,87 @@ function markMulti(el, key, source) {
   pendingChanges[source][key] = combined;
   isDirty = true;
   document.getElementById('saveStatus').textContent = '● Niet opgeslagen';
+}
+
+// Multi-select dropdown functies
+function msOpen(uid) {
+  const dd = document.getElementById(uid + '_dd');
+  const search = document.getElementById(uid + '_search');
+  if (!dd || !search) return;
+  msRender(uid, search.value);
+  dd.classList.add('open');
+  // Sluit bij klik buiten
+  setTimeout(() => {
+    document.addEventListener('click', function handler(e) {
+      const wrap = document.getElementById(uid + '_wrap');
+      if (wrap && !wrap.contains(e.target)) {
+        dd.classList.remove('open');
+        document.removeEventListener('click', handler);
+      }
+    });
+  }, 10);
+}
+
+function msFocus(uid) {
+  const search = document.getElementById(uid + '_search');
+  if (search) { search.focus(); msOpen(uid); }
+}
+
+function msFilter(uid) {
+  msRender(uid, document.getElementById(uid + '_search').value);
+}
+
+function msRender(uid, query) {
+  const search = document.getElementById(uid + '_search');
+  const dd = document.getElementById(uid + '_dd');
+  if (!search || !dd) return;
+  const opts = JSON.parse(search.dataset.opts || '[]');
+  const selected = search.dataset.selected ? search.dataset.selected.split(' | ').filter(Boolean) : [];
+  const q = query.toLowerCase();
+  const filtered = opts.filter(o => !q || o.toLowerCase().includes(q));
+  if (!filtered.length) {
+    dd.innerHTML = '<div class="ms-empty">Geen resultaten</div>';
+    return;
+  }
+  dd.innerHTML = filtered.map(o => {
+    const isSel = selected.includes(o);
+    return `<div class="ms-option ${isSel ? 'selected' : ''}" onclick="msToggle('${uid}','${escHtml(o)}')">
+      <span class="ms-option-check">${isSel ? '✓' : ''}</span>
+      ${escHtml(o)}
+    </div>`;
+  }).join('');
+}
+
+function msToggle(uid, val) {
+  const search = document.getElementById(uid + '_search');
+  if (!search) return;
+  let selected = search.dataset.selected ? search.dataset.selected.split(' | ').filter(Boolean) : [];
+  const idx = selected.indexOf(val);
+  if (idx >= 0) selected.splice(idx, 1);
+  else selected.push(val);
+  search.dataset.selected = selected.join(' | ');
+  // Update tags
+  const tagsEl = document.getElementById(uid + '_tags');
+  if (tagsEl) {
+    tagsEl.innerHTML = selected.map(s =>
+      `<span class="ms-tag">${escHtml(s)}<span class="ms-tag-remove" onclick="msRemoveTag(this,'${uid}','${escHtml(search.dataset.key)}','${escHtml(search.dataset.source)}')" data-val="${escHtml(s)}">×</span></span>`
+    ).join('');
+  }
+  // Update pending
+  const key = search.dataset.key;
+  const source = search.dataset.source;
+  if (!pendingChanges[source]) pendingChanges[source] = {};
+  pendingChanges[source][key] = selected.join(' | ');
+  isDirty = true;
+  document.getElementById('saveStatus').textContent = '● Niet opgeslagen';
+  // Herrender dropdown
+  msRender(uid, search.value);
+}
+
+function msRemoveTag(el, uid, key, source) {
+  event.stopPropagation();
+  const val = el.dataset.val;
+  msToggle(uid, val);
 }
 
 function escHtml(s) {
