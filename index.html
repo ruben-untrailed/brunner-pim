@@ -750,13 +750,22 @@ async function loadProducts() {
 }
 
 async function loadTemplates() {
-  const { data } = await sb.from('category_templates').select('id, marketplace, categorie_naam, categorie_id');
-  if (!data) return;
+  const [tRes, aRes] = await Promise.all([
+    sb.from('category_templates').select('id, marketplace, categorie_naam, categorie_id'),
+    sb.from('product_categories').select('cat_amazon').not('cat_amazon', 'is', null).neq('cat_amazon', '')
+  ]);
   allTemplates = {};
-  data.forEach(t => {
-    if (!allTemplates[t.marketplace]) allTemplates[t.marketplace] = [];
-    allTemplates[t.marketplace].push(t);
-  });
+  if (tRes.data) {
+    tRes.data.forEach(t => {
+      if (!allTemplates[t.marketplace]) allTemplates[t.marketplace] = [];
+      allTemplates[t.marketplace].push(t);
+    });
+  }
+  // Amazon categorieën uit product_categories
+  if (aRes.data) {
+    const uniq = [...new Set(aRes.data.map(r => r.cat_amazon))].sort();
+    allTemplates['amazon'] = uniq.map(c => ({ categorie_naam: c, categorie_id: null }));
+  }
 }
 
 function renderProductList(products) {
@@ -1690,20 +1699,4 @@ async function saveProduct() {
 }
 
 function discardChanges() {
-  if (!isDirty || confirm('Wijzigingen weggooien?')) {
-    isDirty = false;
-    pendingChanges = {};
-    document.getElementById('saveStatus').textContent = '';
-    renderTab();
-  }
-}
-
-function showToast(msg, type='success') {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = `toast ${type} show`;
-  setTimeout(() => t.classList.remove('show'), 3000);
-}
-</script>
-</body>
-</html>
+  if (!isDirty || confirm('Wijzigi
