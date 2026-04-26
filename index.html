@@ -841,7 +841,7 @@ function field(key, label, value, type='text', source='product', required=false,
     </div>`;
   }
 
-  if (opts && !opts.multi) {
+  if (opts && !opts.multi && opts.opties && opts.opties.length > 0) {
     // Single-select dropdown
     const options = opts.opties.map(o =>
       `<option value="${escHtml(o)}" ${o === val ? 'selected' : ''}>${escHtml(o)}</option>`
