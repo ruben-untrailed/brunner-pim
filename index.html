@@ -1640,4 +1640,70 @@ async function saveProduct() {
       Object.assign(currentProduct, updates.product);
     }
 
-    // Update product_at
+    // Update product_attributes
+    if (updates.attrs && Object.keys(updates.attrs).length) {
+      if (currentAttrs.id) {
+        const { error } = await sb.from('product_attributes')
+          .update({ ...updates.attrs, bijgewerkt_op: new Date().toISOString() })
+          .eq('product_id', currentProduct.id);
+        if (error) throw error;
+      } else {
+        const { error } = await sb.from('product_attributes')
+          .insert({ product_id: currentProduct.id, ...updates.attrs });
+        if (error) throw error;
+      }
+      Object.assign(currentAttrs, updates.attrs);
+    }
+
+    // Update product_categories
+    if (updates.cats && Object.keys(updates.cats).length) {
+      if (currentCats.id) {
+        const { error } = await sb.from('product_categories')
+          .update({ ...updates.cats, bijgewerkt_op: new Date().toISOString() })
+          .eq('product_id', currentProduct.id);
+        if (error) throw error;
+      } else {
+        const { error } = await sb.from('product_categories')
+          .insert({ product_id: currentProduct.id, ...updates.cats });
+        if (error) throw error;
+      }
+      Object.assign(currentCats, updates.cats);
+      onCategorySaved();
+    }
+
+    isDirty = false;
+    pendingChanges = {};
+    document.getElementById('saveStatus').textContent = '✓ Opgeslagen';
+    document.getElementById('editorTitle').textContent = currentProduct.naam_nl || '—';
+
+    const idx = allProducts.findIndex(p => p.id === currentProduct.id);
+    if (idx >= 0 && updates.product?.naam_nl) allProducts[idx].naam_nl = updates.product.naam_nl;
+    renderProductList(filteredProducts.length ? filteredProducts : allProducts);
+
+    showToast('Product opgeslagen', 'success');
+  } catch(e) {
+    showToast('Fout bij opslaan: ' + e.message, 'error');
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Opslaan';
+}
+
+function discardChanges() {
+  if (!isDirty || confirm('Wijzigingen weggooien?')) {
+    isDirty = false;
+    pendingChanges = {};
+    document.getElementById('saveStatus').textContent = '';
+    renderTab();
+  }
+}
+
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>
