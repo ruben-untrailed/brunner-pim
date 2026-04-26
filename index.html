@@ -719,7 +719,7 @@ async function loadProducts() {
   const [pRes, cRes, wooRes] = await Promise.all([
     sb.from('products').select('id, ean, naam_nl, mpn, serie, merk').order('naam_nl'),
     sb.from('product_categories').select('product_id, cat_bol, cat_obelink, cat_decathlon'),
-    sb.from('import_products_').select('ean, woocommerce_categorie')
+    sb.from('import products').select('ean, woocommerce_categorie')
   ]);
   if (pRes.error) { showToast('Fout bij laden producten', 'error'); return; }
   const catMap = {};
@@ -876,7 +876,7 @@ async function selectProduct(id) {
   currentProduct = pRes.data;
   currentAttrs = aRes.data || {};
   currentCats = cRes.data || {};
-  // Kopieer _woo_cat van allProducts (wordt geladen via import_products_)
+  // Kopieer _woo_cat van allProducts (wordt geladen via import products)
   const _listEntry = allProducts.find(p => p.id === id);
   if (_listEntry) currentProduct._woo_cat = _listEntry._woo_cat || '';
 
