@@ -486,6 +486,9 @@
       <div class="logo">Brunner PIM</div>
       <div class="logo-sub">Product Informatie Systeem</div>
     </div>
+    <div style="padding:4px 16px 6px;display:flex;justify-content:flex-end;border-bottom:1px solid var(--border);">
+      <button class="btn btn-ghost" onclick="toggleInstellingen()" style="font-size:12px;padding:4px 10px;">⚙ Instellingen</button>
+    </div>
     <div class="search-wrap">
       <input type="text" id="searchInput" placeholder="Zoek op naam, EAN, MPN..." autocomplete="off">
       <select id="categoryFilter" onchange="applyFilters()">
@@ -553,6 +556,8 @@ let pendingChanges = {};
 let allTemplates = {};
 let templateFieldsCache = {};
 let fieldOptions = {};
+let allFieldOptions = [];
+let attributeDefaults = {};
 const catKenmerken = {"Caravan & camper accessoires > Opzetspiegels > Caravanspiegels": ["Trillingsvrij", "Inclusief opbergtas"], "Caravan & camper accessoires > Opzetspiegels > Dodehoekspiegels": ["Trillingsvrij", "Inclusief opbergtas"], "Slapen > Luchtbedden": ["Inclusief opberghoes", "Inclusief reparatiesetje", "Ingebouwde pomp", "Geïntegreerd hoofdkussen"], "Caravan & camper accessoires > Chassis > Levellers": ["Inclusief draagtas", "Anti-slip laag", "Voorkomt vervorming van de band", "Koppelbaar", "Stapelbaar", "Geschikt voor elke ondergrond", "Voor banden van 13 t/m 16 inch"], "Caravan & camper accessoires > Opstapjes & ladders > Opstapjes": ["Antislip", "Verstelbare voetjes", "Inklapbaar", "Draagbaar", "Handmatig in- en uitklappen", "Elektrisch in- en uitklappen", "Vouwbaar"], "Kampeermeubelen > Campingtafels > Campingtafels inklapbaar": ["Deelbaar blad", "Handvat", "Inclusief draagtas", "Opbergnet", "Stelvoetjes", "Afneembare poten", "Verstelbare poten", "Afneembaar blad", "Geïntegreerde waterpas"], "Kampeermeubelen > Campingtafels > Roltafels camping": ["Deelbaar blad", "Handvat", "Inclusief draagtas", "Opbergnet", "Stelvoetjes", "Afneembare poten", "Verstelbare poten", "Afneembaar blad", "Geïntegreerde waterpas"], "Keuken- & huishoudartikelen > Camping keukenspullen > Pannen": ["Anti-aanbaklaag", "Afneembaar handvat", "Wegklapbare handgreep", "Te gebruiken als ovenschaal", "Thermo spot", "Inclusief deksel", "Inclusief draagtas", "Vaatwasserbestendig", "Opvouwbaar"], "Keuken- & huishoudartikelen > Huishoudelijke apparaten > Stofzuigers": ["Telescopische buis", "Vaste wielen", "HEPA filter", "Draaghendel", "High efficiency borstel", "Flexibele buis", "Uitwasbaar filter", "Inclusief accessoires", "Handgreep", "Lichtgewicht"], "Kampeermeubelen > Campingkeukens": ["Draagtas", "Ventilatiegaas aan achterzijde", "Verstelbare poten", "Windscherm", "Zijvakjes", "Ruimte voor gasfles", "Wasbak", "Oprolbaar blad", "MDF legplanken", "Ophanghaakjes", "Voor kooktoestellen tot 60 cm breed", "Opvouwbaar", "Met opbergboxen"], "Caravan & camper accessoires > Ramen > Raamisolatie": ["Regen", "Zon", "Sneeuw", "Stof", "Vuil", "Condensvorming", "Vorst", "Krassen", "Slijtage", "Warmte", "Kou", "UV-straling", "Kleurvervaging", "Wind"], "Klimaatbeheersing > Airco's > Split airco's": ["Afstandsbediening", "Aftapkraantje", "Digitale timer", "Geïntegreerd handvat", "Inclusief afvoerslang", "Slaapmode", "Temperatuur instelbaar", "Voelers ter bescherming bij ijsvorming", "Warmtepomp", "Watertankvol indicator", "Werkt tot een omgevingstemperatuur van 42°C", "Voelers ter detectie van ijsvorming", "Filters zijn verwisselbaar en reinigbaar", "Soft start (laag opstartvermogen)", "Voorzien van Chillout Airbox luchtverdeler"], "Klimaatbeheersing > Airco's > Ventilatoren": ["Afstandsbediening", "Aftapkraantje", "Digitale timer", "Geïntegreerd handvat", "Inclusief afvoerslang", "Slaapmode", "Temperatuur instelbaar", "Voelers ter bescherming bij ijsvorming", "Warmtepomp", "Watertankvol indicator", "Werkt tot een omgevingstemperatuur van 42°C", "Voelers ter detectie van ijsvorming", "Filters zijn verwisselbaar en reinigbaar", "Soft start (laag opstartvermogen)", "Voorzien van Chillout Airbox luchtverdeler"], "Kampeermeubelen > Campingstoelen > Klapstoelen": ["Inklapbaar", "Stapelbaar", "Verstelbaar", "Bekerhouder", "Draagband", "Hoofdsteun", "Inclusief draagtas", "Safety-lock", "Verstelbare hoofdsteun", "Veiligheidsriem", "Zonnedakje", "Geen", "Zijtafel", "Ergonomisch gevormde rugleuning", "Grondverankering mogelijk", "(Afneembaar) eetblad"], "Kampeermeubelen > Campingstoelen > Ligbedden": ["Inklapbaar", "Stapelbaar", "Verstelbaar", "Bekerhouder", "Draagband", "Hoofdsteun", "Inclusief draagtas", "Safety-lock", "Verstelbare hoofdsteun", "Veiligheidsriem", "Zonnedakje", "Geen", "Zijtafel", "Ergonomisch gevormde rugleuning", "Grondverankering mogelijk", "(Afneembaar) eetblad"], "Kampeermeubelen > Campingstoelen > Strandstoelen": ["Inklapbaar", "Stapelbaar", "Verstelbaar", "Bekerhouder", "Draagband", "Hoofdsteun", "Inclusief draagtas", "Safety-lock", "Verstelbare hoofdsteun", "Veiligheidsriem", "Zonnedakje", "Geen", "Zijtafel", "Ergonomisch gevormde rugleuning", "Grondverankering mogelijk", "(Afneembaar) eetblad"], "Kampeermeubelen > Campingstoelen > Vouwstoelen": ["Inklapbaar", "Stapelbaar", "Verstelbaar", "Bekerhouder", "Draagband", "Hoofdsteun", "Inclusief draagtas", "Safety-lock", "Verstelbare hoofdsteun", "Veiligheidsriem", "Zonnedakje", "Geen", "Zijtafel", "Ergonomisch gevormde rugleuning", "Grondverankering mogelijk", "(Afneembaar) eetblad"], "Caravan & camper accessoires > Beschermhoezen > Camperhoezen": ["Elastische band voor betere pasvorm", "2 bevestigingsogen", "Wasbaar tot 30°C", "Toegang tot caravan mogelijk", "Toegang tot camper mogelijk", "Versterkte hoeken", "Vermindert schimmelvorming", "Verstevigde zeilringen", "Biedt privacy", "Eenzijdige doorkijk", "Afritsbaar paneel", "Weerbestendig", "Oprolmogelijkheid", "Voor alle seizoenen geschikt", "Met reflectorstrepen", "Onderkant fietsendrager ook beschermd", "Met insteekhoes voor veiligheidsbord"], "Caravan & camper accessoires > Beschermhoezen > Caravanhoezen": ["Elastische band voor betere pasvorm", "2 bevestigingsogen", "Wasbaar tot 30°C", "Toegang tot caravan mogelijk", "Toegang tot camper mogelijk", "Versterkte hoeken", "Vermindert schimmelvorming", "Verstevigde zeilringen", "Biedt privacy", "Eenzijdige doorkijk", "Afritsbaar paneel", "Weerbestendig", "Oprolmogelijkheid", "Voor alle seizoenen geschikt", "Met reflectorstrepen", "Onderkant fietsendrager ook beschermd", "Met insteekhoes voor veiligheidsbord"], "Caravan & camper accessoires > Beschermhoezen > Disselhoezen": ["Elastische band voor betere pasvorm", "2 bevestigingsogen", "Wasbaar tot 30°C", "Toegang tot caravan mogelijk", "Toegang tot camper mogelijk", "Versterkte hoeken", "Vermindert schimmelvorming", "Verstevigde zeilringen", "Biedt privacy", "Eenzijdige doorkijk", "Afritsbaar paneel", "Weerbestendig", "Oprolmogelijkheid", "Voor alle seizoenen geschikt", "Met reflectorstrepen", "Onderkant fietsendrager ook beschermd", "Met insteekhoes voor veiligheidsbord"], "Caravan & camper accessoires > Beschermhoezen > Wielhoezen": ["Elastische band voor betere pasvorm", "2 bevestigingsogen", "Wasbaar tot 30°C", "Toegang tot caravan mogelijk", "Toegang tot camper mogelijk", "Versterkte hoeken", "Vermindert schimmelvorming", "Verstevigde zeilringen", "Biedt privacy", "Eenzijdige doorkijk", "Afritsbaar paneel", "Weerbestendig", "Oprolmogelijkheid", "Voor alle seizoenen geschikt", "Met reflectorstrepen", "Onderkant fietsendrager ook beschermd", "Met insteekhoes voor veiligheidsbord"], "Koelboxen & koelkasten > Koelboxen > Compressor koelboxen": ["Afneembare deksel", "Bekerhouder in deksel", "Geïntegreerde handvatten", "Geschikt voor 0,33-liter flessen", "Geschikt voor 0,5-liter flessen", "Geschikt voor 1-liter flessen", "Geschikt voor 1,5-liter flessen", "Geschikt voor 2-liter flessen", "Kabelvak in deksel", "Wieltjes", "Binnenverlichting", "Elektronische thermostaat", "Turbo functie", "Geschikt voor 0,75-liter flessen", "Condensafvoer", "USB-A aansluiting", "USB-C aansluiting"], "Water & sanitair > Camping toiletten > Draagbare toiletten": ["Aansluiting centrale watertank", "Afvaltank met wielen", "Geïntegreerde dekselvergrendeling", "Geïntegreerde schenktuit", "Niveau-indicator afvaltank", "Niveau-indicator spoelwater-tank", "Toiletrolhouder", "Beluchtingsknop op afvaltank", "Keramische binnenpot", "Inclusief hold down kit", "Geschikt voor kinderen", "Geschikt voor volwassenen", "Geïntegreerde watertank", "Bedieningspaneel", "Draaibare pot", "Dekselvergrendeling", "Geschikt voor SOG", "Inclusief uitneembare afvaltank"], "BBQ's & kooktoestellen > Kooktoestellen > Campinggasstellen": ["Deksel", "Windscherm", "Anti-slip voetjes", "Vaatwasserbestendige pannendragers", "Afneembare pannendragers", "Geïntegreerd handvat", "In hoogte verstelbare poten", "Legplanken", "Vermogen traploos instelbaar", "Spoelbak links", "Spoelbak rechts", "Hittebestendige glazen afdekplaat", "Geëmailleerde pannendragers", "Geëmailleerde branderdeksels", "Minimale afstand van muur: 4,5 cm", "Inclusief opbergkoffer", "Inclusief opbergtas", "Aansluiting links achter", "Aansluiting rechts achter"], "BBQ's & kooktoestellen > Kooktoestellen > Elektrische kookplaten": ["Deksel", "Windscherm", "Anti-slip voetjes", "Vaatwasserbestendige pannendragers", "Afneembare pannendragers", "Geïntegreerd handvat", "In hoogte verstelbare poten", "Legplanken", "Vermogen traploos instelbaar", "Spoelbak links", "Spoelbak rechts", "Hittebestendige glazen afdekplaat", "Geëmailleerde pannendragers", "Geëmailleerde branderdeksels", "Minimale afstand van muur: 4,5 cm", "Inclusief opbergkoffer", "Inclusief opbergtas", "Aansluiting links achter", "Aansluiting rechts achter"], "Keuken- & huishoudartikelen > Camping keukenspullen > Serviessets": ["BPA vrij", "Biologisch afbreekbaar", "Ftalaten vrij", "Inclusief mes", "Inclusief opbergtas", "Maataanduiding", "Onbreekbaar", "Lekvrij", "Stapelbaar", "Opvouwbaar", "Inclusief deksel", "Inclusief vork", "Inclusief lepel", "Anti-slip", "Krasbestendig", "Magnetisch", "Dubbelwandig", "Duurzaam", "Isolerend", "Lichtgewicht"], "BBQ's & kooktoestellen > Gasbarbecues": ["Afdekhoes", "Asopvang", "Bakplaat", "Brikettenhouders", "Brikettenrails", "Deksel", "Dekselhouder", "Gasfleshouder", "Gereedschapshaken", "Maatbeker", "Opberghoes", "Opbergtas", "Thermometer", "Verrijdbaar", "Vetafvoer", "Zijtafel", "Verstelbare grill", "Warmhoudrooster", "Zijbrander", "Geen", "Draaispit", "Stelvoetjes"], "Water & sanitair > Watertanks > Jerrycans": ["Aansluiting voor optionele kraan", "Kraantje", "Wieltjes", "Handvat", "Vouwbaar", "Afvoerslang", "Niveaumeter", "Din 61 dop (4,6 cm)", "Din 96 dop (8 cm)", "Ontluchtingsventiel", "Dop voor waterpomp", "Leegloop dop", "Platform voor toiletcassette", "Inclusief spanbanden", "Inclusief schenktuit", "Inclusief flexibele schenktuit", "Ophangoog", "Voorzien van slangsleuf", "Inclusief bevestigingsmateriaal", "Geen", "Inclusief bevestigingsogen", "Voor drinkwater geschikt"], "Elektra > Camping verlichting > Sfeerverlichting": ["Waterbestendig", "Kompas", "Handvat", "Ophanghaak", "Bluetooth speaker", "Telefoonoplader", "Opvouwbaar", "Batterij indicator", "Bewegingssensor", "Lichtsensor", "Extern dimbaar", "Dimbaar", "Touch bediening", "Met schakelaar", "180 graden draaibaar", "360 graden draaibaar", "Blauw en wit licht", "Dimbaar in 3 standen", "Traploos dimbaar", "Met afstandsbediening", "Watervaste strip", "Zelfklevend", "Koppelbaar", "Infrarood schakelaar", "Inclusief klemmen", "Inclusief klittenband", "Handlus", "Niet dimbaar", "Standlicht", "Zonnepaneel", "Niet waterbestendig"], "Water & sanitair > Waterslangen > Drinkwaterslangen": ["Voormenger", "Doorlopend warm water", "Led display", "Regelbare watertemperatuur: 30 - 55 graden", "Schakelaar", "Vermogen 12 volt: 200 watt", "Zuurstofvrije koperen warmtewisselaar", "Slot", "Ontluchting", "Geschikt voor warm water", "Geschikt voor koud water", "Doucheslang en kop", "Regelbare spuitmond", "Handgreep", "Kraanadapter 3/4\"", "Inclusief tuinsproeier", "Inclusief 1/2\" aansluiting", "Eenvoudig in te korten", "Led indicator", "Inclusief sensors", "RVS zeef", "Uitneembare zeef", "Afsluitbaar", "Geschikt voor Twin dompelpomp", "Geschikt voor Powerjet dompelpomp", "Met schroef tule", "Voor ca. 4500 liter", "Volledig automatisch", "Instelbaar waterpeil", "Aansluitbaar op waterleiding", "Geschikt voor drinkwater", "Niet geschikt voor ringleiding", "Vervangbaar filter", "Filtert chloor, geur en smaak"], "Keuken- & huishoudartikelen > Camping keukenspullen > Glazen": ["Bol", "Vlak", "Vlak en bol"]};
 
 // Auth State Check
@@ -566,6 +571,8 @@ sb.auth.onAuthStateChange((event, session) => {
       loadProducts();
       loadTemplates();
       loadFieldOptions();
+      loadAllFieldOptions();
+      loadDefaults();
     }
   } else {
     loginScreen.style.display = 'flex';
@@ -624,7 +631,7 @@ async function loadProducts() {
 }
 
 async function loadTemplates() {
-  const { data } = await sb.from('category_templates').select('id, marketplace, categorie_naam');
+  const { data } = await sb.from('category_templates').select('id, marketplace, categorie_naam, categorie_id');
   if (!data) return;
   allTemplates = {};
   data.forEach(t => {
@@ -785,6 +792,256 @@ function onCategorySaved() {
   templateFieldsCache = {};
 }
 
+
+async function loadAllFieldOptions() {
+  const { data } = await sb.from('field_options').select('master_veld, multi, opties').order('master_veld');
+  if (data) allFieldOptions = data;
+}
+
+async function loadDefaults() {
+  try {
+    const { data, error } = await sb.from('attribute_defaults').select('master_veld, default_value');
+    if (\!error && data) data.forEach(r => { attributeDefaults[r.master_veld] = r.default_value; });
+  } catch(e) { /* tabel bestaat nog niet */ }
+}
+
+function onCatSelect(el, mpKey) {
+  markDirty(el);
+  const catNaam = el.value;
+  const template = (allTemplates[mpKey] || []).find(t => t.categorie_naam === catNaam);
+  const catId = template ? (template.categorie_id || '') : '';
+  const section = el.closest('.section');
+  if (section) {
+    const idField = section.querySelector('[data-key="cat_' + mpKey + '_id"]');
+    if (idField) {
+      idField.value = catId;
+      if (\!pendingChanges.cats) pendingChanges.cats = {};
+      pendingChanges.cats['cat_' + mpKey + '_id'] = catId;
+      isDirty = true;
+      document.getElementById('saveStatus').textContent = '● Niet opgeslagen';
+    }
+  }
+  templateFieldsCache = {};
+}
+
+function toggleInstellingen() {
+  const panel = document.getElementById('instellingenPanel');
+  const editor = document.getElementById('productEditor');
+  const noProduct = document.getElementById('noProduct');
+  if (panel.style.display === 'none' || \!panel.style.display) {
+    panel.style.display = 'flex';
+    editor.style.display = 'none';
+    noProduct.style.display = 'none';
+    renderInstellingen();
+  } else {
+    panel.style.display = 'none';
+    if (currentProduct) editor.style.display = 'flex';
+    else noProduct.style.display = 'flex';
+  }
+}
+
+async function renderInstellingen() {
+  const content = document.getElementById('instellingenContent');
+  if (\!content) return;
+  content.innerHTML = '<div class="loading">Laden...</div>';
+
+  // Herlaad field_options zodat ze altijd actueel zijn
+  const { data: foData } = await sb.from('field_options').select('master_veld, multi, opties').order('master_veld');
+  if (foData) allFieldOptions = foData;
+
+  // Laad defaults (optioneel)
+  let defData = [];
+  try {
+    const { data } = await sb.from('attribute_defaults').select('master_veld, default_value');
+    if (data) defData = data;
+  } catch(e) {}
+
+  const defaultsMap = {};
+  defData.forEach(r => { defaultsMap[r.master_veld] = r.default_value; });
+
+  // Groepeer field_options: met opties vs vrij tekst
+  const metOpties = allFieldOptions.filter(f => f.opties && f.opties.length > 0);
+  const vrijeTekst = allFieldOptions.filter(f => \!f.opties || f.opties.length === 0);
+
+  content.innerHTML = `
+    <\!-- ── Sectie 1: Attribuut opties ───────────────────────── -->
+    <div class="section">
+      <div class="section-title">Attribuut opties beheren</div>
+      <p style="color:var(--text3);font-size:13px;margin:0 0 12px;">Klik op een veld om de keuze-opties te bewerken.</p>
+      <div style="display:flex;flex-direction:column;gap:4px;" id="foListWrap">
+        ${metOpties.map(f => `
+          <div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;"
+               onclick="editFieldOptions('${f.master_veld}')">
+            <span style="flex:1;font-size:13px;font-family:'DM Mono',monospace;">${f.master_veld}</span>
+            <span style="font-size:11px;color:var(--text3);">${f.opties.length} opties</span>
+            <span style="font-size:11px;color:var(--text3);">${f.multi ? 'multi' : 'single'}</span>
+            <span style="font-size:12px;color:var(--accent);">✎</span>
+          </div>`).join('')}
+      </div>
+      <div id="foEditPanel" style="display:none;margin-top:16px;padding:14px;background:var(--surface2);border:1px solid var(--accent);border-radius:var(--radius);">
+        <div style="font-weight:600;font-size:13px;margin-bottom:10px;" id="foEditTitle">—</div>
+        <div id="foEditTags" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;"></div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input type="text" id="foNewVal" placeholder="Nieuwe optie..." style="flex:1;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);color:var(--text1);font-size:13px;">
+          <button class="btn btn-primary" onclick="addFieldOptionVal()" style="font-size:12px;">Toevoegen</button>
+          <button class="btn btn-ghost" onclick="saveFieldOptions()" style="font-size:12px;">Opslaan</button>
+        </div>
+      </div>
+    </div>
+
+    <\!-- ── Sectie 2: Standaard waarden ──────────────────────── -->
+    <div class="section">
+      <div class="section-title">Standaard waarden</div>
+      <p style="color:var(--text3);font-size:13px;margin:0 0 12px;">
+        Vul een standaard waarde in die automatisch wordt voorgesteld bij nieuwe producten.
+        Vereist tabel: <code style="font-family:'DM Mono',monospace;font-size:11px;">attribute_defaults</code>
+      </p>
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        ${allFieldOptions.filter(f => f.opties && f.opties.length > 0).map(f => {
+          const def = defaultsMap[f.master_veld] || '';
+          const opts = f.multi ? '' : f.opties.map(o =>
+            `<option value="${escHtml(o)}" ${o === def ? 'selected' : ''}>${escHtml(o)}</option>`
+          ).join('');
+          return `<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);">
+            <span style="flex:1;font-size:12px;font-family:'DM Mono',monospace;">${f.master_veld}</span>
+            ${f.multi
+              ? `<input type="text" value="${escHtml(def)}" data-field="${f.master_veld}" onchange="saveDefault(this)" style="width:200px;padding:4px 8px;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text1);font-size:12px;">`
+              : `<select data-field="${f.master_veld}" onchange="saveDefault(this)" style="width:200px;padding:4px 8px;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text1);font-size:12px;">
+                  <option value="">— Geen standaard —</option>
+                  ${opts}
+                </select>`
+            }
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    <\!-- ── Sectie 3: Categorie toevoegen ────────────────────── -->
+    <div class="section">
+      <div class="section-title">Categorie toevoegen</div>
+      <div class="fields-grid" style="max-width:500px;">
+        <div class="field">
+          <label class="field-label">Marketplace</label>
+          <select id="newCatMarketplace">
+            <option value="bol">BOL.com</option>
+            <option value="obelink">Obelink</option>
+            <option value="decathlon">Decathlon</option>
+            <option value="amazon">Amazon</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="field-label">Categorie naam</label>
+          <input type="text" id="newCatNaam" placeholder="bijv. Campingstoel">
+        </div>
+        <div class="field">
+          <label class="field-label">Categorie ID (optioneel)</label>
+          <input type="text" id="newCatId" placeholder="bijv. 12345">
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="addCategoryTemplate()" style="margin-top:8px;">Categorie toevoegen</button>
+    </div>
+
+    <\!-- ── Sectie 4: Export ──────────────────────────────────── -->
+    <div class="section">
+      <div class="section-title">Export</div>
+      <p style="color:var(--text3);font-size:13px;margin:0 0 12px;">Exporteer producten als CSV. Volgende versie.</p>
+      <button class="btn btn-ghost" onclick="showToast('Export wordt binnenkort toegevoegd', 'success')" style="opacity:.6;cursor:default;">
+        ↓ Exporteer producten (CSV)
+      </button>
+    </div>
+  `;
+
+  // Herstel edit-state als die open was
+  if (window._foEditKey) editFieldOptions(window._foEditKey);
+}
+
+let _foEditOpties = [];
+let _foEditKey = null;
+
+function editFieldOptions(masterVeld) {
+  window._foEditKey = masterVeld;
+  _foEditKey = masterVeld;
+  const field = allFieldOptions.find(f => f.master_veld === masterVeld);
+  if (\!field) return;
+  _foEditOpties = [...(field.opties || [])];
+  document.getElementById('foEditTitle').textContent = '✎  ' + masterVeld;
+  renderFoEditTags();
+  const panel = document.getElementById('foEditPanel');
+  if (panel) panel.style.display = 'block';
+  document.getElementById('foNewVal')?.focus();
+}
+
+function renderFoEditTags() {
+  const el = document.getElementById('foEditTags');
+  if (\!el) return;
+  el.innerHTML = _foEditOpties.map((o, idx) =>
+    `<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;background:var(--surface);border:1px solid var(--border);border-radius:4px;font-size:12px;">
+      ${escHtml(o)}
+      <span style="cursor:pointer;color:var(--text3);font-size:14px;" onclick="removeFoOption(${idx})">×</span>
+    </span>`
+  ).join('');
+}
+
+function removeFoOption(idx) {
+  _foEditOpties.splice(idx, 1);
+  renderFoEditTags();
+}
+
+function addFieldOptionVal() {
+  const input = document.getElementById('foNewVal');
+  const val = input?.value?.trim();
+  if (\!val || _foEditOpties.includes(val)) return;
+  _foEditOpties.push(val);
+  _foEditOpties.sort((a,b) => a.localeCompare(b, 'nl'));
+  input.value = '';
+  renderFoEditTags();
+}
+
+async function saveFieldOptions() {
+  if (\!_foEditKey) return;
+  const sorted = [..._foEditOpties].sort((a,b) => a.localeCompare(b, 'nl'));
+  const { error } = await sb.from('field_options')
+    .update({ opties: sorted })
+    .eq('master_veld', _foEditKey);
+  if (error) { showToast('Fout bij opslaan: ' + error.message, 'error'); return; }
+  // Update lokale cache
+  const f = allFieldOptions.find(f => f.master_veld === _foEditKey);
+  if (f) f.opties = sorted;
+  fieldOptions[_foEditKey] = { ...fieldOptions[_foEditKey], opties: sorted };
+  showToast(_foEditKey + ' opgeslagen', 'success');
+  // Herrender de lijst
+  renderInstellingen();
+}
+
+async function saveDefault(el) {
+  const masterVeld = el.dataset.field;
+  const val = el.value;
+  const { error } = await sb.from('attribute_defaults')
+    .upsert({ master_veld: masterVeld, default_value: val }, { onConflict: 'master_veld' });
+  if (error) showToast('Fout: ' + error.message, 'error');
+  else {
+    attributeDefaults[masterVeld] = val;
+    showToast('Standaard opgeslagen', 'success');
+  }
+}
+
+async function addCategoryTemplate() {
+  const marketplace = document.getElementById('newCatMarketplace')?.value;
+  const naam = document.getElementById('newCatNaam')?.value?.trim();
+  const catId = document.getElementById('newCatId')?.value?.trim() || null;
+  if (\!marketplace || \!naam) { showToast('Vul marketplace en naam in', 'error'); return; }
+  const { data, error } = await sb.from('category_templates')
+    .insert({ marketplace, categorie_naam: naam, categorie_id: catId })
+    .select().single();
+  if (error) { showToast('Fout: ' + error.message, 'error'); return; }
+  // Voeg toe aan allTemplates
+  if (\!allTemplates[marketplace]) allTemplates[marketplace] = [];
+  allTemplates[marketplace].push(data);
+  document.getElementById('newCatNaam').value = '';
+  document.getElementById('newCatId').value = '';
+  showToast('Categorie "' + naam + '" toegevoegd', 'success');
+}
+
 async function loadFieldOptions() {
   const { data } = await sb.from('field_options').select('master_veld, multi, opties');
   if (!data) return;
@@ -805,23 +1062,7 @@ function field(key, label, value, type='text', source='product', required=false,
     const selected = val ? val.split(' | ').map(s => s.trim()).filter(Boolean) : [];
     const uid = 'ms_' + key + '_' + source;
 
-    if (opts.opties.length <= 6) {
-      // Weinig opties: gewone checkboxes
-      const checkboxes = opts.opties.map(o => {
-        const checked = selected.includes(o) ? 'checked' : '';
-        const safeO = escHtml(o);
-        return `<label style="display:inline-flex;align-items:center;gap:4px;margin:2px 4px 2px 0;padding:3px 8px;background:var(--surface);border:1px solid var(--border);border-radius:4px;cursor:pointer;font-size:12px;">
-          <input type="checkbox" ${checked} data-key="${key}" data-source="${source}" data-multi="true"
-            onchange="markMulti(this, '${key}', '${source}')" style="cursor:pointer;"> ${safeO}
-        </label>`;
-      }).join('');
-      return `<div class="field${fw}">
-        <label class="field-label">${escHtml(label)}${reqHtml}</label>
-        <div style="padding:6px 0;line-height:1.8;">${checkboxes}</div>
-      </div>`;
-    }
-
-    // Veel opties: doorzoekbare multi-select dropdown
+    // Multi-select: altijd tag + dropdown UI
     const tagsHtml = selected.map(s =>
       `<span class="ms-tag">${escHtml(s)}<span class="ms-tag-remove" onclick="msRemoveTag(this,'${uid}','${escHtml(key)}','${escHtml(source)}')" data-val="${escHtml(s)}">×</span></span>`
     ).join('');
@@ -1058,7 +1299,6 @@ async function renderAttributen(content) {
       ['verpakking_lengte_cm','Verpakking lengte (cm)'], ['verpakking_breedte_cm','Verpakking breedte (cm)'],
       ['verpakking_hoogte_cm','Verpakking hoogte (cm)'], ['verpakking_gewicht_kg','Verpakking gewicht (kg)'],
       ['stuks_per_verpakking','Stuks per verpakking'],
-      ['aantal_per_verpakking','Aantal per verpakking'], ['verpakkingsinhoud','Verpakkingsinhoud'],
     ]},
     { titel: 'Stoel / Meubel', velden: [
       ['zithoogte_cm','Zithoogte (cm)'], ['zitdiepte_cm','Zitdiepte (cm)'],
@@ -1114,9 +1354,6 @@ async function renderAttributen(content) {
     ]},
     { titel: 'Beschermhoezen', velden: [
       ['type_hoes','Type hoes'], ['uv_bestendig','UV-bestendig'], ['bescherming_tegen','Bescherming tegen'],
-    ]},
-    { titel: 'Taal & Verpakking', velden: [
-      ['producttaal','Producttaal'], ['taal_handleiding','Taal handleiding'],
     ]},
     { titel: 'Overige eigenschappen', velden: [
       ['opvouwbaar','Opvouwbaar'], ['verstelbaar','Verstelbaar'],
@@ -1198,10 +1435,10 @@ async function renderAttributen(content) {
 function renderMarketplaces(content) {
   const c = currentCats;
   const marketplaces = [
-    { key: 'bol', label: 'BOL.com', badge: 'badge-bol', id_key: 'cat_bol_id' },
-    { key: 'obelink', label: 'Obelink', badge: 'badge-obelink', id_key: 'cat_obelink_id' },
-    { key: 'decathlon', label: 'Decathlon', badge: 'badge-decathlon', id_key: 'cat_decathlon_id' },
-    { key: 'amazon', label: 'Amazon', badge: 'badge-amazon', id_key: 'cat_amazon' },
+    { key: 'bol', label: 'BOL.com', badge: 'badge-bol' },
+    { key: 'obelink', label: 'Obelink', badge: 'badge-obelink' },
+    { key: 'decathlon', label: 'Decathlon', badge: 'badge-decathlon' },
+    { key: 'amazon', label: 'Amazon', badge: 'badge-amazon' },
   ];
 
   content.innerHTML = marketplaces.map(mp => {
@@ -1209,15 +1446,23 @@ function renderMarketplaces(content) {
     const currentCat = c[catKey] || '';
     const templates = allTemplates[mp.key] || [];
 
-    let templateFields = '';
-    if (currentCat && mp.key !== 'amazon') {
-      templateFields = `
-        <div style="margin-top:8px;padding:8px 10px;background:var(--bg);border-radius:var(--radius);font-size:11px;color:var(--text3);">
-          Template actief: ${templates.find(t => t.categorie_naam === currentCat)?.categorie_naam || '—'}
-        </div>`;
-    }
-
     if (mp.key === 'amazon') {
+      if (templates.length > 0) {
+        const amazonOpts = templates.map(t =>
+          `<option value="${escHtml(t.categorie_naam)}" ${t.categorie_naam === currentCat ? 'selected' : ''}>${escHtml(t.categorie_naam)}</option>`
+        ).join('');
+        return `
+          <div class="section">
+            <div class="section-title"><span class="badge ${mp.badge}">${mp.label}</span></div>
+            <div class="cat-select-wrap">
+              <span class="cat-select-label">Categorie:</span>
+              <select data-key="cat_amazon" data-source="cats" onchange="markDirty(this)">
+                <option value="">— Geen categorie —</option>
+                ${amazonOpts}
+              </select>
+            </div>
+          </div>`;
+      }
       return `
         <div class="section">
           <div class="section-title"><span class="badge ${mp.badge}">${mp.label}</span></div>
@@ -1227,19 +1472,19 @@ function renderMarketplaces(content) {
         </div>`;
     }
 
+    const catId = c[`cat_${mp.key}_id`] || '';
     return `
       <div class="section">
         <div class="section-title"><span class="badge ${mp.badge}">${mp.label}</span></div>
         <div class="cat-select-wrap">
           <span class="cat-select-label">Categorie:</span>
-          <select data-key="${catKey}" data-source="cats" onchange="markDirty(this)">
+          <select data-key="${catKey}" data-source="cats" onchange="onCatSelect(this, '${mp.key}')">
             <option value="">— Geen categorie —</option>
             ${templates.map(t => `<option value="${escHtml(t.categorie_naam)}" ${t.categorie_naam === currentCat ? 'selected' : ''}>${escHtml(t.categorie_naam)}</option>`).join('')}
           </select>
         </div>
-        ${mp.key !== 'amazon' && c[`cat_${mp.key}_id`] ? `<div style="font-size:11px;color:var(--text3);margin-bottom:12px;font-family:'DM Mono',monospace;">ID: ${c[`cat_${mp.key}_id`]}</div>` : ''}
-        ${field(`cat_${mp.key}_id`, 'Categorie ID', c[`cat_${mp.key}_id`], 'text', 'cats')}
-        ${templateFields}
+        ${catId ? `<div style="font-size:11px;color:var(--text3);margin:4px 0 4px;font-family:'DM Mono',monospace;">ID: ${catId}</div>` : ''}
+        ${field(`cat_${mp.key}_id`, 'Categorie ID', catId, 'text', 'cats')}
       </div>`;
   }).join('');
 }
@@ -1346,5 +1591,30 @@ function showToast(msg, type='success') {
   setTimeout(() => t.classList.remove('show'), 3000);
 }
 </script>
+  <\!-- INSTELLINGEN PANEL -->
+  <script>
+  // Instellingen panel: inserten in .main via toggleInstellingen
+  (function() {
+    const main = document.querySelector('.main');
+    if (main && \!document.getElementById('instellingenPanel')) {
+      const panel = document.createElement('div');
+      panel.id = 'instellingenPanel';
+      panel.style.cssText = 'display:none;flex-direction:column;height:100%;overflow:hidden;';
+      panel.innerHTML = `
+        <div class="main-header">
+          <div class="main-header-left">
+            <div class="product-title">Instellingen</div>
+            <div class="product-ean">Beheer attribuut opties, standaard waarden en categorieën</div>
+          </div>
+          <button class="btn btn-ghost" onclick="toggleInstellingen()" style="font-size:13px;">✕ Sluiten</button>
+        </div>
+        <div style="overflow:auto;padding:16px;" id="instellingenContent">
+          <div class="loading">Laden...</div>
+        </div>
+      `;
+      main.appendChild(panel);
+    }
+  })();
+  </script>
 </body>
 </html>
