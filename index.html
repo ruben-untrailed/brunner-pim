@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Brunner PIM</title>
+<title>Brunner PIM v3</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
@@ -487,7 +487,7 @@
       <div class="logo-sub">Product Informatie Systeem</div>
     </div>
     <div style="padding:4px 16px 6px;display:flex;justify-content:flex-end;border-bottom:1px solid var(--border);">
-      <button class="btn btn-ghost" onclick="toggleInstellingen()" style="font-size:12px;padding:4px 10px;">⚙ Instellingen</button>
+      <button class="btn btn-ghost" onclick="toggleInstellingen()" style="font-size:12px;padding:4px 10px;">&#9881; Instellingen</button>
     </div>
     <div class="search-wrap">
       <input type="text" id="searchInput" placeholder="Zoek op naam, EAN, MPN..." autocomplete="off">
@@ -611,23 +611,18 @@ async function loadProducts() {
     sb.from('import_products_').select('ean, woocommerce_categorie')
   ]);
   if (pRes.error) { showToast('Fout bij laden producten', 'error'); return; }
-
-  // Marketplace-categorieën (voor template koppeling)
   const catMap = {};
   if (cRes.data) {
-    cRes.data.forEach(c => {
-      catMap[c.product_id] = [c.cat_bol, c.cat_obelink, c.cat_decathlon].filter(Boolean);
+    cRes.data.forEach(row => {
+      catMap[row.product_id] = [row.cat_bol, row.cat_obelink, row.cat_decathlon].filter(Boolean);
     });
   }
-
-  // WooCommerce-categorieën via EAN
   const wooCatByEan = {};
   if (wooRes.data) {
-    wooRes.data.forEach(r => {
-      if (r.ean && r.woocommerce_categorie) wooCatByEan[String(r.ean)] = r.woocommerce_categorie;
+    wooRes.data.forEach(row => {
+      if (row.ean && row.woocommerce_categorie) wooCatByEan[String(row.ean)] = row.woocommerce_categorie;
     });
   }
-
   const uniqueWooCats = new Set();
   allProducts = pRes.data.map(p => {
     const cats = catMap[p.id] || [];
@@ -635,12 +630,11 @@ async function loadProducts() {
     if (wooCat) uniqueWooCats.add(wooCat);
     return { ...p, _categories: cats, _woo_cat: wooCat };
   });
-
   document.getElementById('statTotal').textContent = allProducts.length;
-  const select = document.getElementById('categoryFilter');
-  select.innerHTML = '<option value="">Alle categorieën</option>' +
-    '<option value="UNASSIGNED">-- Zonder categorie --</option>' +
-    Array.from(uniqueWooCats).sort().map(c => `<option value="${escHtml(c)}">${escHtml(c)}</option>`).join('');
+  const sel = document.getElementById('categoryFilter');
+  sel.innerHTML = '<option value="">Alle categorieën</option>' +
+    '<option value="UNASSIGNED">-- Zonder WC categorie --</option>' +
+    Array.from(uniqueWooCats).sort().map(wc => '<option value="' + escHtml(wc) + '">' + escHtml(wc) + '</option>').join('');
   applyFilters();
 }
 
@@ -748,8 +742,8 @@ function applyFilters() {
       (p.ean || '').includes(q) ||
       (p.mpn || '').toLowerCase().includes(q);
     let matchCat = true;
-    if (cat === 'UNASSIGNED') matchCat = !p._woo_cat;
-    else if (cat) matchCat = p._woo_cat === cat;
+    if (cat === 'UNASSIGNED') matchCat = (p._woo_cat === '' || !p._woo_cat);
+    else if (cat) matchCat = (p._woo_cat === cat);
     return matchText && matchCat;
   });
   document.getElementById('statLoaded').textContent = filteredProducts.length;
@@ -813,17 +807,15 @@ async function loadAllFieldOptions() {
 }
 
 async function loadDefaults() {
-  try {
-    const { data, error } = await sb.from('attribute_defaults').select('master_veld, default_value');
-    if (!error && data) data.forEach(r => { attributeDefaults[r.master_veld] = r.default_value; });
-  } catch(e) { /* tabel bestaat nog niet */ }
+  const { data, error } = await sb.from('attribute_defaults').select('master_veld, default_value');
+  if (!error && data) data.forEach(r => { attributeDefaults[r.master_veld] = r.default_value; });
 }
 
 function onCatSelect(el, mpKey) {
   markDirty(el);
   const catNaam = el.value;
-  const template = (allTemplates[mpKey] || []).find(t => t.categorie_naam === catNaam);
-  const catId = template ? (template.categorie_id || '') : '';
+  const tmpl = (allTemplates[mpKey] || []).find(t => t.categorie_naam === catNaam);
+  const catId = tmpl ? (tmpl.categorie_id || '') : '';
   const section = el.closest('.section');
   if (section) {
     const idField = section.querySelector('[data-key="cat_' + mpKey + '_id"]');
@@ -842,215 +834,208 @@ function toggleInstellingen() {
   const panel = document.getElementById('instellingenPanel');
   const editor = document.getElementById('productEditor');
   const noProduct = document.getElementById('noProduct');
-  if (panel.style.display === 'none' || !panel.style.display) {
-    panel.style.display = 'flex';
+  if (!panel) return;
+  const isOpen = panel.style.display === 'flex';
+  panel.style.display = isOpen ? 'none' : 'flex';
+  if (!isOpen) {
     editor.style.display = 'none';
     noProduct.style.display = 'none';
     renderInstellingen();
   } else {
-    panel.style.display = 'none';
     if (currentProduct) editor.style.display = 'flex';
     else noProduct.style.display = 'flex';
   }
 }
 
-async function renderInstellingen() {
-  const content = document.getElementById('instellingenContent');
-  if (!content) return;
-  content.innerHTML = '<div class="loading">Laden...</div>';
-
-  // Herlaad field_options zodat ze altijd actueel zijn
-  const { data: foData } = await sb.from('field_options').select('master_veld, multi, opties').order('master_veld');
-  if (foData) allFieldOptions = foData;
-
-  // Laad defaults (optioneel)
-  let defData = [];
-  try {
-    const { data } = await sb.from('attribute_defaults').select('master_veld, default_value');
-    if (data) defData = data;
-  } catch(e) {}
-
-  const defaultsMap = {};
-  defData.forEach(r => { defaultsMap[r.master_veld] = r.default_value; });
-
-  // Groepeer field_options: met opties vs vrij tekst
-  const metOpties = allFieldOptions.filter(f => f.opties && f.opties.length > 0);
-  const vrijeTekst = allFieldOptions.filter(f => !f.opties || f.opties.length === 0);
-
-  content.innerHTML = `
-    <!-- ── Sectie 1: Attribuut opties ───────────────────────── -->
-    <div class="section">
-      <div class="section-title">Attribuut opties beheren</div>
-      <p style="color:var(--text3);font-size:13px;margin:0 0 12px;">Klik op een veld om de keuze-opties te bewerken.</p>
-      <div style="display:flex;flex-direction:column;gap:4px;" id="foListWrap">
-        ${metOpties.map(f => `
-          <div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;"
-               onclick="editFieldOptions('${f.master_veld}')">
-            <span style="flex:1;font-size:13px;font-family:'DM Mono',monospace;">${f.master_veld}</span>
-            <span style="font-size:11px;color:var(--text3);">${f.opties.length} opties</span>
-            <span style="font-size:11px;color:var(--text3);">${f.multi ? 'multi' : 'single'}</span>
-            <span style="font-size:12px;color:var(--accent);">✎</span>
-          </div>`).join('')}
-      </div>
-      <div id="foEditPanel" style="display:none;margin-top:16px;padding:14px;background:var(--surface2);border:1px solid var(--accent);border-radius:var(--radius);">
-        <div style="font-weight:600;font-size:13px;margin-bottom:10px;" id="foEditTitle">—</div>
-        <div id="foEditTags" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;"></div>
-        <div style="display:flex;gap:8px;align-items:center;">
-          <input type="text" id="foNewVal" placeholder="Nieuwe optie..." style="flex:1;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);color:var(--text1);font-size:13px;">
-          <button class="btn btn-primary" onclick="addFieldOptionVal()" style="font-size:12px;">Toevoegen</button>
-          <button class="btn btn-ghost" onclick="saveFieldOptions()" style="font-size:12px;">Opslaan</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ── Sectie 2: Standaard waarden ──────────────────────── -->
-    <div class="section">
-      <div class="section-title">Standaard waarden</div>
-      <p style="color:var(--text3);font-size:13px;margin:0 0 12px;">
-        Vul een standaard waarde in die automatisch wordt voorgesteld bij nieuwe producten.
-        Vereist tabel: <code style="font-family:'DM Mono',monospace;font-size:11px;">attribute_defaults</code>
-      </p>
-      <div style="display:flex;flex-direction:column;gap:4px;">
-        ${allFieldOptions.filter(f => f.opties && f.opties.length > 0).map(f => {
-          const def = defaultsMap[f.master_veld] || '';
-          const opts = f.multi ? '' : f.opties.map(o =>
-            `<option value="${escHtml(o)}" ${o === def ? 'selected' : ''}>${escHtml(o)}</option>`
-          ).join('');
-          return `<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);">
-            <span style="flex:1;font-size:12px;font-family:'DM Mono',monospace;">${f.master_veld}</span>
-            ${f.multi
-              ? `<input type="text" value="${escHtml(def)}" data-field="${f.master_veld}" onchange="saveDefault(this)" style="width:200px;padding:4px 8px;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text1);font-size:12px;">`
-              : `<select data-field="${f.master_veld}" onchange="saveDefault(this)" style="width:200px;padding:4px 8px;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text1);font-size:12px;">
-                  <option value="">— Geen standaard —</option>
-                  ${opts}
-                </select>`
-            }
-          </div>`;
-        }).join('')}
-      </div>
-    </div>
-
-    <!-- ── Sectie 3: Categorie toevoegen ────────────────────── -->
-    <div class="section">
-      <div class="section-title">Categorie toevoegen</div>
-      <div class="fields-grid" style="max-width:500px;">
-        <div class="field">
-          <label class="field-label">Marketplace</label>
-          <select id="newCatMarketplace">
-            <option value="bol">BOL.com</option>
-            <option value="obelink">Obelink</option>
-            <option value="decathlon">Decathlon</option>
-            <option value="amazon">Amazon</option>
-          </select>
-        </div>
-        <div class="field">
-          <label class="field-label">Categorie naam</label>
-          <input type="text" id="newCatNaam" placeholder="bijv. Campingstoel">
-        </div>
-        <div class="field">
-          <label class="field-label">Categorie ID (optioneel)</label>
-          <input type="text" id="newCatId" placeholder="bijv. 12345">
-        </div>
-      </div>
-      <button class="btn btn-primary" onclick="addCategoryTemplate()" style="margin-top:8px;">Categorie toevoegen</button>
-    </div>
-
-    <!-- ── Sectie 4: Export ──────────────────────────────────── -->
-    <div class="section">
-      <div class="section-title">Export</div>
-      <p style="color:var(--text3);font-size:13px;margin:0 0 12px;">Exporteer producten als CSV. Volgende versie.</p>
-      <button class="btn btn-ghost" onclick="showToast('Export wordt binnenkort toegevoegd', 'success')" style="opacity:.6;cursor:default;">
-        ↓ Exporteer producten (CSV)
-      </button>
-    </div>
-  `;
-
-  // Herstel edit-state als die open was
-  if (window._foEditKey) editFieldOptions(window._foEditKey);
-}
-
 let _foEditOpties = [];
 let _foEditKey = null;
 
+async function renderInstellingen() {
+  const cnt = document.getElementById('instellingenContent');
+  if (!cnt) return;
+  cnt.innerHTML = '<div class="loading">Laden...</div>';
+
+  const { data: foData } = await sb.from('field_options').select('master_veld, multi, opties').order('master_veld');
+  if (foData) allFieldOptions = foData;
+  const { data: defData } = await sb.from('attribute_defaults').select('master_veld, default_value');
+  const defaultsMap = {};
+  if (defData) defData.forEach(r => { defaultsMap[r.master_veld] = r.default_value; });
+  const metOpties = allFieldOptions.filter(f => f.opties && f.opties.length > 0);
+
+  // Sectie 1: Attribuut opties
+  const sec1 = document.createElement('div');
+  sec1.className = 'section';
+  sec1.innerHTML = '<div class="section-title">Attribuut opties beheren</div><p style="color:var(--text3);font-size:13px;margin:0 0 12px;">Klik op een veld om de opties te bewerken.</p>';
+  const foList = document.createElement('div');
+  foList.style.cssText = 'display:flex;flex-direction:column;gap:4px;';
+  metOpties.forEach(f => {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;';
+    row.dataset.mv = f.master_veld;
+    row.onclick = function() { editFieldOptions(this.dataset.mv); };
+    row.innerHTML =
+      '<span style="flex:1;font-size:13px;font-family:\'DM Mono\',monospace;">' + escHtml(f.master_veld) + '</span>' +
+      '<span style="font-size:11px;color:var(--text3);">' + f.opties.length + ' opties · ' + (f.multi ? 'multi' : 'single') + '</span>' +
+      '<span style="font-size:12px;color:var(--accent);">&#9998;</span>';
+    foList.appendChild(row);
+  });
+  sec1.appendChild(foList);
+
+  const editPanel = document.createElement('div');
+  editPanel.id = 'foEditPanel';
+  editPanel.style.cssText = 'display:none;margin-top:16px;padding:14px;background:var(--surface2);border:1px solid var(--accent);border-radius:var(--radius);';
+  editPanel.innerHTML =
+    '<div style="font-weight:600;font-size:13px;margin-bottom:10px;" id="foEditTitle">—</div>' +
+    '<div id="foEditTags" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;"></div>' +
+    '<div style="display:flex;gap:8px;align-items:center;">' +
+    '<input type="text" id="foNewVal" placeholder="Nieuwe optie..." style="flex:1;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);color:var(--text1);font-size:13px;">' +
+    '<button class="btn btn-primary" onclick="addFieldOptionVal()" style="font-size:12px;">Toevoegen</button>' +
+    '<button class="btn btn-ghost" onclick="saveFieldOptions()" style="font-size:12px;">Opslaan</button>' +
+    '</div>';
+  editPanel.querySelector('#foNewVal').addEventListener('keydown', e => { if (e.key === 'Enter') addFieldOptionVal(); });
+  sec1.appendChild(editPanel);
+
+  // Sectie 2: Standaard waarden
+  const sec2 = document.createElement('div');
+  sec2.className = 'section';
+  sec2.innerHTML = '<div class="section-title">Standaard waarden</div>';
+  const defList = document.createElement('div');
+  defList.style.cssText = 'display:flex;flex-direction:column;gap:4px;';
+  metOpties.forEach(f => {
+    const def = defaultsMap[f.master_veld] || '';
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);';
+    const label = document.createElement('span');
+    label.style.cssText = 'flex:1;font-size:12px;font-family:\'DM Mono\',monospace;';
+    label.textContent = f.master_veld;
+    row.appendChild(label);
+    let input;
+    if (f.multi) {
+      input = document.createElement('input');
+      input.type = 'text';
+      input.value = def;
+      input.style.cssText = 'width:220px;padding:4px 8px;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text1);font-size:12px;';
+    } else {
+      input = document.createElement('select');
+      input.style.cssText = 'width:220px;padding:4px 8px;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text1);font-size:12px;';
+      const blank = document.createElement('option');
+      blank.value = ''; blank.textContent = '— Geen standaard —';
+      input.appendChild(blank);
+      f.opties.forEach(o => {
+        const opt = document.createElement('option');
+        opt.value = o; opt.textContent = o;
+        if (o === def) opt.selected = true;
+        input.appendChild(opt);
+      });
+    }
+    input.dataset.field = f.master_veld;
+    input.addEventListener('change', function() { saveDefault(this); });
+    row.appendChild(input);
+    defList.appendChild(row);
+  });
+  sec2.appendChild(defList);
+
+  // Sectie 3: Categorie toevoegen
+  const sec3 = document.createElement('div');
+  sec3.className = 'section';
+  sec3.innerHTML =
+    '<div class="section-title">Categorie toevoegen</div>' +
+    '<div class="fields-grid" style="max-width:480px;">' +
+    '<div class="field"><label class="field-label">Marketplace</label>' +
+    '<select id="newCatMarketplace"><option value="bol">BOL.com</option><option value="obelink">Obelink</option><option value="decathlon">Decathlon</option><option value="amazon">Amazon</option></select></div>' +
+    '<div class="field"><label class="field-label">Categorie naam</label><input type="text" id="newCatNaam" placeholder="bijv. Campingstoel"></div>' +
+    '<div class="field"><label class="field-label">Categorie ID (optioneel)</label><input type="text" id="newCatId" placeholder="bijv. 12345"></div>' +
+    '</div><button class="btn btn-primary" onclick="addCategoryTemplate()" style="margin-top:8px;">Categorie toevoegen</button>';
+
+  // Sectie 4: Export
+  const sec4 = document.createElement('div');
+  sec4.className = 'section';
+  sec4.innerHTML =
+    '<div class="section-title">Export</div>' +
+    '<p style="color:var(--text3);font-size:13px;margin:0 0 12px;">Wordt later toegevoegd.</p>' +
+    '<button class="btn btn-ghost" style="opacity:.5;cursor:default;">&#8595; Exporteer producten (CSV)</button>';
+
+  cnt.innerHTML = '';
+  cnt.appendChild(sec1);
+  cnt.appendChild(sec2);
+  cnt.appendChild(sec3);
+  cnt.appendChild(sec4);
+
+  if (_foEditKey) editFieldOptions(_foEditKey);
+}
+
 function editFieldOptions(masterVeld) {
-  window._foEditKey = masterVeld;
   _foEditKey = masterVeld;
-  const field = allFieldOptions.find(f => f.master_veld === masterVeld);
-  if (!field) return;
-  _foEditOpties = [...(field.opties || [])];
-  document.getElementById('foEditTitle').textContent = '✎  ' + masterVeld;
+  const f = allFieldOptions.find(x => x.master_veld === masterVeld);
+  if (!f) return;
+  _foEditOpties = [...(f.opties || [])];
+  const title = document.getElementById('foEditTitle');
+  if (title) title.textContent = 'Bewerken: ' + masterVeld;
   renderFoEditTags();
   const panel = document.getElementById('foEditPanel');
-  if (panel) panel.style.display = 'block';
-  document.getElementById('foNewVal')?.focus();
+  if (panel) { panel.style.display = 'block'; panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
 }
 
 function renderFoEditTags() {
   const el = document.getElementById('foEditTags');
   if (!el) return;
-  el.innerHTML = _foEditOpties.map((o, idx) =>
-    `<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;background:var(--surface);border:1px solid var(--border);border-radius:4px;font-size:12px;">
-      ${escHtml(o)}
-      <span style="cursor:pointer;color:var(--text3);font-size:14px;" onclick="removeFoOption(${idx})">×</span>
-    </span>`
-  ).join('');
+  el.innerHTML = '';
+  _foEditOpties.forEach((o, idx) => {
+    const tag = document.createElement('span');
+    tag.style.cssText = 'display:inline-flex;align-items:center;gap:4px;padding:3px 8px;background:var(--surface);border:1px solid var(--border);border-radius:4px;font-size:12px;';
+    tag.textContent = o;
+    const x = document.createElement('span');
+    x.textContent = '×';
+    x.style.cssText = 'cursor:pointer;color:var(--text3);';
+    x.dataset.idx = idx;
+    x.onclick = function() { removeFoOption(parseInt(this.dataset.idx)); };
+    tag.appendChild(x);
+    el.appendChild(tag);
+  });
 }
 
-function removeFoOption(idx) {
-  _foEditOpties.splice(idx, 1);
-  renderFoEditTags();
-}
+function removeFoOption(idx) { _foEditOpties.splice(idx, 1); renderFoEditTags(); }
 
 function addFieldOptionVal() {
-  const input = document.getElementById('foNewVal');
-  const val = input?.value?.trim();
+  const inp = document.getElementById('foNewVal');
+  const val = inp ? inp.value.trim() : '';
   if (!val || _foEditOpties.includes(val)) return;
   _foEditOpties.push(val);
-  _foEditOpties.sort((a,b) => a.localeCompare(b, 'nl'));
-  input.value = '';
+  _foEditOpties.sort((a, b) => a.localeCompare(b, 'nl'));
+  if (inp) inp.value = '';
   renderFoEditTags();
 }
 
 async function saveFieldOptions() {
   if (!_foEditKey) return;
-  const sorted = [..._foEditOpties].sort((a,b) => a.localeCompare(b, 'nl'));
-  const { error } = await sb.from('field_options')
-    .update({ opties: sorted })
-    .eq('master_veld', _foEditKey);
-  if (error) { showToast('Fout bij opslaan: ' + error.message, 'error'); return; }
-  // Update lokale cache
-  const f = allFieldOptions.find(f => f.master_veld === _foEditKey);
+  const sorted = [..._foEditOpties].sort((a, b) => a.localeCompare(b, 'nl'));
+  const { error } = await sb.from('field_options').update({ opties: sorted }).eq('master_veld', _foEditKey);
+  if (error) { showToast('Fout: ' + error.message, 'error'); return; }
+  const f = allFieldOptions.find(x => x.master_veld === _foEditKey);
   if (f) f.opties = sorted;
-  fieldOptions[_foEditKey] = { ...fieldOptions[_foEditKey], opties: sorted };
+  if (fieldOptions[_foEditKey]) fieldOptions[_foEditKey].opties = sorted;
   showToast(_foEditKey + ' opgeslagen', 'success');
-  // Herrender de lijst
   renderInstellingen();
 }
 
 async function saveDefault(el) {
-  const masterVeld = el.dataset.field;
-  const val = el.value;
-  const { error } = await sb.from('attribute_defaults')
-    .upsert({ master_veld: masterVeld, default_value: val }, { onConflict: 'master_veld' });
+  const mv = el.dataset.field, val = el.value;
+  const { error } = await sb.from('attribute_defaults').upsert({ master_veld: mv, default_value: val }, { onConflict: 'master_veld' });
   if (error) showToast('Fout: ' + error.message, 'error');
-  else {
-    attributeDefaults[masterVeld] = val;
-    showToast('Standaard opgeslagen', 'success');
-  }
+  else { attributeDefaults[mv] = val; showToast('Standaard opgeslagen', 'success'); }
 }
 
 async function addCategoryTemplate() {
-  const marketplace = document.getElementById('newCatMarketplace')?.value;
-  const naam = document.getElementById('newCatNaam')?.value?.trim();
-  const catId = document.getElementById('newCatId')?.value?.trim() || null;
-  if (!marketplace || !naam) { showToast('Vul marketplace en naam in', 'error'); return; }
+  const mp = document.getElementById('newCatMarketplace').value;
+  const naam = document.getElementById('newCatNaam').value.trim();
+  const catId = document.getElementById('newCatId').value.trim() || null;
+  if (!naam) { showToast('Vul een categorie naam in', 'error'); return; }
   const { data, error } = await sb.from('category_templates')
-    .insert({ marketplace, categorie_naam: naam, categorie_id: catId })
+    .insert({ marketplace: mp, categorie_naam: naam, categorie_id: catId })
     .select().single();
   if (error) { showToast('Fout: ' + error.message, 'error'); return; }
-  // Voeg toe aan allTemplates
-  if (!allTemplates[marketplace]) allTemplates[marketplace] = [];
-  allTemplates[marketplace].push(data);
+  if (!allTemplates[mp]) allTemplates[mp] = [];
+  allTemplates[mp].push(data);
   document.getElementById('newCatNaam').value = '';
   document.getElementById('newCatId').value = '';
   showToast('Categorie "' + naam + '" toegevoegd', 'success');
@@ -1076,7 +1061,7 @@ function field(key, label, value, type='text', source='product', required=false,
     const selected = val ? val.split(' | ').map(s => s.trim()).filter(Boolean) : [];
     const uid = 'ms_' + key + '_' + source;
 
-    // Multi-select: altijd tag + dropdown UI
+    // Multi-select: altijd tags + dropdown
     const tagsHtml = selected.map(s =>
       `<span class="ms-tag">${escHtml(s)}<span class="ms-tag-remove" onclick="msRemoveTag(this,'${uid}','${escHtml(key)}','${escHtml(source)}')" data-val="${escHtml(s)}">×</span></span>`
     ).join('');
@@ -1447,62 +1432,67 @@ async function renderAttributen(content) {
 }
 
 function renderMarketplaces(content) {
-  const c = currentCats;
+  const cats = currentCats;
   const marketplaces = [
-    { key: 'bol', label: 'BOL.com', badge: 'badge-bol' },
-    { key: 'obelink', label: 'Obelink', badge: 'badge-obelink' },
+    { key: 'bol',       label: 'BOL.com',   badge: 'badge-bol' },
+    { key: 'obelink',   label: 'Obelink',   badge: 'badge-obelink' },
     { key: 'decathlon', label: 'Decathlon', badge: 'badge-decathlon' },
-    { key: 'amazon', label: 'Amazon', badge: 'badge-amazon' },
+    { key: 'amazon',    label: 'Amazon',    badge: 'badge-amazon' },
   ];
-
-  content.innerHTML = marketplaces.map(mp => {
-    const catKey = mp.key === 'amazon' ? 'cat_amazon' : `cat_${mp.key}`;
-    const currentCat = c[catKey] || '';
+  content.innerHTML = '';
+  marketplaces.forEach(mp => {
+    const catKey = mp.key === 'amazon' ? 'cat_amazon' : ('cat_' + mp.key);
+    const currentCat = cats[catKey] || '';
     const templates = allTemplates[mp.key] || [];
-
-    if (mp.key === 'amazon') {
-      if (templates.length > 0) {
-        const amazonOpts = templates.map(t =>
-          `<option value="${escHtml(t.categorie_naam)}" ${t.categorie_naam === currentCat ? 'selected' : ''}>${escHtml(t.categorie_naam)}</option>`
-        ).join('');
-        return `
-          <div class="section">
-            <div class="section-title"><span class="badge ${mp.badge}">${mp.label}</span></div>
-            <div class="cat-select-wrap">
-              <span class="cat-select-label">Categorie:</span>
-              <select data-key="cat_amazon" data-source="cats" onchange="markDirty(this)">
-                <option value="">— Geen categorie —</option>
-                ${amazonOpts}
-              </select>
-            </div>
-          </div>`;
+    const sec = document.createElement('div');
+    sec.className = 'section';
+    const title = document.createElement('div');
+    title.className = 'section-title';
+    title.innerHTML = '<span class="badge ' + mp.badge + '">' + mp.label + '</span>';
+    sec.appendChild(title);
+    if (mp.key === 'amazon' && templates.length === 0) {
+      sec.innerHTML += field('cat_amazon', 'Amazon categorie code', cats.cat_amazon || '', 'text', 'cats', false, true);
+    } else {
+      const wrap = document.createElement('div');
+      wrap.className = 'cat-select-wrap';
+      const lbl = document.createElement('span');
+      lbl.className = 'cat-select-label';
+      lbl.textContent = 'Categorie:';
+      wrap.appendChild(lbl);
+      const sel = document.createElement('select');
+      sel.dataset.key = catKey;
+      sel.dataset.source = 'cats';
+      if (mp.key !== 'amazon') {
+        sel.onchange = function() { onCatSelect(this, mp.key); };
+      } else {
+        sel.onchange = function() { markDirty(this); };
       }
-      return `
-        <div class="section">
-          <div class="section-title"><span class="badge ${mp.badge}">${mp.label}</span></div>
-          <div class="fields-grid">
-            ${field('cat_amazon', 'Amazon categorie code', c.cat_amazon, 'text', 'cats', false, true)}
-          </div>
-        </div>`;
+      const blank = document.createElement('option');
+      blank.value = ''; blank.textContent = '— Geen categorie —';
+      sel.appendChild(blank);
+      templates.forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t.categorie_naam;
+        opt.textContent = t.categorie_naam;
+        if (t.categorie_naam === currentCat) opt.selected = true;
+        sel.appendChild(opt);
+      });
+      wrap.appendChild(sel);
+      sec.appendChild(wrap);
+      if (mp.key !== 'amazon') {
+        const catId = cats['cat_' + mp.key + '_id'] || '';
+        if (catId) {
+          const idDiv = document.createElement('div');
+          idDiv.style.cssText = 'font-size:11px;color:var(--text3);margin:4px 0;font-family:\'DM Mono\',monospace;';
+          idDiv.textContent = 'ID: ' + catId;
+          sec.appendChild(idDiv);
+        }
+        sec.innerHTML += field('cat_' + mp.key + '_id', 'Categorie ID', cats['cat_' + mp.key + '_id'] || '', 'text', 'cats');
+      }
     }
-
-    const catId = c[`cat_${mp.key}_id`] || '';
-    return `
-      <div class="section">
-        <div class="section-title"><span class="badge ${mp.badge}">${mp.label}</span></div>
-        <div class="cat-select-wrap">
-          <span class="cat-select-label">Categorie:</span>
-          <select data-key="${catKey}" data-source="cats" onchange="onCatSelect(this, '${mp.key}')">
-            <option value="">— Geen categorie —</option>
-            ${templates.map(t => `<option value="${escHtml(t.categorie_naam)}" ${t.categorie_naam === currentCat ? 'selected' : ''}>${escHtml(t.categorie_naam)}</option>`).join('')}
-          </select>
-        </div>
-        ${catId ? `<div style="font-size:11px;color:var(--text3);margin:4px 0 4px;font-family:'DM Mono',monospace;">ID: ${catId}</div>` : ''}
-        ${field(`cat_${mp.key}_id`, 'Categorie ID', catId, 'text', 'cats')}
-      </div>`;
-  }).join('');
+    content.appendChild(sec);
+  });
 }
-
 function renderAmazon(content) {
   const p = currentProduct;
   content.innerHTML = `
@@ -1605,30 +1595,18 @@ function showToast(msg, type='success') {
   setTimeout(() => t.classList.remove('show'), 3000);
 }
 </script>
-  <!-- INSTELLINGEN PANEL -->
-  <script>
-  // Instellingen panel: inserten in .main via toggleInstellingen
-  (function() {
-    const main = document.querySelector('.main');
-    if (main && !document.getElementById('instellingenPanel')) {
-      const panel = document.createElement('div');
-      panel.id = 'instellingenPanel';
-      panel.style.cssText = 'display:none;flex-direction:column;height:100%;overflow:hidden;';
-      panel.innerHTML = `
-        <div class="main-header">
-          <div class="main-header-left">
-            <div class="product-title">Instellingen</div>
-            <div class="product-ean">Beheer attribuut opties, standaard waarden en categorieën</div>
-          </div>
-          <button class="btn btn-ghost" onclick="toggleInstellingen()" style="font-size:13px;">✕ Sluiten</button>
-        </div>
-        <div style="overflow:auto;padding:16px;" id="instellingenContent">
-          <div class="loading">Laden...</div>
-        </div>
-      `;
-      main.appendChild(panel);
-    }
-  })();
-  </script>
+
+  <div id="instellingenPanel" style="display:none;flex-direction:column;height:100%;overflow:hidden;">
+    <div class="main-header">
+      <div class="main-header-left">
+        <div class="product-title">Instellingen</div>
+        <div class="product-ean">Beheer attribuut opties, standaard waarden en categorieën</div>
+      </div>
+      <button class="btn btn-ghost" onclick="toggleInstellingen()">&#10005; Sluiten</button>
+    </div>
+    <div style="overflow:auto;padding:16px;flex:1;" id="instellingenContent">
+      <div class="loading">Laden...</div>
+    </div>
+  </div>
 </body>
 </html>
