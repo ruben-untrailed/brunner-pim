@@ -511,7 +511,20 @@
       <div style="font-size:14px">Selecteer een product</div>
     </div>
 
-    <div id="productEditor" style="display:none; display:none; flex-direction:column; height:100%; overflow:hidden;">
+    <div id="instellingenPanel" style="display:none;flex-direction:column;height:100%;overflow:hidden;">
+      <div class="main-header">
+        <div class="main-header-left">
+          <div class="product-title">Instellingen</div>
+          <div class="product-ean">Beheer attribuut opties, standaard waarden en categorieën</div>
+        </div>
+        <button class="btn btn-ghost" onclick="toggleInstellingen()">&#10005; Sluiten</button>
+      </div>
+      <div style="overflow:auto;padding:16px;flex:1;" id="instellingenContent">
+        <div class="loading">Laden...</div>
+      </div>
+    </div>
+
+    <div id="productEditor" style="display:none; flex-direction:column; height:100%; overflow:hidden;">
       <div class="main-header">
         <div class="main-header-left">
           <div class="product-title" id="editorTitle">—</div>
@@ -1439,59 +1452,39 @@ function renderMarketplaces(content) {
     { key: 'decathlon', label: 'Decathlon', badge: 'badge-decathlon' },
     { key: 'amazon',    label: 'Amazon',    badge: 'badge-amazon' },
   ];
-  content.innerHTML = '';
-  marketplaces.forEach(mp => {
+  content.innerHTML = marketplaces.map(mp => {
     const catKey = mp.key === 'amazon' ? 'cat_amazon' : ('cat_' + mp.key);
     const currentCat = cats[catKey] || '';
     const templates = allTemplates[mp.key] || [];
-    const sec = document.createElement('div');
-    sec.className = 'section';
-    const title = document.createElement('div');
-    title.className = 'section-title';
-    title.innerHTML = '<span class="badge ' + mp.badge + '">' + mp.label + '</span>';
-    sec.appendChild(title);
+
+    // Amazon zonder templates: vrij tekstveld
     if (mp.key === 'amazon' && templates.length === 0) {
-      sec.innerHTML += field('cat_amazon', 'Amazon categorie code', cats.cat_amazon || '', 'text', 'cats', false, true);
-    } else {
-      const wrap = document.createElement('div');
-      wrap.className = 'cat-select-wrap';
-      const lbl = document.createElement('span');
-      lbl.className = 'cat-select-label';
-      lbl.textContent = 'Categorie:';
-      wrap.appendChild(lbl);
-      const sel = document.createElement('select');
-      sel.dataset.key = catKey;
-      sel.dataset.source = 'cats';
-      if (mp.key !== 'amazon') {
-        sel.onchange = function() { onCatSelect(this, mp.key); };
-      } else {
-        sel.onchange = function() { markDirty(this); };
-      }
-      const blank = document.createElement('option');
-      blank.value = ''; blank.textContent = '— Geen categorie —';
-      sel.appendChild(blank);
-      templates.forEach(t => {
-        const opt = document.createElement('option');
-        opt.value = t.categorie_naam;
-        opt.textContent = t.categorie_naam;
-        if (t.categorie_naam === currentCat) opt.selected = true;
-        sel.appendChild(opt);
-      });
-      wrap.appendChild(sel);
-      sec.appendChild(wrap);
-      if (mp.key !== 'amazon') {
-        const catId = cats['cat_' + mp.key + '_id'] || '';
-        if (catId) {
-          const idDiv = document.createElement('div');
-          idDiv.style.cssText = 'font-size:11px;color:var(--text3);margin:4px 0;font-family:\'DM Mono\',monospace;';
-          idDiv.textContent = 'ID: ' + catId;
-          sec.appendChild(idDiv);
-        }
-        sec.innerHTML += field('cat_' + mp.key + '_id', 'Categorie ID', cats['cat_' + mp.key + '_id'] || '', 'text', 'cats');
-      }
+      return '<div class="section">' +
+        '<div class="section-title"><span class="badge ' + mp.badge + '">' + mp.label + '</span></div>' +
+        field('cat_amazon', 'Amazon categorie code', cats.cat_amazon || '', 'text', 'cats', false, true) +
+        '</div>';
     }
-    content.appendChild(sec);
-  });
+
+    // Dropdown met templates
+    const catIdKey = mp.key !== 'amazon' ? 'cat_' + mp.key + '_id' : null;
+    const catId = catIdKey ? (cats[catIdKey] || '') : '';
+    const options = templates.map(t =>
+      '<option value="' + escHtml(t.categorie_naam) + '"' + (t.categorie_naam === currentCat ? ' selected' : '') + '>' + escHtml(t.categorie_naam) + '</option>'
+    ).join('');
+    const onChg = mp.key !== 'amazon'
+      ? 'onchange="onCatSelect(this,\'' + mp.key + '\')"'
+      : 'onchange="markDirty(this)"';
+    return '<div class="section">' +
+      '<div class="section-title"><span class="badge ' + mp.badge + '">' + mp.label + '</span></div>' +
+      '<div class="cat-select-wrap">' +
+        '<span class="cat-select-label">Categorie:</span>' +
+        '<select ' + onChg + ' data-key="' + catKey + '" data-source="cats">' +
+          '<option value="">— Geen categorie —</option>' + options +
+        '</select>' +
+      '</div>' +
+      (catIdKey ? field(catIdKey, 'Categorie ID', catId, 'text', 'cats') : '') +
+      '</div>';
+  }).join('');
 }
 function renderAmazon(content) {
   const p = currentProduct;
@@ -1596,17 +1589,6 @@ function showToast(msg, type='success') {
 }
 </script>
 
-  <div id="instellingenPanel" style="display:none;flex-direction:column;height:100%;overflow:hidden;">
-    <div class="main-header">
-      <div class="main-header-left">
-        <div class="product-title">Instellingen</div>
-        <div class="product-ean">Beheer attribuut opties, standaard waarden en categorieën</div>
-      </div>
-      <button class="btn btn-ghost" onclick="toggleInstellingen()">&#10005; Sluiten</button>
-    </div>
-    <div style="overflow:auto;padding:16px;flex:1;" id="instellingenContent">
-      <div class="loading">Laden...</div>
-    </div>
-  </div>
+
 </body>
 </html>
