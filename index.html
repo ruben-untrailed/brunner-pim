@@ -761,7 +761,6 @@ async function loadTemplates() {
       allTemplates[t.marketplace].push(t);
     });
   }
-  // Amazon categorieën uit product_categories
   if (aRes.data) {
     const uniq = [...new Set(aRes.data.map(r => r.cat_amazon))].sort();
     allTemplates['amazon'] = uniq.map(c => ({ categorie_naam: c, categorie_id: null }));
@@ -1699,4 +1698,20 @@ async function saveProduct() {
 }
 
 function discardChanges() {
-  if (!isDirty || confirm('Wijzigi
+  if (!isDirty || confirm('Wijzigingen weggooien?')) {
+    isDirty = false;
+    pendingChanges = {};
+    document.getElementById('saveStatus').textContent = '';
+    renderTab();
+  }
+}
+
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>
