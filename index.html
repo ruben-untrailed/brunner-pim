@@ -456,6 +456,104 @@
     gap: 12px;
     color: var(--text3);
   }
+
+  /* MULTI-SELECT */
+  .ms-wrap { position: relative; }
+  .ms-input {
+    min-height: 38px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 4px 8px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    transition: border-color .15s;
+  }
+  .ms-input:focus-within { border-color: var(--accent2); }
+  .ms-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2px 7px;
+    font-size: 12px;
+    color: var(--text);
+    white-space: nowrap;
+  }
+  .ms-tag-remove {
+    cursor: pointer;
+    color: var(--text3);
+    font-size: 14px;
+    line-height: 1;
+    margin-left: 1px;
+  }
+  .ms-tag-remove:hover { color: var(--red); }
+  .ms-search {
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--text);
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    min-width: 80px;
+    flex: 1;
+    padding: 2px 0;
+  }
+  .ms-search::placeholder { color: var(--text3); }
+  .ms-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    max-height: 220px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 16px rgba(0,0,0,.5);
+  }
+  .ms-dropdown.open { display: block; }
+  .ms-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 10px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background .1s;
+  }
+  .ms-option:hover { background: var(--surface); }
+  .ms-option-check {
+    width: 15px;
+    height: 15px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    flex-shrink: 0;
+    background: var(--bg);
+    color: transparent;
+  }
+  .ms-option.selected .ms-option-check {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #000;
+  }
+  .ms-empty {
+    padding: 10px;
+    color: var(--text3);
+    font-size: 13px;
+    text-align: center;
+  }
 </style>
 </head>
 <body>
@@ -540,7 +638,7 @@
       <div class="tabs">
         <div class="tab active" onclick="switchTab('basis', this)">Basisinfo</div>
         <div class="tab" onclick="switchTab('attributen', this)">Attributen</div>
-        <div class="tab" onclick="switchTab('marketplaces', this)">Marketplaces</div>
+        <div class="tab" onclick="switchTab('categorie', this)">Categorie</div>
         <div class="tab" onclick="switchTab('amazon', this)">Amazon teksten</div>
       </div>
 
@@ -778,6 +876,9 @@ async function selectProduct(id) {
   currentProduct = pRes.data;
   currentAttrs = aRes.data || {};
   currentCats = cRes.data || {};
+  // Kopieer _woo_cat van allProducts (wordt geladen via import_products_)
+  const _listEntry = allProducts.find(p => p.id === id);
+  if (_listEntry) currentProduct._woo_cat = _listEntry._woo_cat || '';
 
   document.getElementById('noProduct').style.display = 'none';
   const editor = document.getElementById('productEditor');
@@ -804,7 +905,7 @@ function renderTab() {
 
   if (currentTab === 'basis') renderBasis(content);
   else if (currentTab === 'attributen') renderAttributen(content);
-  else if (currentTab === 'marketplaces') renderMarketplaces(content);
+  else if (currentTab === 'categorie') renderMarketplaces(content);
   else if (currentTab === 'amazon') renderAmazon(content);
 }
 
@@ -1177,10 +1278,10 @@ function msRender(uid, query) {
   }
   dd.innerHTML = filtered.map(o => {
     const isSel = selected.includes(o);
-    return `<div class="ms-option ${isSel ? 'selected' : ''}" onclick="msToggle('${uid}','${escHtml(o)}')">
-      <span class="ms-option-check">${isSel ? '✓' : ''}</span>
-      ${escHtml(o)}
-    </div>`;
+    return '<div class="ms-option ' + (isSel ? 'selected' : '') + '" onclick="msToggle(\'' + uid + '\',\'' + escHtml(o) + '\')">' +
+      '<span class="ms-option-check">' + (isSel ? '✓' : '') + '</span>' +
+      escHtml(o) +
+      '</div>';
   }).join('');
 }
 
@@ -1446,34 +1547,48 @@ async function renderAttributen(content) {
 
 function renderMarketplaces(content) {
   const cats = currentCats;
+  const wooCat = currentProduct._woo_cat || '';
+
   const marketplaces = [
     { key: 'bol',       label: 'BOL.com',   badge: 'badge-bol' },
     { key: 'obelink',   label: 'Obelink',   badge: 'badge-obelink' },
     { key: 'decathlon', label: 'Decathlon', badge: 'badge-decathlon' },
     { key: 'amazon',    label: 'Amazon',    badge: 'badge-amazon' },
   ];
-  content.innerHTML = marketplaces.map(mp => {
+
+  // WooCommerce sectie bovenaan (read-only)
+  const wooSection =
+    '<div class="section">' +
+      '<div class="section-title">WooCommerce</div>' +
+      '<div class="cat-select-wrap" style="cursor:default;">' +
+        '<span class="cat-select-label">Categorie:</span>' +
+        '<span style="flex:1;font-size:13px;color:' + (wooCat ? 'var(--text)' : 'var(--text3)') + ';">' +
+          (wooCat ? escHtml(wooCat) : '— Niet gevonden in import —') +
+        '</span>' +
+      '</div>' +
+    '</div>';
+
+  const mpSections = marketplaces.map(mp => {
     const catKey = mp.key === 'amazon' ? 'cat_amazon' : ('cat_' + mp.key);
     const currentCat = cats[catKey] || '';
     const templates = allTemplates[mp.key] || [];
-
-    // Amazon zonder templates: vrij tekstveld
-    if (mp.key === 'amazon' && templates.length === 0) {
-      return '<div class="section">' +
-        '<div class="section-title"><span class="badge ' + mp.badge + '">' + mp.label + '</span></div>' +
-        field('cat_amazon', 'Amazon categorie code', cats.cat_amazon || '', 'text', 'cats', false, true) +
-        '</div>';
-    }
-
-    // Dropdown met templates
     const catIdKey = mp.key !== 'amazon' ? 'cat_' + mp.key + '_id' : null;
     const catId = catIdKey ? (cats[catIdKey] || '') : '';
-    const options = templates.map(t =>
-      '<option value="' + escHtml(t.categorie_naam) + '"' + (t.categorie_naam === currentCat ? ' selected' : '') + '>' + escHtml(t.categorie_naam) + '</option>'
-    ).join('');
+
+    const options = templates.length
+      ? templates.map(t =>
+          '<option value="' + escHtml(t.categorie_naam) + '"' + (t.categorie_naam === currentCat ? ' selected' : '') + '>' + escHtml(t.categorie_naam) + '</option>'
+        ).join('')
+      : '';
+
+    const noTemplatesNote = templates.length === 0
+      ? '<div style="font-size:11px;color:var(--text3);margin-top:6px;">Nog geen categorieën — voeg ze toe via Instellingen.</div>'
+      : '';
+
     const onChg = mp.key !== 'amazon'
       ? 'onchange="onCatSelect(this,\'' + mp.key + '\')"'
       : 'onchange="markDirty(this)"';
+
     return '<div class="section">' +
       '<div class="section-title"><span class="badge ' + mp.badge + '">' + mp.label + '</span></div>' +
       '<div class="cat-select-wrap">' +
@@ -1482,9 +1597,12 @@ function renderMarketplaces(content) {
           '<option value="">— Geen categorie —</option>' + options +
         '</select>' +
       '</div>' +
+      noTemplatesNote +
       (catIdKey ? field(catIdKey, 'Categorie ID', catId, 'text', 'cats') : '') +
       '</div>';
   }).join('');
+
+  content.innerHTML = wooSection + mpSections;
 }
 function renderAmazon(content) {
   const p = currentProduct;
@@ -1522,73 +1640,4 @@ async function saveProduct() {
       Object.assign(currentProduct, updates.product);
     }
 
-    // Update product_attributes
-    if (updates.attrs && Object.keys(updates.attrs).length) {
-      if (currentAttrs.id) {
-        const { error } = await sb.from('product_attributes')
-          .update({ ...updates.attrs, bijgewerkt_op: new Date().toISOString() })
-          .eq('product_id', currentProduct.id);
-        if (error) throw error;
-      } else {
-        const { error } = await sb.from('product_attributes')
-          .insert({ product_id: currentProduct.id, ...updates.attrs });
-        if (error) throw error;
-      }
-      Object.assign(currentAttrs, updates.attrs);
-    }
-
-    // Update product_categories
-    if (updates.cats && Object.keys(updates.cats).length) {
-      if (currentCats.id) {
-        const { error } = await sb.from('product_categories')
-          .update({ ...updates.cats, bijgewerkt_op: new Date().toISOString() })
-          .eq('product_id', currentProduct.id);
-        if (error) throw error;
-      } else {
-        const { error } = await sb.from('product_categories')
-          .insert({ product_id: currentProduct.id, ...updates.cats });
-        if (error) throw error;
-      }
-      Object.assign(currentCats, updates.cats);
-      onCategorySaved(); // invalideer template velden cache
-    }
-
-    isDirty = false;
-    pendingChanges = {};
-    document.getElementById('saveStatus').textContent = '✓ Opgeslagen';
-    document.getElementById('editorTitle').textContent = currentProduct.naam_nl || '—';
-
-    // Update sidebar
-    const idx = allProducts.findIndex(p => p.id === currentProduct.id);
-    if (idx >= 0 && updates.product?.naam_nl) allProducts[idx].naam_nl = updates.product.naam_nl;
-    renderProductList(filteredProducts.length ? filteredProducts : allProducts);
-
-    showToast('Product opgeslagen', 'success');
-  } catch(e) {
-    showToast('Fout bij opslaan: ' + e.message, 'error');
-  }
-
-  btn.disabled = false;
-  btn.textContent = 'Opslaan';
-}
-
-function discardChanges() {
-  if (!isDirty || confirm('Wijzigingen weggooien?')) {
-    isDirty = false;
-    pendingChanges = {};
-    document.getElementById('saveStatus').textContent = '';
-    renderTab();
-  }
-}
-
-function showToast(msg, type='success') {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = `toast ${type} show`;
-  setTimeout(() => t.classList.remove('show'), 3000);
-}
-</script>
-
-
-</body>
-</html>
+    // Update product_at
