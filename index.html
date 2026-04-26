@@ -605,28 +605,42 @@ async function handleLogout() {
 
 async function loadProducts() {
   document.getElementById('productList').innerHTML = '<div class="loading">Producten laden...</div>';
-  const [pRes, cRes] = await Promise.all([
+  const [pRes, cRes, wooRes] = await Promise.all([
     sb.from('products').select('id, ean, naam_nl, mpn, serie, merk').order('naam_nl'),
-    sb.from('product_categories').select('product_id, cat_bol, cat_obelink, cat_decathlon')
+    sb.from('product_categories').select('product_id, cat_bol, cat_obelink, cat_decathlon'),
+    sb.from('import_products_').select('ean, woocommerce_categorie')
   ]);
   if (pRes.error) { showToast('Fout bij laden producten', 'error'); return; }
+
+  // Marketplace-categorieën (voor template koppeling)
   const catMap = {};
   if (cRes.data) {
     cRes.data.forEach(c => {
       catMap[c.product_id] = [c.cat_bol, c.cat_obelink, c.cat_decathlon].filter(Boolean);
     });
   }
-  const uniqueCats = new Set();
+
+  // WooCommerce-categorieën via EAN
+  const wooCatByEan = {};
+  if (wooRes.data) {
+    wooRes.data.forEach(r => {
+      if (r.ean && r.woocommerce_categorie) wooCatByEan[String(r.ean)] = r.woocommerce_categorie;
+    });
+  }
+
+  const uniqueWooCats = new Set();
   allProducts = pRes.data.map(p => {
     const cats = catMap[p.id] || [];
-    cats.forEach(c => uniqueCats.add(c));
-    return { ...p, _categories: cats };
+    const wooCat = wooCatByEan[String(p.ean || '')] || '';
+    if (wooCat) uniqueWooCats.add(wooCat);
+    return { ...p, _categories: cats, _woo_cat: wooCat };
   });
+
   document.getElementById('statTotal').textContent = allProducts.length;
   const select = document.getElementById('categoryFilter');
   select.innerHTML = '<option value="">Alle categorieën</option>' +
-    '<option value="UNASSIGNED">-- Zonder gekoppelde categorie --</option>' +
-    Array.from(uniqueCats).sort().map(c => `<option value="${escHtml(c)}">${escHtml(c)}</option>`).join('');
+    '<option value="UNASSIGNED">-- Zonder categorie --</option>' +
+    Array.from(uniqueWooCats).sort().map(c => `<option value="${escHtml(c)}">${escHtml(c)}</option>`).join('');
   applyFilters();
 }
 
@@ -734,8 +748,8 @@ function applyFilters() {
       (p.ean || '').includes(q) ||
       (p.mpn || '').toLowerCase().includes(q);
     let matchCat = true;
-    if (cat === 'UNASSIGNED') matchCat = (p._categories || []).length === 0;
-    else if (cat) matchCat = (p._categories || []).includes(cat);
+    if (cat === 'UNASSIGNED') matchCat = !p._woo_cat;
+    else if (cat) matchCat = p._woo_cat === cat;
     return matchText && matchCat;
   });
   document.getElementById('statLoaded').textContent = filteredProducts.length;
@@ -801,7 +815,7 @@ async function loadAllFieldOptions() {
 async function loadDefaults() {
   try {
     const { data, error } = await sb.from('attribute_defaults').select('master_veld, default_value');
-    if (\!error && data) data.forEach(r => { attributeDefaults[r.master_veld] = r.default_value; });
+    if (!error && data) data.forEach(r => { attributeDefaults[r.master_veld] = r.default_value; });
   } catch(e) { /* tabel bestaat nog niet */ }
 }
 
@@ -815,7 +829,7 @@ function onCatSelect(el, mpKey) {
     const idField = section.querySelector('[data-key="cat_' + mpKey + '_id"]');
     if (idField) {
       idField.value = catId;
-      if (\!pendingChanges.cats) pendingChanges.cats = {};
+      if (!pendingChanges.cats) pendingChanges.cats = {};
       pendingChanges.cats['cat_' + mpKey + '_id'] = catId;
       isDirty = true;
       document.getElementById('saveStatus').textContent = '● Niet opgeslagen';
@@ -828,7 +842,7 @@ function toggleInstellingen() {
   const panel = document.getElementById('instellingenPanel');
   const editor = document.getElementById('productEditor');
   const noProduct = document.getElementById('noProduct');
-  if (panel.style.display === 'none' || \!panel.style.display) {
+  if (panel.style.display === 'none' || !panel.style.display) {
     panel.style.display = 'flex';
     editor.style.display = 'none';
     noProduct.style.display = 'none';
@@ -842,7 +856,7 @@ function toggleInstellingen() {
 
 async function renderInstellingen() {
   const content = document.getElementById('instellingenContent');
-  if (\!content) return;
+  if (!content) return;
   content.innerHTML = '<div class="loading">Laden...</div>';
 
   // Herlaad field_options zodat ze altijd actueel zijn
@@ -861,10 +875,10 @@ async function renderInstellingen() {
 
   // Groepeer field_options: met opties vs vrij tekst
   const metOpties = allFieldOptions.filter(f => f.opties && f.opties.length > 0);
-  const vrijeTekst = allFieldOptions.filter(f => \!f.opties || f.opties.length === 0);
+  const vrijeTekst = allFieldOptions.filter(f => !f.opties || f.opties.length === 0);
 
   content.innerHTML = `
-    <\!-- ── Sectie 1: Attribuut opties ───────────────────────── -->
+    <!-- ── Sectie 1: Attribuut opties ───────────────────────── -->
     <div class="section">
       <div class="section-title">Attribuut opties beheren</div>
       <p style="color:var(--text3);font-size:13px;margin:0 0 12px;">Klik op een veld om de keuze-opties te bewerken.</p>
@@ -889,7 +903,7 @@ async function renderInstellingen() {
       </div>
     </div>
 
-    <\!-- ── Sectie 2: Standaard waarden ──────────────────────── -->
+    <!-- ── Sectie 2: Standaard waarden ──────────────────────── -->
     <div class="section">
       <div class="section-title">Standaard waarden</div>
       <p style="color:var(--text3);font-size:13px;margin:0 0 12px;">
@@ -916,7 +930,7 @@ async function renderInstellingen() {
       </div>
     </div>
 
-    <\!-- ── Sectie 3: Categorie toevoegen ────────────────────── -->
+    <!-- ── Sectie 3: Categorie toevoegen ────────────────────── -->
     <div class="section">
       <div class="section-title">Categorie toevoegen</div>
       <div class="fields-grid" style="max-width:500px;">
@@ -941,7 +955,7 @@ async function renderInstellingen() {
       <button class="btn btn-primary" onclick="addCategoryTemplate()" style="margin-top:8px;">Categorie toevoegen</button>
     </div>
 
-    <\!-- ── Sectie 4: Export ──────────────────────────────────── -->
+    <!-- ── Sectie 4: Export ──────────────────────────────────── -->
     <div class="section">
       <div class="section-title">Export</div>
       <p style="color:var(--text3);font-size:13px;margin:0 0 12px;">Exporteer producten als CSV. Volgende versie.</p>
@@ -962,7 +976,7 @@ function editFieldOptions(masterVeld) {
   window._foEditKey = masterVeld;
   _foEditKey = masterVeld;
   const field = allFieldOptions.find(f => f.master_veld === masterVeld);
-  if (\!field) return;
+  if (!field) return;
   _foEditOpties = [...(field.opties || [])];
   document.getElementById('foEditTitle').textContent = '✎  ' + masterVeld;
   renderFoEditTags();
@@ -973,7 +987,7 @@ function editFieldOptions(masterVeld) {
 
 function renderFoEditTags() {
   const el = document.getElementById('foEditTags');
-  if (\!el) return;
+  if (!el) return;
   el.innerHTML = _foEditOpties.map((o, idx) =>
     `<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;background:var(--surface);border:1px solid var(--border);border-radius:4px;font-size:12px;">
       ${escHtml(o)}
@@ -990,7 +1004,7 @@ function removeFoOption(idx) {
 function addFieldOptionVal() {
   const input = document.getElementById('foNewVal');
   const val = input?.value?.trim();
-  if (\!val || _foEditOpties.includes(val)) return;
+  if (!val || _foEditOpties.includes(val)) return;
   _foEditOpties.push(val);
   _foEditOpties.sort((a,b) => a.localeCompare(b, 'nl'));
   input.value = '';
@@ -998,7 +1012,7 @@ function addFieldOptionVal() {
 }
 
 async function saveFieldOptions() {
-  if (\!_foEditKey) return;
+  if (!_foEditKey) return;
   const sorted = [..._foEditOpties].sort((a,b) => a.localeCompare(b, 'nl'));
   const { error } = await sb.from('field_options')
     .update({ opties: sorted })
@@ -1029,13 +1043,13 @@ async function addCategoryTemplate() {
   const marketplace = document.getElementById('newCatMarketplace')?.value;
   const naam = document.getElementById('newCatNaam')?.value?.trim();
   const catId = document.getElementById('newCatId')?.value?.trim() || null;
-  if (\!marketplace || \!naam) { showToast('Vul marketplace en naam in', 'error'); return; }
+  if (!marketplace || !naam) { showToast('Vul marketplace en naam in', 'error'); return; }
   const { data, error } = await sb.from('category_templates')
     .insert({ marketplace, categorie_naam: naam, categorie_id: catId })
     .select().single();
   if (error) { showToast('Fout: ' + error.message, 'error'); return; }
   // Voeg toe aan allTemplates
-  if (\!allTemplates[marketplace]) allTemplates[marketplace] = [];
+  if (!allTemplates[marketplace]) allTemplates[marketplace] = [];
   allTemplates[marketplace].push(data);
   document.getElementById('newCatNaam').value = '';
   document.getElementById('newCatId').value = '';
@@ -1591,12 +1605,12 @@ function showToast(msg, type='success') {
   setTimeout(() => t.classList.remove('show'), 3000);
 }
 </script>
-  <\!-- INSTELLINGEN PANEL -->
+  <!-- INSTELLINGEN PANEL -->
   <script>
   // Instellingen panel: inserten in .main via toggleInstellingen
   (function() {
     const main = document.querySelector('.main');
-    if (main && \!document.getElementById('instellingenPanel')) {
+    if (main && !document.getElementById('instellingenPanel')) {
       const panel = document.createElement('div');
       panel.id = 'instellingenPanel';
       panel.style.cssText = 'display:none;flex-direction:column;height:100%;overflow:hidden;';
