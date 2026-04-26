@@ -841,7 +841,7 @@ function field(key, label, value, type='text', source='product', required=false,
     </div>`;
   }
 
-  if (opts && !opts.multi && opts.opties && opts.opties.length > 0) {
+  if (opts && !opts.multi) {
     // Single-select dropdown
     const options = opts.opties.map(o =>
       `<option value="${escHtml(o)}" ${o === val ? 'selected' : ''}>${escHtml(o)}</option>`
@@ -1058,6 +1058,7 @@ async function renderAttributen(content) {
       ['verpakking_lengte_cm','Verpakking lengte (cm)'], ['verpakking_breedte_cm','Verpakking breedte (cm)'],
       ['verpakking_hoogte_cm','Verpakking hoogte (cm)'], ['verpakking_gewicht_kg','Verpakking gewicht (kg)'],
       ['stuks_per_verpakking','Stuks per verpakking'],
+      ['aantal_per_verpakking','Aantal per verpakking'], ['verpakkingsinhoud','Verpakkingsinhoud'],
     ]},
     { titel: 'Stoel / Meubel', velden: [
       ['zithoogte_cm','Zithoogte (cm)'], ['zitdiepte_cm','Zitdiepte (cm)'],
@@ -1113,6 +1114,9 @@ async function renderAttributen(content) {
     ]},
     { titel: 'Beschermhoezen', velden: [
       ['type_hoes','Type hoes'], ['uv_bestendig','UV-bestendig'], ['bescherming_tegen','Bescherming tegen'],
+    ]},
+    { titel: 'Taal & Verpakking', velden: [
+      ['producttaal','Producttaal'], ['taal_handleiding','Taal handleiding'],
     ]},
     { titel: 'Overige eigenschappen', velden: [
       ['opvouwbaar','Opvouwbaar'], ['verstelbaar','Verstelbaar'],
