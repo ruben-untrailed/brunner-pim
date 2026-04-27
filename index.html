@@ -696,6 +696,7 @@
         </div>
         <div style="display:flex;gap:8px;align-items:center;">
           <span id="completenessScore" style="font-size:12px;color:var(--text3);font-family:'DM Mono',monospace;"></span><span id="saveStatus" style="font-size:12px;color:var(--text3);"></span>
+          <button class="btn btn-ghost" onclick="duplicateProduct()" title="Maak een kopie" style="font-size:12px;">&#x2398; Dupliceer</button>
           <button class="btn btn-ghost" onclick="discardChanges()">Annuleer</button>
           <button class="btn btn-primary" id="saveBtn" onclick="saveProduct()">Opslaan</button>
         </div>
@@ -706,6 +707,7 @@
         <div class="tab" onclick="switchTab('attributen', this)">Attributen</div>
         <div class="tab" onclick="switchTab('categorie', this)">Categorie</div>
         <div class="tab" onclick="switchTab('amazon', this)">Amazon teksten</div>
+        <div class="tab" onclick="switchTab('geschiedenis', this)">Geschiedenis</div>
       </div>
 
       <div class="content" id="tabContent">
@@ -1112,6 +1114,7 @@ function renderTab() {
   else if (currentTab === 'attributen') renderAttributen(content);
   else if (currentTab === 'categorie') renderMarketplaces(content);
   else if (currentTab === 'amazon') renderAmazon(content);
+  else if (currentTab === 'geschiedenis') loadGeschiedenisTab(content);
 }
 
 // Na opslaan van marketplace categorie: invalideer template cache en herlaad attributen
@@ -1585,8 +1588,12 @@ async function renderAttributen(content) {
   // Toggle: gefilterd of alles tonen
   const showAll = document.getElementById('showAllToggle')?.checked || !hasAnyTemplate;
 
+  const showMissingOnly = !showAll && (document.getElementById('showMissingToggle')?.checked || false);
   const isVisible = (key) => {
     if (showAll || !hasAnyTemplate) return true;
+    if (showMissingOnly) {
+      return (templateFields[key]?.verplicht || false) && (!a[key] || String(a[key]).trim() === '');
+    }
     return !!templateFields[key];
   };
   const isRequired = (key) => templateFields[key]?.verplicht || false;
@@ -1703,11 +1710,15 @@ async function renderAttributen(content) {
   const toggleHtml = hasAnyTemplate ? `
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;padding:10px 12px;background:var(--surface2);border-radius:var(--radius);border:1px solid var(--border);">
       <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text2);">
-        <input type="checkbox" id="showAllToggle" ${showAll ? 'checked' : ''} onchange="renderAttributen(document.getElementById('tabContent'))" style="cursor:pointer;">
-        Alle velden tonen (ook velden buiten de marketplace templates)
+        <input type="checkbox" id="showAllToggle" ${showAll ? 'checked' : ''} onchange="if(this.checked){var m=document.getElementById('showMissingToggle');if(m)m.checked=false;}renderAttributen(document.getElementById('tabContent'))" style="cursor:pointer;">
+        Alle velden
+      </label>
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;color:var(--red);">
+        <input type="checkbox" id="showMissingToggle" ${showMissingOnly ? 'checked' : ''} onchange="if(this.checked){var s=document.getElementById('showAllToggle');if(s)s.checked=false;}renderAttributen(document.getElementById('tabContent'))" style="cursor:pointer;accent-color:var(--red);">
+        Alleen ontbrekende verplichte velden
       </label>
       <span style="margin-left:auto;font-size:11px;color:var(--text3);">
-        ${showAll ? 'Alle velden' : Object.keys(templateFields).length + ' template velden'}
+        ${showAll ? 'Alle velden' : showMissingOnly ? 'Ontbrekend' : Object.keys(templateFields).length + ' template velden'}
       </span>
     </div>` : `
     <div style="padding:10px 12px;background:var(--surface2);border-radius:var(--radius);border:1px solid var(--border);font-size:12px;color:var(--text3);margin-bottom:16px;">
@@ -1835,6 +1846,45 @@ async function saveProduct() {
 
   try {
     const updates = pendingChanges;
+
+    // -- Log wijzigingen --
+    const changesToLog = [];
+    if (updates.product) {
+      for (const [veld, nieuw] of Object.entries(updates.product)) {
+        if (veld === 'bijgewerkt_op') continue;
+        const oud = currentProduct[veld] ?? null;
+        const oudStr = String(oud ?? '');
+        const nieuwStr = String(nieuw ?? '');
+        if (oudStr !== nieuwStr) {
+          changesToLog.push({ product_id: currentProduct.id, tabel: 'products', veld, oude_waarde: oudStr, nieuwe_waarde: nieuwStr });
+        }
+      }
+    }
+    if (updates.attrs) {
+      for (const [veld, nieuw] of Object.entries(updates.attrs)) {
+        if (veld === 'bijgewerkt_op') continue;
+        const oud = currentAttrs ? (currentAttrs[veld] ?? null) : null;
+        const oudStr = String(oud ?? '');
+        const nieuwStr = String(nieuw ?? '');
+        if (oudStr !== nieuwStr) {
+          changesToLog.push({ product_id: currentProduct.id, tabel: 'product_attributes', veld, oude_waarde: oudStr, nieuwe_waarde: nieuwStr });
+        }
+      }
+    }
+    if (updates.cats) {
+      for (const [veld, nieuw] of Object.entries(updates.cats)) {
+        if (veld === 'bijgewerkt_op') continue;
+        const oud = currentCats ? (currentCats[veld] ?? null) : null;
+        const oudStr = String(oud ?? '');
+        const nieuwStr = String(nieuw ?? '');
+        if (oudStr !== nieuwStr) {
+          changesToLog.push({ product_id: currentProduct.id, tabel: 'product_categories', veld, oude_waarde: oudStr, nieuwe_waarde: nieuwStr });
+        }
+      }
+    }
+    if (changesToLog.length > 0) {
+      await sb.from('product_changes').insert(changesToLog);
+    }
 
     // Update products tabel
     if (updates.product && Object.keys(updates.product).length) {
@@ -2041,6 +2091,94 @@ async function exportSelected() {
   filteredProducts = allProducts.filter(p => selectedIds.has(p.id));
   await exportCSV();
   filteredProducts = prev;
+}
+
+
+async function duplicateProduct() {
+  if (!currentProduct) return;
+  if (!confirm('Maak een kopie van "' + (currentProduct.naam_nl || 'dit product') + '"?')) return;
+  showToast('Product dupliceren...', 'success');
+  const skip = new Set(['id','created_at','bijgewerkt_op','_categories','_woo_cat','_completeness','_cat_bol','_cat_obelink','_cat_decathlon']);
+  const productData = {};
+  for (const [k, v] of Object.entries(currentProduct)) {
+    if (!skip.has(k)) productData[k] = v;
+  }
+  productData.naam_nl = 'Kopie van ' + (currentProduct.naam_nl || 'product');
+  productData.ean = null;
+  productData.mpn = null;
+  const { data: created, error: pErr } = await sb.from('products').insert(productData).select().single();
+  if (pErr) { showToast('Fout: ' + pErr.message, 'error'); return; }
+  const sysFields = new Set(['id','product_id','bijgewerkt_op','created_at','updated_at']);
+  if (currentAttrs) {
+    const attrData = { product_id: created.id };
+    for (const [k, v] of Object.entries(currentAttrs)) {
+      if (!sysFields.has(k)) attrData[k] = v;
+    }
+    await sb.from('product_attributes').insert(attrData);
+  }
+  if (currentCats) {
+    const catData = { product_id: created.id };
+    for (const [k, v] of Object.entries(currentCats)) {
+      if (!sysFields.has(k)) catData[k] = v;
+    }
+    await sb.from('product_categories').insert(catData);
+  }
+  const cats = currentProduct._categories || [];
+  const newEntry = { ...created, _categories: cats, _woo_cat: '', _completeness: calcCompleteness(created, cats, currentAttrs || {}) };
+  allProducts.push(newEntry);
+  allProducts.sort((a, b) => (a.naam_nl || '').localeCompare(b.naam_nl || '', 'nl'));
+  applyFilters();
+  selectProduct(created.id);
+  showToast('Product gedupliceerd', 'success');
+}
+
+async function loadGeschiedenisTab(content) {
+  content.innerHTML = '<div class="loading">Geschiedenis laden...</div>';
+  const { data, error } = await sb.from('product_changes')
+    .select('*')
+    .eq('product_id', currentProduct.id)
+    .order('gewijzigd_op', { ascending: false })
+    .limit(200);
+  if (error) {
+    content.innerHTML = '<div style="padding:16px;color:var(--red);font-size:13px;">Fout: ' + escHtml(error.message) + '</div>';
+    return;
+  }
+  if (!data || data.length === 0) {
+    content.innerHTML = '<div style="padding:24px;color:var(--text3);font-size:13px;text-align:center;">Geen wijzigingen gevonden voor dit product.</div>';
+    return;
+  }
+  const byDay = {};
+  data.forEach(c => {
+    const day = c.gewijzigd_op.slice(0, 10);
+    if (!byDay[day]) byDay[day] = [];
+    byDay[day].push(c);
+  });
+  const tabelLabel = { products: 'Basisinfo', product_attributes: 'Attributen', product_categories: 'Categorieën' };
+  const html = Object.entries(byDay).map(([day, changes]) => {
+    const rows = changes.map(c => {
+      const oud = c.oude_waarde ? escHtml(c.oude_waarde) : '<span style="color:var(--text3);font-style:italic;">leeg</span>';
+      const nieuw = c.nieuwe_waarde ? escHtml(c.nieuwe_waarde) : '<span style="color:var(--text3);font-style:italic;">leeg</span>';
+      const tijd = c.gewijzigd_op.slice(11, 16);
+      return '<tr>' +
+        '<td style="padding:6px 8px;font-size:11px;color:var(--text3);white-space:nowrap;">' + tijd + '</td>' +
+        '<td style="padding:6px 8px;font-size:11px;color:var(--text3);">' + escHtml(tabelLabel[c.tabel] || c.tabel) + '</td>' +
+        '<td style="padding:6px 8px;font-size:12px;font-weight:500;">' + escHtml(c.veld) + '</td>' +
+        '<td style="padding:6px 8px;font-size:12px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + escHtml(c.oude_waarde || '') + '">' + oud + '</td>' +
+        '<td style="padding:6px 8px;font-size:12px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + escHtml(c.nieuwe_waarde || '') + '">' + nieuw + '</td>' +
+        '</tr>';
+    }).join('');
+    return '<div class="section">' +
+      '<div class="section-title">' + day + '</div>' +
+      '<table style="width:100%;border-collapse:collapse;">' +
+      '<thead><tr style="border-bottom:1px solid var(--border);">' +
+      '<th style="padding:4px 8px;font-size:11px;color:var(--text3);text-align:left;font-weight:500;">Tijd</th>' +
+      '<th style="padding:4px 8px;font-size:11px;color:var(--text3);text-align:left;font-weight:500;">Sectie</th>' +
+      '<th style="padding:4px 8px;font-size:11px;color:var(--text3);text-align:left;font-weight:500;">Veld</th>' +
+      '<th style="padding:4px 8px;font-size:11px;color:var(--text3);text-align:left;font-weight:500;">Was</th>' +
+      '<th style="padding:4px 8px;font-size:11px;color:var(--text3);text-align:left;font-weight:500;">Wordt</th>' +
+      '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+  }).join('');
+  content.innerHTML = html;
 }
 
 async function exportCSV() {
