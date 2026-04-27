@@ -834,12 +834,8 @@ function calcCompleteness(p, cats, attr) {
   if (requiredFields.length > 0 && attr) {
     const filled = requiredFields.filter(mv => attr[mv] && String(attr[mv]).trim() !== '').length;
     templateScore = Math.round((filled / requiredFields.length) * 50);
-  } else {
-    // Geen template: score op key-attributen
-    const keyAttrs = ['kleur_primair','materiaal','product_lengte_cm','product_breedte_cm','product_hoogte_cm','product_gewicht_kg'];
-    const filled = keyAttrs.filter(k => attr && attr[k] && String(attr[k]).trim() !== '').length;
-    templateScore = Math.round((filled / keyAttrs.length) * 50);
   }
+  // Geen template: templateScore = 0 (max score = basisvelden = 50%)
 
   return Math.min(100, base + templateScore);
 }
