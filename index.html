@@ -457,6 +457,23 @@
     color: var(--text3);
   }
 
+
+  /* BULK SELECTIE */
+  .product-item { position: relative; padding-left: 36px; }
+  .product-item-cb {
+    position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+    width: 15px; height: 15px; cursor: pointer; accent-color: var(--accent);
+  }
+  .bulk-bar {
+    display: none; padding: 8px 12px; background: var(--surface2);
+    border-bottom: 1px solid var(--accent); gap: 6px; flex-direction: column;
+  }
+  .bulk-bar.visible { display: flex; }
+  .bulk-bar-top { display: flex; align-items: center; gap: 6px; }
+  .bulk-bar-count { font-size: 12px; color: var(--accent); font-weight: 600; flex: 1; }
+  .bulk-edit-form { display: none; padding-top: 8px; border-top: 1px solid var(--border); gap: 6px; flex-direction: column; }
+  .bulk-edit-form.open { display: flex; }
+
   /* MULTI-SELECT */
   .ms-wrap { position: relative; }
   .ms-input {
@@ -593,6 +610,35 @@
         <option value="">Alle categorieën inladen...</option>
       </select>
     </div>
+    <div class="bulk-bar" id="bulkBar">
+      <div class="bulk-bar-top">
+        <span class="bulk-bar-count" id="bulkCount">0 geselecteerd</span>
+        <button class="btn btn-ghost" onclick="toggleBulkEdit()" style="font-size:11px;padding:4px 8px;">&#9998; Bewerken</button>
+        <button class="btn btn-ghost" onclick="exportSelected()" style="font-size:11px;padding:4px 8px;">&#8595; Export</button>
+        <button class="btn btn-ghost" onclick="clearSelection()" style="font-size:11px;padding:4px 8px;color:var(--text3);">&#10005;</button>
+      </div>
+      <div class="bulk-edit-form" id="bulkEditForm">
+        <select id="bulkField" style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:6px 8px;color:var(--text);font-size:12px;">
+          <option value="">— Kies een veld —</option>
+          <optgroup label="Product">
+            <option value="product::merk">Merk</option>
+            <option value="product::serie">Serie</option>
+          </optgroup>
+          <optgroup label="Attributen" id="bulkAttrOptions"></optgroup>
+          <optgroup label="Categorieën">
+            <option value="cats::cat_bol">Categorie BOL</option>
+            <option value="cats::cat_obelink">Categorie Obelink</option>
+            <option value="cats::cat_decathlon">Categorie Decathlon</option>
+            <option value="cats::cat_amazon">Categorie Amazon</option>
+          </optgroup>
+        </select>
+        <div id="bulkValueWrap" style="display:flex;gap:6px;align-items:center;">
+          <input type="text" id="bulkValue" placeholder="Nieuwe waarde..." style="flex:1;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:6px 8px;color:var(--text);font-size:12px;">
+          <button class="btn btn-primary" onclick="applyBulkEdit()" style="font-size:12px;padding:6px 12px;">Toepassen</button>
+        </div>
+        <div id="bulkEditStatus" style="font-size:11px;color:var(--text3);"></div>
+      </div>
+    </div>
     <div class="product-list" id="productList">
       <div class="loading">Producten laden...</div>
     </div>
@@ -668,6 +714,7 @@ let currentTab = 'basis';
 let isDirty = false;
 let pendingChanges = {};
 let allTemplates = {};
+let selectedIds = new Set();
 let templateFieldsCache = {};
 let fieldOptions = {};
 let allFieldOptions = [];
@@ -859,13 +906,18 @@ function renderProductList(products) {
   list.innerHTML = products.map(p => {
     const score = p._completeness || 0;
     const color = score >= 80 ? 'var(--green)' : score >= 40 ? 'var(--accent)' : 'var(--red)';
-    return '<div class="product-item ' + (currentProduct && currentProduct.id === p.id ? 'active' : '') + '" onclick="selectProduct(\'' + p.id + '\')">' +
-      '<div class="product-item-name">' + escHtml(p.naam_nl || '—') + '</div>' +
-      '<div style="display:flex;align-items:center;gap:6px;margin-top:3px;">' +
-        '<div class="completeness-bar" style="flex:1;">' +
-          '<div class="completeness-fill" style="width:' + score + '%;background:' + color + ';"></div>' +
+    const isSel = selectedIds.has(p.id);
+    const isActive = currentProduct && currentProduct.id === p.id;
+    return '<div class="product-item ' + (isActive ? 'active' : '') + (isSel ? '" style="background:var(--surface2);border-left-color:var(--accent2)' : '') + '">' +
+      '<input type="checkbox" class="product-item-cb" ' + (isSel ? 'checked' : '') + ' onclick="event.stopPropagation();toggleSelect(\'' + p.id + '\')">' +
+      '<div onclick="selectProduct(\'' + p.id + '\')" style="cursor:pointer;">' +
+        '<div class="product-item-name">' + escHtml(p.naam_nl || '—') + '</div>' +
+        '<div style="display:flex;align-items:center;gap:6px;margin-top:3px;">' +
+          '<div class="completeness-bar" style="flex:1;">' +
+            '<div class="completeness-fill" style="width:' + score + '%;background:' + color + ';"></div>' +
+          '</div>' +
+          '<span style="font-size:10px;color:var(--text3);font-family:monospace;min-width:28px;text-align:right;">' + score + '%</span>' +
         '</div>' +
-        '<span style="font-size:10px;color:var(--text3);font-family:monospace;min-width:28px;text-align:right;">' + score + '%</span>' +
       '</div>' +
     '</div>';
   }).join('');
@@ -1807,6 +1859,76 @@ function discardChanges() {
   }
     renderTab();
   }
+}
+
+function toggleSelect(id) {
+  if (selectedIds.has(id)) selectedIds.delete(id);
+  else selectedIds.add(id);
+  updateBulkBar();
+  renderProductList(filteredProducts.length ? filteredProducts : allProducts);
+}
+
+function clearSelection() {
+  selectedIds.clear();
+  updateBulkBar();
+  renderProductList(filteredProducts.length ? filteredProducts : allProducts);
+}
+
+function updateBulkBar() {
+  const bar = document.getElementById('bulkBar');
+  const cnt = document.getElementById('bulkCount');
+  if (!bar) return;
+  if (selectedIds.size > 0) {
+    bar.classList.add('visible');
+    cnt.textContent = selectedIds.size + ' geselecteerd';
+    // Populate attribute options
+    const attrOpts = document.getElementById('bulkAttrOptions');
+    if (attrOpts && attrOpts.children.length === 0) {
+      allFieldOptions.forEach(f => {
+        const o = document.createElement('option');
+        o.value = 'attrs::' + f.master_veld;
+        o.textContent = f.master_veld;
+        attrOpts.appendChild(o);
+      });
+    }
+  } else {
+    bar.classList.remove('visible');
+    const form = document.getElementById('bulkEditForm');
+    if (form) form.classList.remove('open');
+  }
+}
+
+function toggleBulkEdit() {
+  const form = document.getElementById('bulkEditForm');
+  if (form) form.classList.toggle('open');
+}
+
+async function applyBulkEdit() {
+  const fieldVal = document.getElementById('bulkField').value;
+  const newVal = document.getElementById('bulkValue').value;
+  const status = document.getElementById('bulkEditStatus');
+  if (!fieldVal) { status.textContent = 'Kies eerst een veld.'; return; }
+  const [source, key] = fieldVal.split('::');
+  const ids = [...selectedIds];
+  status.textContent = 'Bezig...';
+  let table, idCol;
+  if (source === 'product') { table = 'products'; idCol = 'id'; }
+  else if (source === 'attrs') { table = 'product_attributes'; idCol = 'product_id'; }
+  else if (source === 'cats') { table = 'product_categories'; idCol = 'product_id'; }
+  const { error } = await sb.from(table).update({ [key]: newVal }).in(idCol, ids);
+  if (error) { status.textContent = 'Fout: ' + error.message; return; }
+  status.textContent = ids.length + ' producten bijgewerkt.';
+  // Update local cache
+  if (source === 'attrs') ids.forEach(id => { if (allAttrsMap[id]) allAttrsMap[id][key] = newVal; });
+  showToast(ids.length + ' producten bijgewerkt', 'success');
+}
+
+async function exportSelected() {
+  if (!selectedIds.size) { showToast('Niets geselecteerd', 'error'); return; }
+  const prev = filteredProducts;
+  filteredProducts = allProducts.filter(p => selectedIds.has(p.id));
+  await exportCSV();
+  filteredProducts = prev;
 }
 
 async function exportCSV() {
