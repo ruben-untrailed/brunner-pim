@@ -458,6 +458,20 @@
   }
 
 
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.6);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 500; backdrop-filter: blur(2px);
+  }
+  .modal {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 24px; width: 100%;
+    max-width: 420px; display: flex; flex-direction: column; gap: 16px;
+  }
+  .modal-title { font-size: 15px; font-weight: 600; }
+
   /* BULK SELECTIE */
   .product-item { position: relative; padding-left: 36px; }
   .product-item-cb {
@@ -601,6 +615,9 @@
       <div class="logo">Brunner PIM</div>
       <div class="logo-sub">Product Informatie Systeem</div>
     </div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);">
+      <button class="btn btn-primary" onclick="openNewProduct()" style="width:100%;font-size:12px;">+ Nieuw product</button>
+    </div>
     <div style="padding:4px 16px 6px;display:flex;justify-content:flex-end;border-bottom:1px solid var(--border);">
       <button class="btn btn-ghost" onclick="toggleInstellingen()" style="font-size:12px;padding:4px 10px;">&#9881; Instellingen</button>
     </div>
@@ -695,6 +712,40 @@
         <div class="loading">Product laden...</div>
       </div>
     </div>
+  </div>
+</div>
+
+
+<div class="modal-overlay" id="newProductModal" style="display:none;" onclick="if(event.target===this)closeNewProduct()">
+  <div class="modal">
+    <div class="modal-title">Nieuw product aanmaken</div>
+    <div class="field">
+      <label class="field-label">Naam NL <span class="field-required">●</span></label>
+      <input type="text" id="np_naam_nl" placeholder="Productnaam in het Nederlands">
+    </div>
+    <div class="fields-grid" style="grid-template-columns:1fr 1fr;">
+      <div class="field">
+        <label class="field-label">EAN</label>
+        <input type="text" id="np_ean" placeholder="8712345678901">
+      </div>
+      <div class="field">
+        <label class="field-label">MPN</label>
+        <input type="text" id="np_mpn" placeholder="Artikelnummer">
+      </div>
+      <div class="field">
+        <label class="field-label">Merk</label>
+        <input type="text" id="np_merk" placeholder="Bijv. Brunner">
+      </div>
+      <div class="field">
+        <label class="field-label">Serie</label>
+        <input type="text" id="np_serie" placeholder="Bijv. Chilly Billy">
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button class="btn btn-ghost" onclick="closeNewProduct()">Annuleer</button>
+      <button class="btn btn-primary" id="np_saveBtn" onclick="createProduct()">Aanmaken</button>
+    </div>
+    <div id="np_error" style="font-size:12px;color:var(--red);display:none;"></div>
   </div>
 </div>
 
@@ -1859,6 +1910,69 @@ function discardChanges() {
   }
     renderTab();
   }
+}
+
+function openNewProduct() {
+  ['np_naam_nl','np_ean','np_mpn','np_merk','np_serie'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  const err = document.getElementById('np_error');
+  if (err) { err.style.display = 'none'; err.textContent = ''; }
+  document.getElementById('newProductModal').style.display = 'flex';
+  setTimeout(() => document.getElementById('np_naam_nl').focus(), 50);
+}
+
+function closeNewProduct() {
+  document.getElementById('newProductModal').style.display = 'none';
+}
+
+async function createProduct() {
+  const naam = document.getElementById('np_naam_nl').value.trim();
+  const err = document.getElementById('np_error');
+  if (!naam) {
+    err.textContent = 'Naam is verplicht.';
+    err.style.display = 'block';
+    return;
+  }
+  const btn = document.getElementById('np_saveBtn');
+  btn.disabled = true; btn.textContent = 'Bezig...';
+
+  const newP = {
+    naam_nl: naam,
+    ean: document.getElementById('np_ean').value.trim() || null,
+    mpn: document.getElementById('np_mpn').value.trim() || null,
+    merk: document.getElementById('np_merk').value.trim() || null,
+    serie: document.getElementById('np_serie').value.trim() || null,
+  };
+
+  const { data, error } = await sb.from('products').insert(newP).select().single();
+  if (error) {
+    err.textContent = 'Fout: ' + error.message;
+    err.style.display = 'block';
+    btn.disabled = false; btn.textContent = 'Aanmaken';
+    return;
+  }
+
+  // Lege attribuut- en categorierij aanmaken
+  await Promise.all([
+    sb.from('product_attributes').insert({ product_id: data.id }),
+    sb.from('product_categories').insert({ product_id: data.id })
+  ]);
+
+  closeNewProduct();
+  showToast('Product "' + naam + '" aangemaakt', 'success');
+
+  // Voeg toe aan allProducts en herlaad lijst
+  const newEntry = { ...data, _categories: [], _woo_cat: '', _completeness: calcCompleteness(data, [], {}) };
+  allProducts.push(newEntry);
+  allProducts.sort((a, b) => (a.naam_nl || '').localeCompare(b.naam_nl || '', 'nl'));
+  applyFilters();
+
+  // Open het nieuwe product direct
+  selectProduct(data.id);
+
+  btn.disabled = false; btn.textContent = 'Aanmaken';
 }
 
 function toggleSelect(id) {
