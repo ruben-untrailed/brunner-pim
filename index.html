@@ -882,7 +882,7 @@ async function loadProducts() {
     sb.from('products').select('id, ean, naam_nl, mpn, serie, merk, beschrijving_nl, afbeeldingen').order('naam_nl'),
     sb.from('product_categories').select('product_id, cat_bol, cat_obelink, cat_decathlon'),
     sb.from('import products').select('ean, woocommerce_categorie'),
-    sb.from('product_attributes').select('product_id, kleur_primair, kleur_secundair, materiaal, product_lengte_cm, product_breedte_cm, product_hoogte_cm, product_gewicht_kg, beschrijving_nl, verpakking_lengte_cm, verpakking_gewicht_kg, producttaal, taal_handleiding')
+    sb.from('product_attributes').select('*')
   ]);
   if (pRes.error) { showToast('Fout bij laden producten', 'error'); return; }
   const catMap = {};
