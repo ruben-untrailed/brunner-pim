@@ -1581,14 +1581,18 @@ function renderBasis(content) {
 }
 
 async function renderAttributen(content) {
+  // Lees toggle-staat VOOR innerHTML wordt vervangen
+  const prevShowAll = document.getElementById('showAllToggle')?.checked ?? false;
+  const prevShowMissing = document.getElementById('showMissingToggle')?.checked ?? false;
+
   content.innerHTML = '<div class="loading">Velden laden...</div>';
   const a = currentAttrs;
   const { fields: templateFields, hasAnyTemplate } = await getActiveTemplateFields();
 
   // Toggle: gefilterd of alles tonen
-  const showAll = document.getElementById('showAllToggle')?.checked || !hasAnyTemplate;
+  const showAll = prevShowAll || !hasAnyTemplate;
 
-  const showMissingOnly = !showAll && (document.getElementById('showMissingToggle')?.checked || false);
+  const showMissingOnly = !showAll && prevShowMissing;
   const isVisible = (key) => {
     if (showAll || !hasAnyTemplate) return true;
     if (showMissingOnly) {
