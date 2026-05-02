@@ -543,6 +543,21 @@
 
 <div class="toast" id="toast"></div>
 
+<div id="wooModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);z-index:9998;align-items:center;justify-content:center;">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;width:360px;display:flex;flex-direction:column;gap:16px;">
+    <div style="font-weight:600;font-size:15px;">WooCommerce Export</div>
+    <div class="field">
+      <label class="field-label">Exporteer producten gewijzigd na:</label>
+      <input type="date" id="wooExportDate" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;width:100%;">
+    </div>
+    <div style="font-size:12px;color:var(--text3);">Laat leeg om alle producten te exporteren.</div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-ghost" style="flex:1;" onclick="document.getElementById('wooModal').style.display='none'">Annuleer</button>
+      <button class="btn btn-primary" style="flex:1;" onclick="exportWooCommerce()">Exporteren</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const SUPABASE_URL = 'https://furblfnwplmpnqlbxbcm.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ1cmJsZm53cGxtcG5xbGJ4YmNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3NTUzNTUsImV4cCI6MjA5MjMzMTM1NX0.tRbB2rbkjUm0Fsi0xP0eZXZZ379o6a0Dy3SKipTlEy4';
@@ -1437,6 +1452,202 @@ function showToast(msg, type='success') {
   t.className = `toast ${type} show`;
   setTimeout(() => t.classList.remove('show'), 3000);
 }
+
+// ============================================================
+// EXPORTS
+// ============================================================
+
+async function exportChannable() {
+  showToast('Channable CSV wordt voorbereid...', 'success');
+
+  // Haal alle producten op met attributen
+  let allProds = [];
+  let from = 0;
+  while (true) {
+    const { data } = await sb.from('products')
+      .select('id,ean,naam_nl,naam_de,naam_en,beschrijving_nl,beschrijving_de,merk,mpn,serie,afbeeldingen,bol_custom_titel,amazon_bulletpoint_1,amazon_bulletpoint_2,amazon_bulletpoint_3,amazon_bulletpoint_4,amazon_bulletpoint_5,amazon_zoektrefwoorden')
+      .range(from, from + 999);
+    if (!data || data.length === 0) break;
+    allProds = allProds.concat(data);
+    if (data.length < 1000) break;
+    from += 1000;
+  }
+
+  // Haal attributen op
+  let allAttrs = {};
+  from = 0;
+  while (true) {
+    const { data } = await sb.from('product_attributes').select('*').range(from, from + 999);
+    if (!data || data.length === 0) break;
+    data.forEach(a => { allAttrs[a.product_id] = a; });
+    if (data.length < 1000) break;
+    from += 1000;
+  }
+
+  // Haal categories op
+  let allCats = {};
+  from = 0;
+  while (true) {
+    const { data } = await sb.from('product_categories').select('*').range(from, from + 999);
+    if (!data || data.length === 0) break;
+    data.forEach(c => { allCats[c.product_id] = c; });
+    if (data.length < 1000) break;
+    from += 1000;
+  }
+
+  // Definieer alle kolommen
+  const attrCols = [
+    'product_lengte_cm','product_breedte_cm','product_hoogte_cm','product_gewicht_kg',
+    'verpakking_lengte_cm','verpakking_breedte_cm','verpakking_hoogte_cm','verpakking_gewicht_kg',
+    'stuks_per_verpakking','kleur_primair','kleur_secundair','materiaal','materiaal_frame',
+    'materiaal_zitting','materiaal_blad','materiaal_grill','materiaal_buitentent',
+    'materiaal_binnentent','materiaal_grondzeil','materiaal_voering','materiaal_vulling',
+    'materiaal_dak','materiaal_zijwand','materiaal_voorwand','materiaal_bovenzijde',
+    'materiaal_onderzijde','zithoogte_cm','zitdiepte_cm','zitbreedte_cm','ruglengte_cm',
+    'draagvermogen_kg','type_stoel','aantal_standen','bekleding_ademend','bekleding_gepolsterd',
+    'bekleding_waterbestendig','bekleding_sneldrogend','blad_hittebestendig','blad_vochtbestendig',
+    'tafel_lichtgewicht','tafelblad_afmeting','gevouwen_lengte_cm','gevouwen_breedte_cm',
+    'gevouwen_hoogte_cm','gevouwen_afmeting','afmeting','maat','maat_open',
+    'type_servies','diner_bord','ontbijt_bord','diep_bord','mok','glas','type_glas',
+    'saladekom','kom_maat','bestek_stuks','type_pan','aantal_pannen','pannenset_inhoud',
+    'type_pannenset','antikleeflaag','type_antikleeflaag','inclusief_deksel',
+    'type_barbecue','type_grill','grilloppervlak','aantal_branders','geschikte_warmtebronnen',
+    'gasverbruik_g_per_uur','stahoogte_cm','binnenbreedte_cm','binnenlengte_cm',
+    'binnentent_afmeting','palen_materiaal','cabines','aantal_personen','raam_afdekking',
+    'insectengaas','afdekking','seizoensgebruik','temp_min_graden','temp_max_graden',
+    'temperatuurbereik','vermogen_watt','inhoud_liter','koeltechnologie','koelbox_aansluiting',
+    'koelsysteem','koelmiddel','aansluitspanning','aansluitingen','druk_bar',
+    'stroomsnelheid_l_per_min','lumen','type_lichtbron','type_verlichting','led',
+    'oplaadbaar','batterijduur_uren','oplaadtijd_uren','batterijformaat','ip_classificatie',
+    'functies','oscillerend','ventilatie','warmte_standen','energielabel','type_kachel',
+    'type_hoes','uv_bestendig','bescherming_tegen','opvouwbaar','verstelbaar','oprolbaar',
+    'uitbreidbaar','inclusief_draagtas','inclusief_opbergbox','draagtas_maat','lagen',
+    'uitvoering','versie','type_montage','aansluiting','werkt_met','garantie_jaar',
+    'doelgroep','geschikt_voor','geschikt_voor_voertuig','geschikt_voor_type_camper',
+    'aanbevolen_voor','vorm','producttype','keurmerk','bandenmaat','kenmerken',
+  ];
+
+  const catCols = ['cat_bol','cat_bol_id','cat_obelink','cat_obelink_id',
+                   'cat_decathlon','cat_decathlon_id','cat_amazon'];
+
+  const headers = [
+    'ean','naam_nl','naam_de','naam_en','beschrijving_nl','beschrijving_de',
+    'merk','mpn','serie','afbeeldingen','bol_custom_titel',
+    'amazon_bulletpoint_1','amazon_bulletpoint_2','amazon_bulletpoint_3',
+    'amazon_bulletpoint_4','amazon_bulletpoint_5','amazon_zoektrefwoorden',
+    ...attrCols, ...catCols
+  ];
+
+  const rows = allProds.map(p => {
+    const a = allAttrs[p.id] || {};
+    const c = allCats[p.id] || {};
+    return headers.map(h => {
+      let val = p[h] ?? a[h] ?? c[h] ?? '';
+      // Escape CSV
+      val = String(val).replace(/"/g, '""');
+      if (val.includes(',') || val.includes('"') || val.includes('\n')) {
+        val = `"${val}"`;
+      }
+      return val;
+    });
+  });
+
+  const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+  downloadCSV(csv, `brunner_channable_${new Date().toISOString().slice(0,10)}.csv`);
+  showToast(`${allProds.length} producten geëxporteerd`, 'success');
+}
+
+function showWooExport() {
+  // Stel standaard datum in op een week geleden
+  const weekAgo = new Date();
+  weekAgo.setDate(weekAgo.getDate() - 7);
+  document.getElementById('wooExportDate').value = weekAgo.toISOString().slice(0,10);
+  document.getElementById('wooModal').style.display = 'flex';
+}
+
+async function exportWooCommerce() {
+  const datumStr = document.getElementById('wooExportDate').value;
+  document.getElementById('wooModal').style.display = 'none';
+  showToast('WooCommerce CSV wordt voorbereid...', 'success');
+
+  // Bouw query
+  let query = sb.from('products')
+    .select('id,ean,naam_nl,beschrijving_nl,merk,mpn,afbeeldingen,bijgewerkt_op');
+  if (datumStr) query = query.gte('bijgewerkt_op', datumStr);
+
+  // Haal producten op
+  let allProds = [];
+  let from = 0;
+  while (true) {
+    const { data } = await query.range(from, from + 999);
+    if (!data || data.length === 0) break;
+    allProds = allProds.concat(data);
+    if (data.length < 1000) break;
+    from += 1000;
+  }
+
+  if (!allProds.length) {
+    showToast('Geen producten gevonden voor deze periode', 'error');
+    return;
+  }
+
+  // Haal attributen op voor deze producten
+  const ids = allProds.map(p => p.id);
+  let allAttrs = {};
+  for (let i = 0; i < ids.length; i += 100) {
+    const chunk = ids.slice(i, i + 100);
+    const { data } = await sb.from('product_attributes')
+      .select('product_id,kleur_primair,materiaal,materiaal_frame,product_breedte_cm,product_hoogte_cm,product_gewicht_kg,garantie_jaar')
+      .in('product_id', chunk);
+    if (data) data.forEach(a => { allAttrs[a.product_id] = a; });
+  }
+
+  // WooCommerce CSV formaat
+  const headers = ['ID','SKU','Name','Description','Images',
+    'Attribute 1 name','Attribute 1 value(s)',
+    'Attribute 2 name','Attribute 2 value(s)',
+    'Attribute 3 name','Attribute 3 value(s)',
+    'Attribute 4 name','Attribute 4 value(s)',
+  ];
+
+  const rows = allProds.map(p => {
+    const a = allAttrs[p.id] || {};
+    const attrs = [
+      ['Kleur', a.kleur_primair || ''],
+      ['Materiaal', a.materiaal || ''],
+      ['Breedte (cm)', a.product_breedte_cm || ''],
+      ['Hoogte (cm)', a.product_hoogte_cm || ''],
+    ].filter(([,v]) => v);
+
+    const row = [
+      '', p.ean || '', p.naam_nl || '',
+      (p.beschrijving_nl || '').replace(/"/g,'""'),
+      p.afbeeldingen || '',
+    ];
+    for (let i = 0; i < 4; i++) {
+      row.push(attrs[i] ? attrs[i][0] : '');
+      row.push(attrs[i] ? attrs[i][1] : '');
+    }
+    return row.map(v => {
+      v = String(v);
+      if (v.includes(',') || v.includes('"') || v.includes('\n')) v = `"${v}"`;
+      return v;
+    });
+  });
+
+  const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+  downloadCSV(csv, `brunner_woocommerce_${datumStr || 'alles'}_${new Date().toISOString().slice(0,10)}.csv`);
+  showToast(`${allProds.length} producten geëxporteerd`, 'success');
+}
+
+function downloadCSV(csv, filename) {
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
+
 </script>
 </body>
 </html>
