@@ -491,6 +491,12 @@
       <select id="categoryFilter" onchange="applyFilters()">
         <option value="">Alle categorieën inladen...</option>
       </select>
+      <select id="voorraadFilter" onchange="applyFilters()">
+        <option value="">Alle producten</option>
+        <option value="IN_STOCK">Op voorraad</option>
+        <option value="OUT_OF_STOCK">Niet op voorraad</option>
+        <option value="NOT_IN_EXACT">Niet in Exact</option>
+      </select>
     </div>
     <div class="product-list" id="productList">
       <div class="loading">Producten laden...</div>
@@ -553,6 +559,7 @@ let pendingChanges = {};
 let allTemplates = {};
 let templateFieldsCache = {};
 let fieldOptions = {};
+let voorraadData = {}; // ean -> voorraad_totaal
 const catKenmerken = {"Caravan & camper accessoires > Opzetspiegels > Caravanspiegels": ["Trillingsvrij", "Inclusief opbergtas"], "Caravan & camper accessoires > Opzetspiegels > Dodehoekspiegels": ["Trillingsvrij", "Inclusief opbergtas"], "Slapen > Luchtbedden": ["Inclusief opberghoes", "Inclusief reparatiesetje", "Ingebouwde pomp", "Geïntegreerd hoofdkussen"], "Caravan & camper accessoires > Chassis > Levellers": ["Inclusief draagtas", "Anti-slip laag", "Voorkomt vervorming van de band", "Koppelbaar", "Stapelbaar", "Geschikt voor elke ondergrond", "Voor banden van 13 t/m 16 inch"], "Caravan & camper accessoires > Opstapjes & ladders > Opstapjes": ["Antislip", "Verstelbare voetjes", "Inklapbaar", "Draagbaar", "Handmatig in- en uitklappen", "Elektrisch in- en uitklappen", "Vouwbaar"], "Kampeermeubelen > Campingtafels > Campingtafels inklapbaar": ["Deelbaar blad", "Handvat", "Inclusief draagtas", "Opbergnet", "Stelvoetjes", "Afneembare poten", "Verstelbare poten", "Afneembaar blad", "Geïntegreerde waterpas"], "Kampeermeubelen > Campingtafels > Roltafels camping": ["Deelbaar blad", "Handvat", "Inclusief draagtas", "Opbergnet", "Stelvoetjes", "Afneembare poten", "Verstelbare poten", "Afneembaar blad", "Geïntegreerde waterpas"], "Keuken- & huishoudartikelen > Camping keukenspullen > Pannen": ["Anti-aanbaklaag", "Afneembaar handvat", "Wegklapbare handgreep", "Te gebruiken als ovenschaal", "Thermo spot", "Inclusief deksel", "Inclusief draagtas", "Vaatwasserbestendig", "Opvouwbaar"], "Keuken- & huishoudartikelen > Huishoudelijke apparaten > Stofzuigers": ["Telescopische buis", "Vaste wielen", "HEPA filter", "Draaghendel", "High efficiency borstel", "Flexibele buis", "Uitwasbaar filter", "Inclusief accessoires", "Handgreep", "Lichtgewicht"], "Kampeermeubelen > Campingkeukens": ["Draagtas", "Ventilatiegaas aan achterzijde", "Verstelbare poten", "Windscherm", "Zijvakjes", "Ruimte voor gasfles", "Wasbak", "Oprolbaar blad", "MDF legplanken", "Ophanghaakjes", "Voor kooktoestellen tot 60 cm breed", "Opvouwbaar", "Met opbergboxen"], "Caravan & camper accessoires > Ramen > Raamisolatie": ["Regen", "Zon", "Sneeuw", "Stof", "Vuil", "Condensvorming", "Vorst", "Krassen", "Slijtage", "Warmte", "Kou", "UV-straling", "Kleurvervaging", "Wind"], "Klimaatbeheersing > Airco's > Split airco's": ["Afstandsbediening", "Aftapkraantje", "Digitale timer", "Geïntegreerd handvat", "Inclusief afvoerslang", "Slaapmode", "Temperatuur instelbaar", "Voelers ter bescherming bij ijsvorming", "Warmtepomp", "Watertankvol indicator", "Werkt tot een omgevingstemperatuur van 42°C", "Voelers ter detectie van ijsvorming", "Filters zijn verwisselbaar en reinigbaar", "Soft start (laag opstartvermogen)", "Voorzien van Chillout Airbox luchtverdeler"], "Klimaatbeheersing > Airco's > Ventilatoren": ["Afstandsbediening", "Aftapkraantje", "Digitale timer", "Geïntegreerd handvat", "Inclusief afvoerslang", "Slaapmode", "Temperatuur instelbaar", "Voelers ter bescherming bij ijsvorming", "Warmtepomp", "Watertankvol indicator", "Werkt tot een omgevingstemperatuur van 42°C", "Voelers ter detectie van ijsvorming", "Filters zijn verwisselbaar en reinigbaar", "Soft start (laag opstartvermogen)", "Voorzien van Chillout Airbox luchtverdeler"], "Kampeermeubelen > Campingstoelen > Klapstoelen": ["Inklapbaar", "Stapelbaar", "Verstelbaar", "Bekerhouder", "Draagband", "Hoofdsteun", "Inclusief draagtas", "Safety-lock", "Verstelbare hoofdsteun", "Veiligheidsriem", "Zonnedakje", "Geen", "Zijtafel", "Ergonomisch gevormde rugleuning", "Grondverankering mogelijk", "(Afneembaar) eetblad"], "Kampeermeubelen > Campingstoelen > Ligbedden": ["Inklapbaar", "Stapelbaar", "Verstelbaar", "Bekerhouder", "Draagband", "Hoofdsteun", "Inclusief draagtas", "Safety-lock", "Verstelbare hoofdsteun", "Veiligheidsriem", "Zonnedakje", "Geen", "Zijtafel", "Ergonomisch gevormde rugleuning", "Grondverankering mogelijk", "(Afneembaar) eetblad"], "Kampeermeubelen > Campingstoelen > Strandstoelen": ["Inklapbaar", "Stapelbaar", "Verstelbaar", "Bekerhouder", "Draagband", "Hoofdsteun", "Inclusief draagtas", "Safety-lock", "Verstelbare hoofdsteun", "Veiligheidsriem", "Zonnedakje", "Geen", "Zijtafel", "Ergonomisch gevormde rugleuning", "Grondverankering mogelijk", "(Afneembaar) eetblad"], "Kampeermeubelen > Campingstoelen > Vouwstoelen": ["Inklapbaar", "Stapelbaar", "Verstelbaar", "Bekerhouder", "Draagband", "Hoofdsteun", "Inclusief draagtas", "Safety-lock", "Verstelbare hoofdsteun", "Veiligheidsriem", "Zonnedakje", "Geen", "Zijtafel", "Ergonomisch gevormde rugleuning", "Grondverankering mogelijk", "(Afneembaar) eetblad"], "Caravan & camper accessoires > Beschermhoezen > Camperhoezen": ["Elastische band voor betere pasvorm", "2 bevestigingsogen", "Wasbaar tot 30°C", "Toegang tot caravan mogelijk", "Toegang tot camper mogelijk", "Versterkte hoeken", "Vermindert schimmelvorming", "Verstevigde zeilringen", "Biedt privacy", "Eenzijdige doorkijk", "Afritsbaar paneel", "Weerbestendig", "Oprolmogelijkheid", "Voor alle seizoenen geschikt", "Met reflectorstrepen", "Onderkant fietsendrager ook beschermd", "Met insteekhoes voor veiligheidsbord"], "Caravan & camper accessoires > Beschermhoezen > Caravanhoezen": ["Elastische band voor betere pasvorm", "2 bevestigingsogen", "Wasbaar tot 30°C", "Toegang tot caravan mogelijk", "Toegang tot camper mogelijk", "Versterkte hoeken", "Vermindert schimmelvorming", "Verstevigde zeilringen", "Biedt privacy", "Eenzijdige doorkijk", "Afritsbaar paneel", "Weerbestendig", "Oprolmogelijkheid", "Voor alle seizoenen geschikt", "Met reflectorstrepen", "Onderkant fietsendrager ook beschermd", "Met insteekhoes voor veiligheidsbord"], "Caravan & camper accessoires > Beschermhoezen > Disselhoezen": ["Elastische band voor betere pasvorm", "2 bevestigingsogen", "Wasbaar tot 30°C", "Toegang tot caravan mogelijk", "Toegang tot camper mogelijk", "Versterkte hoeken", "Vermindert schimmelvorming", "Verstevigde zeilringen", "Biedt privacy", "Eenzijdige doorkijk", "Afritsbaar paneel", "Weerbestendig", "Oprolmogelijkheid", "Voor alle seizoenen geschikt", "Met reflectorstrepen", "Onderkant fietsendrager ook beschermd", "Met insteekhoes voor veiligheidsbord"], "Caravan & camper accessoires > Beschermhoezen > Wielhoezen": ["Elastische band voor betere pasvorm", "2 bevestigingsogen", "Wasbaar tot 30°C", "Toegang tot caravan mogelijk", "Toegang tot camper mogelijk", "Versterkte hoeken", "Vermindert schimmelvorming", "Verstevigde zeilringen", "Biedt privacy", "Eenzijdige doorkijk", "Afritsbaar paneel", "Weerbestendig", "Oprolmogelijkheid", "Voor alle seizoenen geschikt", "Met reflectorstrepen", "Onderkant fietsendrager ook beschermd", "Met insteekhoes voor veiligheidsbord"], "Koelboxen & koelkasten > Koelboxen > Compressor koelboxen": ["Afneembare deksel", "Bekerhouder in deksel", "Geïntegreerde handvatten", "Geschikt voor 0,33-liter flessen", "Geschikt voor 0,5-liter flessen", "Geschikt voor 1-liter flessen", "Geschikt voor 1,5-liter flessen", "Geschikt voor 2-liter flessen", "Kabelvak in deksel", "Wieltjes", "Binnenverlichting", "Elektronische thermostaat", "Turbo functie", "Geschikt voor 0,75-liter flessen", "Condensafvoer", "USB-A aansluiting", "USB-C aansluiting"], "Water & sanitair > Camping toiletten > Draagbare toiletten": ["Aansluiting centrale watertank", "Afvaltank met wielen", "Geïntegreerde dekselvergrendeling", "Geïntegreerde schenktuit", "Niveau-indicator afvaltank", "Niveau-indicator spoelwater-tank", "Toiletrolhouder", "Beluchtingsknop op afvaltank", "Keramische binnenpot", "Inclusief hold down kit", "Geschikt voor kinderen", "Geschikt voor volwassenen", "Geïntegreerde watertank", "Bedieningspaneel", "Draaibare pot", "Dekselvergrendeling", "Geschikt voor SOG", "Inclusief uitneembare afvaltank"], "BBQ's & kooktoestellen > Kooktoestellen > Campinggasstellen": ["Deksel", "Windscherm", "Anti-slip voetjes", "Vaatwasserbestendige pannendragers", "Afneembare pannendragers", "Geïntegreerd handvat", "In hoogte verstelbare poten", "Legplanken", "Vermogen traploos instelbaar", "Spoelbak links", "Spoelbak rechts", "Hittebestendige glazen afdekplaat", "Geëmailleerde pannendragers", "Geëmailleerde branderdeksels", "Minimale afstand van muur: 4,5 cm", "Inclusief opbergkoffer", "Inclusief opbergtas", "Aansluiting links achter", "Aansluiting rechts achter"], "BBQ's & kooktoestellen > Kooktoestellen > Elektrische kookplaten": ["Deksel", "Windscherm", "Anti-slip voetjes", "Vaatwasserbestendige pannendragers", "Afneembare pannendragers", "Geïntegreerd handvat", "In hoogte verstelbare poten", "Legplanken", "Vermogen traploos instelbaar", "Spoelbak links", "Spoelbak rechts", "Hittebestendige glazen afdekplaat", "Geëmailleerde pannendragers", "Geëmailleerde branderdeksels", "Minimale afstand van muur: 4,5 cm", "Inclusief opbergkoffer", "Inclusief opbergtas", "Aansluiting links achter", "Aansluiting rechts achter"], "Keuken- & huishoudartikelen > Camping keukenspullen > Serviessets": ["BPA vrij", "Biologisch afbreekbaar", "Ftalaten vrij", "Inclusief mes", "Inclusief opbergtas", "Maataanduiding", "Onbreekbaar", "Lekvrij", "Stapelbaar", "Opvouwbaar", "Inclusief deksel", "Inclusief vork", "Inclusief lepel", "Anti-slip", "Krasbestendig", "Magnetisch", "Dubbelwandig", "Duurzaam", "Isolerend", "Lichtgewicht"], "BBQ's & kooktoestellen > Gasbarbecues": ["Afdekhoes", "Asopvang", "Bakplaat", "Brikettenhouders", "Brikettenrails", "Deksel", "Dekselhouder", "Gasfleshouder", "Gereedschapshaken", "Maatbeker", "Opberghoes", "Opbergtas", "Thermometer", "Verrijdbaar", "Vetafvoer", "Zijtafel", "Verstelbare grill", "Warmhoudrooster", "Zijbrander", "Geen", "Draaispit", "Stelvoetjes"], "Water & sanitair > Watertanks > Jerrycans": ["Aansluiting voor optionele kraan", "Kraantje", "Wieltjes", "Handvat", "Vouwbaar", "Afvoerslang", "Niveaumeter", "Din 61 dop (4,6 cm)", "Din 96 dop (8 cm)", "Ontluchtingsventiel", "Dop voor waterpomp", "Leegloop dop", "Platform voor toiletcassette", "Inclusief spanbanden", "Inclusief schenktuit", "Inclusief flexibele schenktuit", "Ophangoog", "Voorzien van slangsleuf", "Inclusief bevestigingsmateriaal", "Geen", "Inclusief bevestigingsogen", "Voor drinkwater geschikt"], "Elektra > Camping verlichting > Sfeerverlichting": ["Waterbestendig", "Kompas", "Handvat", "Ophanghaak", "Bluetooth speaker", "Telefoonoplader", "Opvouwbaar", "Batterij indicator", "Bewegingssensor", "Lichtsensor", "Extern dimbaar", "Dimbaar", "Touch bediening", "Met schakelaar", "180 graden draaibaar", "360 graden draaibaar", "Blauw en wit licht", "Dimbaar in 3 standen", "Traploos dimbaar", "Met afstandsbediening", "Watervaste strip", "Zelfklevend", "Koppelbaar", "Infrarood schakelaar", "Inclusief klemmen", "Inclusief klittenband", "Handlus", "Niet dimbaar", "Standlicht", "Zonnepaneel", "Niet waterbestendig"], "Water & sanitair > Waterslangen > Drinkwaterslangen": ["Voormenger", "Doorlopend warm water", "Led display", "Regelbare watertemperatuur: 30 - 55 graden", "Schakelaar", "Vermogen 12 volt: 200 watt", "Zuurstofvrije koperen warmtewisselaar", "Slot", "Ontluchting", "Geschikt voor warm water", "Geschikt voor koud water", "Doucheslang en kop", "Regelbare spuitmond", "Handgreep", "Kraanadapter 3/4\"", "Inclusief tuinsproeier", "Inclusief 1/2\" aansluiting", "Eenvoudig in te korten", "Led indicator", "Inclusief sensors", "RVS zeef", "Uitneembare zeef", "Afsluitbaar", "Geschikt voor Twin dompelpomp", "Geschikt voor Powerjet dompelpomp", "Met schroef tule", "Voor ca. 4500 liter", "Volledig automatisch", "Instelbaar waterpeil", "Aansluitbaar op waterleiding", "Geschikt voor drinkwater", "Niet geschikt voor ringleiding", "Vervangbaar filter", "Filtert chloor, geur en smaak"], "Keuken- & huishoudartikelen > Camping keukenspullen > Glazen": ["Bol", "Vlak", "Vlak en bol"]};
 
 // Auth State Check
@@ -566,6 +573,7 @@ sb.auth.onAuthStateChange((event, session) => {
       loadProducts();
       loadTemplates();
       loadFieldOptions();
+      loadVoorraad();
     }
   } else {
     loginScreen.style.display = 'flex';
@@ -659,13 +667,22 @@ function renderProductList(products) {
     list.innerHTML = '<div style="padding:16px;color:var(--text3);font-size:13px;text-align:center;">Geen producten gevonden</div>';
     return;
   }
-  list.innerHTML = products.map(p => `
-    <div class="product-item ${currentProduct?.id === p.id ? 'active' : ''}"
+  list.innerHTML = products.map(p => {
+    const stock = p.ean && voorraadData[p.ean] !== undefined ? voorraadData[p.ean] : null;
+    const stockBadge = stock === null
+      ? ''
+      : stock > 0
+        ? `<span style="color:var(--green);font-size:10px;font-family:'DM Mono',monospace;">${stock} st.</span>`
+        : `<span style="color:var(--text3);font-size:10px;font-family:'DM Mono',monospace;">0 st.</span>`;
+    return `<div class="product-item ${currentProduct?.id === p.id ? 'active' : ''}"
          onclick="selectProduct('${p.id}')">
       <div class="product-item-name">${escHtml(p.naam_nl || '—')}</div>
-      <div class="product-item-meta">${escHtml(p.mpn || p.ean || '—')}</div>
-    </div>
-  `).join('');
+      <div class="product-item-meta" style="display:flex;justify-content:space-between;align-items:center;">
+        <span>${escHtml(p.mpn || p.ean || '—')}</span>
+        ${stockBadge}
+      </div>
+    </div>`;
+  }).join('');
 }
 
 async function getTemplateFields(marketplace, categorie_naam) {
@@ -741,15 +758,28 @@ document.getElementById('searchInput').addEventListener('input', applyFilters);
 function applyFilters() {
   const q = document.getElementById('searchInput').value.toLowerCase().trim();
   const cat = document.getElementById('categoryFilter').value;
+  const voorraad = document.getElementById('voorraadFilter').value;
+
   filteredProducts = allProducts.filter(p => {
     const matchText = !q ||
       (p.naam_nl || '').toLowerCase().includes(q) ||
       (p.ean || '').includes(q) ||
       (p.mpn || '').toLowerCase().includes(q);
+
     let matchCat = true;
     if (cat === 'UNASSIGNED') matchCat = (p._categories || []).length === 0;
     else if (cat) matchCat = (p._categories || []).includes(cat);
-    return matchText && matchCat;
+
+    let matchVoorraad = true;
+    if (voorraad === 'IN_STOCK') {
+      matchVoorraad = p.ean && voorraadData[p.ean] !== undefined && voorraadData[p.ean] > 0;
+    } else if (voorraad === 'OUT_OF_STOCK') {
+      matchVoorraad = p.ean && voorraadData[p.ean] !== undefined && voorraadData[p.ean] === 0;
+    } else if (voorraad === 'NOT_IN_EXACT') {
+      matchVoorraad = !p.ean || voorraadData[p.ean] === undefined;
+    }
+
+    return matchText && matchCat && matchVoorraad;
   });
   document.getElementById('statLoaded').textContent = filteredProducts.length;
   renderProductList(filteredProducts);
@@ -803,6 +833,29 @@ function renderTab() {
 // Na opslaan van marketplace categorie: invalideer template cache en herlaad attributen
 function onCategorySaved() {
   templateFieldsCache = {};
+}
+
+async function loadVoorraad() {
+  // Haal voorraad op uit de v_voorraad_pim view in batches
+  let all = [];
+  let from = 0;
+  const batchSize = 1000;
+  while (true) {
+    const { data, error } = await sb
+      .from('v_voorraad_pim')
+      .select('ean, voorraad_totaal, is_voorraadproduct')
+      .range(from, from + batchSize - 1);
+    if (error || !data || data.length === 0) break;
+    all = all.concat(data);
+    if (data.length < batchSize) break;
+    from += batchSize;
+  }
+  voorraadData = {};
+  all.forEach(r => {
+    if (r.ean) voorraadData[r.ean] = r.voorraad_totaal || 0;
+  });
+  // Herlaad de lijst met voorraadinfo
+  applyFilters();
 }
 
 async function loadFieldOptions() {
