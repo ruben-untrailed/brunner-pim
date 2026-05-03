@@ -643,7 +643,13 @@ async function loadProducts() {
       if (data.length < batchSize) break;
       from += batchSize;
     }
-    return all;
+    // Fix EAN .0 suffix (getal werd float bij import)
+    return all.map(r => {
+      if (r.ean && String(r.ean).endsWith('.0')) {
+        r.ean = String(r.ean).replace(/\.0$/, '');
+      }
+      return r;
+    });
   }
 
   const [pData, cData] = await Promise.all([
@@ -674,10 +680,19 @@ async function loadProducts() {
 }
 
 async function loadTemplates() {
-  const { data } = await sb.from('category_templates').select('id, marketplace, categorie_naam');
-  if (!data) return;
+  let all = [];
+  let from = 0;
+  while (true) {
+    const { data } = await sb.from('category_templates')
+      .select('id, marketplace, categorie_naam, categorie_id')
+      .range(from, from + 999);
+    if (!data || data.length === 0) break;
+    all = all.concat(data);
+    if (data.length < 1000) break;
+    from += 1000;
+  }
   allTemplates = {};
-  data.forEach(t => {
+  all.forEach(t => {
     if (!allTemplates[t.marketplace]) allTemplates[t.marketplace] = [];
     allTemplates[t.marketplace].push(t);
   });
@@ -1306,53 +1321,120 @@ async function renderAttributen(content) {
   content.innerHTML = toggleHtml + groepenHtml + kenmerkenHtml;
 }
 
+function getCatId(mp, catNaam) {
+  // Zoek categorie ID op uit category_templates data
+  const templates = allTemplates[mp] || [];
+  const t = templates.find(t => t.categorie_naam === catNaam);
+  return t?.categorie_id || t?.id || '';
+}
+
+function onCatChange(el, mp) {
+  const catNaam = el.value;
+  markDirty(el);
+
+  // Auto-fill categorie ID
+  if (mp !== 'amazon') {
+    const idKey = `cat_${mp}_id`;
+    // Zoek het ID uit de templates
+    const templates = allTemplates[mp] || [];
+    const template = templates.find(t => t.categorie_naam === catNaam);
+    const catId = template?.categorie_id || '';
+
+    // Update pending changes
+    if (!pendingChanges['cats']) pendingChanges['cats'] = {};
+    pendingChanges['cats'][idKey] = catId;
+
+    // Update het zichtbare ID veld
+    const idInput = document.querySelector(`[data-key="${idKey}"][data-source="cats"]`);
+    if (idInput) idInput.value = catId;
+
+    // Update currentCats
+    if (currentCats) currentCats[idKey] = catId;
+  }
+
+  onCategorySaved();
+}
+
 function renderMarketplaces(content) {
   const c = currentCats;
   const marketplaces = [
-    { key: 'bol', label: 'BOL.com', badge: 'badge-bol', id_key: 'cat_bol_id' },
-    { key: 'obelink', label: 'Obelink', badge: 'badge-obelink', id_key: 'cat_obelink_id' },
-    { key: 'decathlon', label: 'Decathlon', badge: 'badge-decathlon', id_key: 'cat_decathlon_id' },
-    { key: 'amazon', label: 'Amazon', badge: 'badge-amazon', id_key: 'cat_amazon' },
+    { key: 'bol', label: 'BOL.com', badge: 'badge-bol' },
+    { key: 'obelink', label: 'Obelink', badge: 'badge-obelink' },
+    { key: 'decathlon', label: 'Decathlon', badge: 'badge-decathlon' },
+    { key: 'amazon', label: 'Amazon', badge: 'badge-amazon' },
+  ];
+
+  // Amazon categorieën — vrij tekstveld + vaste lijst van bekende codes
+  const amazonCodes = [
+    'CAMPING_EQUIPMENT', 'OUTDOOR_FURNITURE', 'COOKWARE', 'TABLEWARE',
+    'KITCHEN_STORAGE', 'OUTDOOR_COOKING', 'SLEEPING_BAGS', 'TENTS',
+    'BACKPACKS', 'LIGHTING', 'COOLERS', 'HEATING',
   ];
 
   content.innerHTML = marketplaces.map(mp => {
-    const catKey = mp.key === 'amazon' ? 'cat_amazon' : `cat_${mp.key}`;
+    const catKey = `cat_${mp.key}`;
     const currentCat = c[catKey] || '';
     const templates = allTemplates[mp.key] || [];
 
-    let templateFields = '';
-    if (currentCat && mp.key !== 'amazon') {
-      templateFields = `
-        <div style="margin-top:8px;padding:8px 10px;background:var(--bg);border-radius:var(--radius);font-size:11px;color:var(--text3);">
-          Template actief: ${templates.find(t => t.categorie_naam === currentCat)?.categorie_naam || '—'}
-        </div>`;
-    }
-
     if (mp.key === 'amazon') {
+      // Amazon: dropdown met bekende codes + vrij tekstveld
       return `
         <div class="section">
           <div class="section-title"><span class="badge ${mp.badge}">${mp.label}</span></div>
           <div class="fields-grid">
-            ${field('cat_amazon', 'Amazon categorie code', c.cat_amazon, 'text', 'cats', false, true)}
+            <div class="field field-wide">
+              <label class="field-label">Amazon categorie code</label>
+              <select data-key="cat_amazon" data-source="cats" onchange="markDirty(this)">
+                <option value="">— Kies een categorie —</option>
+                ${amazonCodes.map(code => `<option value="${code}" ${code === currentCat ? 'selected' : ''}>${code}</option>`).join('')}
+                ${currentCat && !amazonCodes.includes(currentCat) ? `<option value="${escHtml(currentCat)}" selected>${escHtml(currentCat)}</option>` : ''}
+              </select>
+            </div>
+            <div class="field field-wide">
+              <label class="field-label">Of voer zelf een code in</label>
+              <input type="text" value="${escHtml(currentCat)}"
+                placeholder="bijv. CAMPING_EQUIPMENT"
+                onchange="overrideAmazonCat(this.value)"
+                style="font-family:'DM Mono',monospace;font-size:12px;">
+            </div>
           </div>
         </div>`;
     }
+
+    const currentId = c[`cat_${mp.key}_id`] || '';
 
     return `
       <div class="section">
         <div class="section-title"><span class="badge ${mp.badge}">${mp.label}</span></div>
         <div class="cat-select-wrap">
           <span class="cat-select-label">Categorie:</span>
-          <select data-key="${catKey}" data-source="cats" onchange="markDirty(this)">
+          <select data-key="${catKey}" data-source="cats"
+            onchange="onCatChange(this, '${mp.key}')">
             <option value="">— Geen categorie —</option>
             ${templates.map(t => `<option value="${escHtml(t.categorie_naam)}" ${t.categorie_naam === currentCat ? 'selected' : ''}>${escHtml(t.categorie_naam)}</option>`).join('')}
           </select>
         </div>
-        ${mp.key !== 'amazon' && c[`cat_${mp.key}_id`] ? `<div style="font-size:11px;color:var(--text3);margin-bottom:12px;font-family:'DM Mono',monospace;">ID: ${c[`cat_${mp.key}_id`]}</div>` : ''}
-        ${field(`cat_${mp.key}_id`, 'Categorie ID', c[`cat_${mp.key}_id`], 'text', 'cats')}
-        ${templateFields}
+        <div class="fields-grid" style="margin-top:8px;">
+          <div class="field">
+            <label class="field-label">Categorie ID</label>
+            <input type="text" value="${escHtml(currentId)}" readonly
+              data-key="cat_${mp.key}_id" data-source="cats"
+              style="font-family:'DM Mono',monospace;font-size:12px;opacity:.7;"
+              title="Wordt automatisch gevuld bij selectie">
+          </div>
+        </div>
       </div>`;
   }).join('');
+}
+
+function overrideAmazonCat(val) {
+  if (!pendingChanges['cats']) pendingChanges['cats'] = {};
+  pendingChanges['cats']['cat_amazon'] = val;
+  // Sync de dropdown
+  const sel = document.querySelector('[data-key="cat_amazon"][data-source="cats"] select, select[data-key="cat_amazon"]');
+  if (sel) sel.value = val;
+  isDirty = true;
+  document.getElementById('saveStatus').textContent = '● Niet opgeslagen';
 }
 
 function renderAmazon(content) {
