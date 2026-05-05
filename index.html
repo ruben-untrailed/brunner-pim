@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Brunner PIM</title>
+<title>Brunner PIM v2</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
@@ -33,26 +33,24 @@
     font-size: 14px;
   }
 
-
-  /* LOGIN SCHERM */
   .login-screen {
     position: fixed; top: 0; left: 0; right: 0; bottom: 0;
     background: var(--bg);
     display: flex; align-items: center; justify-content: center;
     z-index: 9999;
   }
+
   .login-box {
     background: var(--surface);
     border: 1px solid var(--border); border-radius: var(--radius);
     padding: 32px; width: 100%; max-width: 360px;
     display: flex; flex-direction: column; gap: 16px;
   }
+
   .login-header { text-align: center; margin-bottom: 8px; }
 
-  /* LAYOUT */
   .app { display: grid; grid-template-columns: 280px 1fr; height: 100vh; overflow: hidden; }
 
-  /* SIDEBAR */
   .sidebar {
     background: var(--surface);
     border-right: 1px solid var(--border);
@@ -61,10 +59,7 @@
     overflow: hidden;
   }
 
-  .sidebar-header {
-    padding: 20px;
-    border-bottom: 1px solid var(--border);
-  }
+  .sidebar-header { padding: 20px; border-bottom: 1px solid var(--border); }
 
   .logo {
     font-family: 'DM Mono', monospace;
@@ -81,27 +76,35 @@
     font-family: 'DM Mono', monospace;
   }
 
-  .search-wrap { padding: 12px 16px; border-bottom: 1px solid var(--border); }
+  .search-wrap {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
 
-  .search-wrap { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; }
-  .search-wrap input, .search-wrap select {
+  .search-wrap input,
+  .search-wrap select {
     width: 100%; background: var(--surface2); border: 1px solid var(--border);
     border-radius: var(--radius); padding: 8px 12px; color: var(--text);
     font-family: 'DM Sans', sans-serif; font-size: 13px; outline: none; transition: border-color .15s;
   }
-  .search-wrap input:focus, .search-wrap select:focus { border-color: var(--accent); }
+
+  .search-wrap input:focus,
+  .search-wrap select:focus { border-color: var(--accent); }
+
   .search-wrap input::placeholder { color: var(--text3); }
   .search-wrap select { cursor: pointer; padding: 7px 10px; }
   .search-wrap select option { background: var(--surface); }
 
-  .product-list {
-    flex: 1;
-    overflow-y: auto;
-    padding: 8px 0;
-  }
-  .product-list::-webkit-scrollbar { width: 4px; }
-  .product-list::-webkit-scrollbar-track { background: transparent; }
-  .product-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  .product-list { flex: 1; overflow-y: auto; padding: 8px 0; }
+  .product-list::-webkit-scrollbar,
+  .content::-webkit-scrollbar { width: 4px; }
+  .product-list::-webkit-scrollbar-track,
+  .content::-webkit-scrollbar-track { background: transparent; }
+  .product-list::-webkit-scrollbar-thumb,
+  .content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
   .product-item {
     padding: 10px 16px;
@@ -127,25 +130,7 @@
     font-family: 'DM Mono', monospace;
   }
 
-  .completeness-bar {
-    height: 2px;
-    background: var(--border);
-    border-radius: 1px;
-    margin-top: 5px;
-    overflow: hidden;
-  }
-  .completeness-fill {
-    height: 100%;
-    border-radius: 1px;
-    transition: width .3s;
-  }
-
-  /* MAIN */
-  .main {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
+  .main { display: flex; flex-direction: column; overflow: hidden; }
 
   .main-header {
     padding: 16px 24px;
@@ -187,10 +172,7 @@
     white-space: nowrap;
   }
 
-  .btn-primary {
-    background: var(--accent);
-    color: #000;
-  }
+  .btn-primary { background: var(--accent); color: #000; }
   .btn-primary:hover { background: #f0d060; }
   .btn-primary:disabled { opacity: .4; cursor: not-allowed; }
 
@@ -201,7 +183,6 @@
   }
   .btn-ghost:hover { border-color: var(--text2); color: var(--text); }
 
-  /* TABS */
   .tabs {
     display: flex;
     gap: 0;
@@ -223,33 +204,9 @@
   .tab:hover { color: var(--text); }
   .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
 
-  /* CONTENT */
-  .content {
-    flex: 1;
-    overflow-y: auto;
-    padding: 24px;
-  }
-  .content::-webkit-scrollbar { width: 4px; }
-  .content::-webkit-scrollbar-track { background: transparent; }
-  .content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  .content { flex: 1; overflow-y: auto; padding: 24px; }
 
-  /* EMPTY STATE */
-  .empty-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    color: var(--text3);
-    gap: 8px;
-  }
-  .empty-state-icon { font-size: 32px; opacity: .3; }
-  .empty-state-text { font-size: 14px; }
-
-  /* FORM */
-  .section {
-    margin-bottom: 28px;
-  }
+  .section { margin-bottom: 28px; }
 
   .section-title {
     font-size: 11px;
@@ -276,11 +233,8 @@
     gap: 12px;
   }
 
-  .field {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field-full { grid-column: 1 / -1; }
 
   .field-label {
     font-size: 11px;
@@ -291,12 +245,11 @@
     gap: 4px;
   }
 
-  .field-required {
-    color: var(--accent);
-    font-size: 10px;
-  }
+  .field-required { color: var(--accent); font-size: 10px; }
 
-  .field input, .field textarea, .field select {
+  .field input,
+  .field textarea,
+  .field select {
     background: var(--surface2);
     border: 1px solid var(--border);
     border-radius: var(--radius);
@@ -308,39 +261,18 @@
     transition: border-color .15s;
     width: 100%;
   }
-  .field input:focus, .field textarea:focus, .field select:focus {
-    border-color: var(--accent2);
-  }
-  .field input::placeholder, .field textarea::placeholder { color: var(--text3); }
+
+  .field input:focus,
+  .field textarea:focus,
+  .field select:focus { border-color: var(--accent2); }
+
+  .field input::placeholder,
+  .field textarea::placeholder { color: var(--text3); }
+
   .field textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
   .field select { cursor: pointer; }
   .field select option { background: var(--surface2); }
 
-  .field-full { grid-column: 1 / -1; }
-
-  /* MARKETPLACE TABS */
-  .mp-selector {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-  }
-
-  .mp-btn {
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 500;
-    cursor: pointer;
-    border: 1px solid var(--border);
-    background: transparent;
-    color: var(--text2);
-    transition: all .15s;
-  }
-  .mp-btn:hover { border-color: var(--text2); color: var(--text); }
-  .mp-btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
-
-  /* CATEGORY SELECT */
   .cat-select-wrap {
     background: var(--surface2);
     border: 1px solid var(--border);
@@ -352,11 +284,7 @@
     gap: 12px;
   }
 
-  .cat-select-label {
-    font-size: 12px;
-    color: var(--text2);
-    white-space: nowrap;
-  }
+  .cat-select-label { font-size: 12px; color: var(--text2); white-space: nowrap; }
 
   .cat-select-wrap select {
     flex: 1;
@@ -370,9 +298,7 @@
     outline: none;
     cursor: pointer;
   }
-  .cat-select-wrap select option { background: var(--surface); }
 
-  /* TOAST */
   .toast {
     position: fixed;
     bottom: 24px;
@@ -386,13 +312,12 @@
     transform: translateY(80px);
     opacity: 0;
     transition: all .25s;
-    max-width: 320px;
+    max-width: 420px;
   }
   .toast.show { transform: translateY(0); opacity: 1; }
   .toast.success { border-color: var(--green); color: var(--green); }
   .toast.error { border-color: var(--red); color: var(--red); }
 
-  /* BADGE */
   .badge {
     display: inline-flex;
     align-items: center;
@@ -423,20 +348,10 @@
     flex-shrink: 0;
   }
 
-  .stat {
-    font-size: 11px;
-    color: var(--text3);
-    font-family: 'DM Mono', monospace;
-  }
-
+  .stat { font-size: 11px; color: var(--text3); font-family: 'DM Mono', monospace; }
   .stat span { color: var(--text2); }
 
-  .image-preview {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-top: 6px;
-  }
+  .image-preview { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
 
   .image-thumb {
     width: 60px;
@@ -456,10 +371,88 @@
     gap: 12px;
     color: var(--text3);
   }
+
+  .ms-wrap { position: relative; }
+
+  .ms-input {
+    min-height: 36px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 5px 8px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+    cursor: text;
+  }
+
+  .ms-input:focus-within { border-color: var(--accent2); }
+
+  .ms-search {
+    background: transparent !important;
+    border: none !important;
+    padding: 3px !important;
+    min-width: 120px;
+    flex: 1;
+  }
+
+  .ms-dropdown {
+    display: none;
+    position: absolute;
+    z-index: 50;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-top: 4px;
+    max-height: 220px;
+    overflow-y: auto;
+    width: 100%;
+  }
+
+  .ms-dropdown.open { display: block; }
+
+  .ms-option {
+    padding: 8px 10px;
+    cursor: pointer;
+    font-size: 13px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .ms-option:hover { background: var(--surface2); }
+  .ms-option.selected { color: var(--accent); }
+
+  .ms-option-check {
+    width: 14px;
+    color: var(--accent);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .ms-tag {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2px 7px;
+    font-size: 12px;
+    display: inline-flex;
+    gap: 5px;
+    align-items: center;
+  }
+
+  .ms-tag-remove { cursor: pointer; color: var(--text3); }
+  .ms-tag-remove:hover { color: var(--red); }
+
+  .ms-empty { padding: 10px; color: var(--text3); font-size: 12px; }
+
+  @media (max-width: 900px) {
+    .app { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+  }
 </style>
 </head>
 <body>
-
 
 <div class="login-screen" id="loginScreen">
   <div class="login-box">
@@ -469,18 +462,17 @@
     </div>
     <div class="field">
       <label class="field-label">E-mailadres</label>
-      <input type="email" id="loginEmail" placeholder="naam@bedrijf.nl">
+      <input type="email" id="loginEmail" placeholder="naam@bedrijf.nl" autocomplete="email">
     </div>
     <div class="field">
       <label class="field-label">Wachtwoord</label>
-      <input type="password" id="loginPassword" placeholder="••••••••">
+      <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password">
     </div>
     <button class="btn btn-primary" id="loginBtn" onclick="handleLogin()" style="width: 100%; margin-top: 8px;">Inloggen</button>
   </div>
 </div>
 
 <div class="app" id="mainApp" style="display:none;">
-  <!-- SIDEBAR -->
   <div class="sidebar">
     <div class="sidebar-header">
       <div class="logo">Brunner PIM</div>
@@ -489,7 +481,9 @@
         <button class="btn btn-ghost" style="font-size:11px;padding:4px 8px;flex:1;" onclick="exportChannable()">↓ Channable</button>
         <button class="btn btn-ghost" style="font-size:11px;padding:4px 8px;flex:1;" onclick="showWooExport()">↓ WooCommerce</button>
       </div>
+      <button class="btn btn-ghost" style="font-size:11px;padding:4px 8px;width:100%;margin-top:8px;" onclick="handleLogout()">Uitloggen</button>
     </div>
+
     <div class="search-wrap">
       <input type="text" id="searchInput" placeholder="Zoek op naam, EAN, MPN..." autocomplete="off">
       <select id="categoryFilter" onchange="applyFilters()">
@@ -502,23 +496,24 @@
         <option value="NOT_IN_EXACT">Niet in Exact</option>
       </select>
     </div>
+
     <div class="product-list" id="productList">
       <div class="loading">Producten laden...</div>
     </div>
+
     <div class="stats-row">
       <div class="stat">Totaal: <span id="statTotal">—</span></div>
       <div class="stat">Geladen: <span id="statLoaded">—</span></div>
     </div>
   </div>
 
-  <!-- MAIN -->
   <div class="main">
     <div id="noProduct" class="no-product">
       <div style="font-size:32px;opacity:.2">◈</div>
       <div style="font-size:14px">Selecteer een product</div>
     </div>
 
-    <div id="productEditor" style="display:none; display:none; flex-direction:column; height:100%; overflow:hidden;">
+    <div id="productEditor" style="display:none; flex-direction:column; height:100%; overflow:hidden;">
       <div class="main-header">
         <div class="main-header-left">
           <div class="product-title" id="editorTitle">—</div>
@@ -532,10 +527,10 @@
       </div>
 
       <div class="tabs">
-        <div class="tab active" onclick="switchTab('basis', this)">Basisinfo</div>
-        <div class="tab" onclick="switchTab('attributen', this)">Attributen</div>
-        <div class="tab" onclick="switchTab('marketplaces', this)">Marketplaces</div>
-        <div class="tab" onclick="switchTab('amazon', this)">Amazon teksten</div>
+        <div class="tab active" data-tab="basis" onclick="switchTab('basis', this)">Basisinfo</div>
+        <div class="tab" data-tab="attributen" onclick="switchTab('attributen', this)">Attributen</div>
+        <div class="tab" data-tab="marketplaces" onclick="switchTab('marketplaces', this)">Marketplaces</div>
+        <div class="tab" data-tab="amazon" onclick="switchTab('amazon', this)">Amazon teksten</div>
       </div>
 
       <div class="content" id="tabContent">
@@ -552,9 +547,9 @@
     <div style="font-weight:600;font-size:15px;">WooCommerce Export</div>
     <div class="field">
       <label class="field-label">Exporteer producten gewijzigd na:</label>
-      <input type="date" id="wooExportDate" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;width:100%;">
+      <input type="date" id="wooExportDate">
     </div>
-    <div style="font-size:12px;color:var(--text3);">Laat leeg om alle producten te exporteren.</div>
+    <div style="font-size:12px;color:var(--text3);">Laat leeg om alle producten te exporteren. CSV blijft komma-gescheiden voor Rons editor.</div>
     <div style="display:flex;gap:8px;">
       <button class="btn btn-ghost" style="flex:1;" onclick="document.getElementById('wooModal').style.display='none'">Annuleer</button>
       <button class="btn btn-primary" style="flex:1;" onclick="exportWooCommerce()">Exporteren</button>
@@ -578,24 +573,28 @@ let pendingChanges = {};
 let allTemplates = {};
 let templateFieldsCache = {};
 let fieldOptions = {};
-let voorraadData = {}; // ean -> voorraad_totaal
+let voorraadData = {};
+let voorraadNulLaden = false;
+let renderToken = 0;
+let searchTimer = null;
+
 const catKenmerken = {"Caravan & camper accessoires > Opzetspiegels > Caravanspiegels": ["Trillingsvrij", "Inclusief opbergtas"], "Caravan & camper accessoires > Opzetspiegels > Dodehoekspiegels": ["Trillingsvrij", "Inclusief opbergtas"], "Slapen > Luchtbedden": ["Inclusief opberghoes", "Inclusief reparatiesetje", "Ingebouwde pomp", "Geïntegreerd hoofdkussen"], "Caravan & camper accessoires > Chassis > Levellers": ["Inclusief draagtas", "Anti-slip laag", "Voorkomt vervorming van de band", "Koppelbaar", "Stapelbaar", "Geschikt voor elke ondergrond", "Voor banden van 13 t/m 16 inch"], "Caravan & camper accessoires > Opstapjes & ladders > Opstapjes": ["Antislip", "Verstelbare voetjes", "Inklapbaar", "Draagbaar", "Handmatig in- en uitklappen", "Elektrisch in- en uitklappen", "Vouwbaar"], "Kampeermeubelen > Campingtafels > Campingtafels inklapbaar": ["Deelbaar blad", "Handvat", "Inclusief draagtas", "Opbergnet", "Stelvoetjes", "Afneembare poten", "Verstelbare poten", "Afneembaar blad", "Geïntegreerde waterpas"], "Kampeermeubelen > Campingtafels > Roltafels camping": ["Deelbaar blad", "Handvat", "Inclusief draagtas", "Opbergnet", "Stelvoetjes", "Afneembare poten", "Verstelbare poten", "Afneembaar blad", "Geïntegreerde waterpas"], "Keuken- & huishoudartikelen > Camping keukenspullen > Pannen": ["Anti-aanbaklaag", "Afneembaar handvat", "Wegklapbare handgreep", "Te gebruiken als ovenschaal", "Thermo spot", "Inclusief deksel", "Inclusief draagtas", "Vaatwasserbestendig", "Opvouwbaar"], "Keuken- & huishoudartikelen > Huishoudelijke apparaten > Stofzuigers": ["Telescopische buis", "Vaste wielen", "HEPA filter", "Draaghendel", "High efficiency borstel", "Flexibele buis", "Uitwasbaar filter", "Inclusief accessoires", "Handgreep", "Lichtgewicht"], "Kampeermeubelen > Campingkeukens": ["Draagtas", "Ventilatiegaas aan achterzijde", "Verstelbare poten", "Windscherm", "Zijvakjes", "Ruimte voor gasfles", "Wasbak", "Oprolbaar blad", "MDF legplanken", "Ophanghaakjes", "Voor kooktoestellen tot 60 cm breed", "Opvouwbaar", "Met opbergboxen"], "Caravan & camper accessoires > Ramen > Raamisolatie": ["Regen", "Zon", "Sneeuw", "Stof", "Vuil", "Condensvorming", "Vorst", "Krassen", "Slijtage", "Warmte", "Kou", "UV-straling", "Kleurvervaging", "Wind"], "Klimaatbeheersing > Airco's > Split airco's": ["Afstandsbediening", "Aftapkraantje", "Digitale timer", "Geïntegreerd handvat", "Inclusief afvoerslang", "Slaapmode", "Temperatuur instelbaar", "Voelers ter bescherming bij ijsvorming", "Warmtepomp", "Watertankvol indicator", "Werkt tot een omgevingstemperatuur van 42°C", "Voelers ter detectie van ijsvorming", "Filters zijn verwisselbaar en reinigbaar", "Soft start (laag opstartvermogen)", "Voorzien van Chillout Airbox luchtverdeler"], "Klimaatbeheersing > Airco's > Ventilatoren": ["Afstandsbediening", "Aftapkraantje", "Digitale timer", "Geïntegreerd handvat", "Inclusief afvoerslang", "Slaapmode", "Temperatuur instelbaar", "Voelers ter bescherming bij ijsvorming", "Warmtepomp", "Watertankvol indicator", "Werkt tot een omgevingstemperatuur van 42°C", "Voelers ter detectie van ijsvorming", "Filters zijn verwisselbaar en reinigbaar", "Soft start (laag opstartvermogen)", "Voorzien van Chillout Airbox luchtverdeler"], "Kampeermeubelen > Campingstoelen > Klapstoelen": ["Inklapbaar", "Stapelbaar", "Verstelbaar", "Bekerhouder", "Draagband", "Hoofdsteun", "Inclusief draagtas", "Safety-lock", "Verstelbare hoofdsteun", "Veiligheidsriem", "Zonnedakje", "Geen", "Zijtafel", "Ergonomisch gevormde rugleuning", "Grondverankering mogelijk", "(Afneembaar) eetblad"], "Kampeermeubelen > Campingstoelen > Ligbedden": ["Inklapbaar", "Stapelbaar", "Verstelbaar", "Bekerhouder", "Draagband", "Hoofdsteun", "Inclusief draagtas", "Safety-lock", "Verstelbare hoofdsteun", "Veiligheidsriem", "Zonnedakje", "Geen", "Zijtafel", "Ergonomisch gevormde rugleuning", "Grondverankering mogelijk", "(Afneembaar) eetblad"], "Kampeermeubelen > Campingstoelen > Strandstoelen": ["Inklapbaar", "Stapelbaar", "Verstelbaar", "Bekerhouder", "Draagband", "Hoofdsteun", "Inclusief draagtas", "Safety-lock", "Verstelbare hoofdsteun", "Veiligheidsriem", "Zonnedakje", "Geen", "Zijtafel", "Ergonomisch gevormde rugleuning", "Grondverankering mogelijk", "(Afneembaar) eetblad"], "Kampeermeubelen > Campingstoelen > Vouwstoelen": ["Inklapbaar", "Stapelbaar", "Verstelbaar", "Bekerhouder", "Draagband", "Hoofdsteun", "Inclusief draagtas", "Safety-lock", "Verstelbare hoofdsteun", "Veiligheidsriem", "Zonnedakje", "Geen", "Zijtafel", "Ergonomisch gevormde rugleuning", "Grondverankering mogelijk", "(Afneembaar) eetblad"], "Caravan & camper accessoires > Beschermhoezen > Camperhoezen": ["Elastische band voor betere pasvorm", "2 bevestigingsogen", "Wasbaar tot 30°C", "Toegang tot caravan mogelijk", "Toegang tot camper mogelijk", "Versterkte hoeken", "Vermindert schimmelvorming", "Verstevigde zeilringen", "Biedt privacy", "Eenzijdige doorkijk", "Afritsbaar paneel", "Weerbestendig", "Oprolmogelijkheid", "Voor alle seizoenen geschikt", "Met reflectorstrepen", "Onderkant fietsendrager ook beschermd", "Met insteekhoes voor veiligheidsbord"], "Caravan & camper accessoires > Beschermhoezen > Caravanhoezen": ["Elastische band voor betere pasvorm", "2 bevestigingsogen", "Wasbaar tot 30°C", "Toegang tot caravan mogelijk", "Toegang tot camper mogelijk", "Versterkte hoeken", "Vermindert schimmelvorming", "Verstevigde zeilringen", "Biedt privacy", "Eenzijdige doorkijk", "Afritsbaar paneel", "Weerbestendig", "Oprolmogelijkheid", "Voor alle seizoenen geschikt", "Met reflectorstrepen", "Onderkant fietsendrager ook beschermd", "Met insteekhoes voor veiligheidsbord"], "Caravan & camper accessoires > Beschermhoezen > Disselhoezen": ["Elastische band voor betere pasvorm", "2 bevestigingsogen", "Wasbaar tot 30°C", "Toegang tot caravan mogelijk", "Toegang tot camper mogelijk", "Versterkte hoeken", "Vermindert schimmelvorming", "Verstevigde zeilringen", "Biedt privacy", "Eenzijdige doorkijk", "Afritsbaar paneel", "Weerbestendig", "Oprolmogelijkheid", "Voor alle seizoenen geschikt", "Met reflectorstrepen", "Onderkant fietsendrager ook beschermd", "Met insteekhoes voor veiligheidsbord"], "Caravan & camper accessoires > Beschermhoezen > Wielhoezen": ["Elastische band voor betere pasvorm", "2 bevestigingsogen", "Wasbaar tot 30°C", "Toegang tot caravan mogelijk", "Toegang tot camper mogelijk", "Versterkte hoeken", "Vermindert schimmelvorming", "Verstevigde zeilringen", "Biedt privacy", "Eenzijdige doorkijk", "Afritsbaar paneel", "Weerbestendig", "Oprolmogelijkheid", "Voor alle seizoenen geschikt", "Met reflectorstrepen", "Onderkant fietsendrager ook beschermd", "Met insteekhoes voor veiligheidsbord"], "Koelboxen & koelkasten > Koelboxen > Compressor koelboxen": ["Afneembare deksel", "Bekerhouder in deksel", "Geïntegreerde handvatten", "Geschikt voor 0,33-liter flessen", "Geschikt voor 0,5-liter flessen", "Geschikt voor 1-liter flessen", "Geschikt voor 1,5-liter flessen", "Geschikt voor 2-liter flessen", "Kabelvak in deksel", "Wieltjes", "Binnenverlichting", "Elektronische thermostaat", "Turbo functie", "Geschikt voor 0,75-liter flessen", "Condensafvoer", "USB-A aansluiting", "USB-C aansluiting"], "Water & sanitair > Camping toiletten > Draagbare toiletten": ["Aansluiting centrale watertank", "Afvaltank met wielen", "Geïntegreerde dekselvergrendeling", "Geïntegreerde schenktuit", "Niveau-indicator afvaltank", "Niveau-indicator spoelwater-tank", "Toiletrolhouder", "Beluchtingsknop op afvaltank", "Keramische binnenpot", "Inclusief hold down kit", "Geschikt voor kinderen", "Geschikt voor volwassenen", "Geïntegreerde watertank", "Bedieningspaneel", "Draaibare pot", "Dekselvergrendeling", "Geschikt voor SOG", "Inclusief uitneembare afvaltank"], "BBQ's & kooktoestellen > Kooktoestellen > Campinggasstellen": ["Deksel", "Windscherm", "Anti-slip voetjes", "Vaatwasserbestendige pannendragers", "Afneembare pannendragers", "Geïntegreerd handvat", "In hoogte verstelbare poten", "Legplanken", "Vermogen traploos instelbaar", "Spoelbak links", "Spoelbak rechts", "Hittebestendige glazen afdekplaat", "Geëmailleerde pannendragers", "Geëmailleerde branderdeksels", "Minimale afstand van muur: 4,5 cm", "Inclusief opbergkoffer", "Inclusief opbergtas", "Aansluiting links achter", "Aansluiting rechts achter"], "BBQ's & kooktoestellen > Kooktoestellen > Elektrische kookplaten": ["Deksel", "Windscherm", "Anti-slip voetjes", "Vaatwasserbestendige pannendragers", "Afneembare pannendragers", "Geïntegreerd handvat", "In hoogte verstelbare poten", "Legplanken", "Vermogen traploos instelbaar", "Spoelbak links", "Spoelbak rechts", "Hittebestendige glazen afdekplaat", "Geëmailleerde pannendragers", "Geëmailleerde branderdeksels", "Minimale afstand van muur: 4,5 cm", "Inclusief opbergkoffer", "Inclusief opbergtas", "Aansluiting links achter", "Aansluiting rechts achter"], "Keuken- & huishoudartikelen > Camping keukenspullen > Serviessets": ["BPA vrij", "Biologisch afbreekbaar", "Ftalaten vrij", "Inclusief mes", "Inclusief opbergtas", "Maataanduiding", "Onbreekbaar", "Lekvrij", "Stapelbaar", "Opvouwbaar", "Inclusief deksel", "Inclusief vork", "Inclusief lepel", "Anti-slip", "Krasbestendig", "Magnetisch", "Dubbelwandig", "Duurzaam", "Isolerend", "Lichtgewicht"], "BBQ's & kooktoestellen > Gasbarbecues": ["Afdekhoes", "Asopvang", "Bakplaat", "Brikettenhouders", "Brikettenrails", "Deksel", "Dekselhouder", "Gasfleshouder", "Gereedschapshaken", "Maatbeker", "Opberghoes", "Opbergtas", "Thermometer", "Verrijdbaar", "Vetafvoer", "Zijtafel", "Verstelbare grill", "Warmhoudrooster", "Zijbrander", "Geen", "Draaispit", "Stelvoetjes"], "Water & sanitair > Watertanks > Jerrycans": ["Aansluiting voor optionele kraan", "Kraantje", "Wieltjes", "Handvat", "Vouwbaar", "Afvoerslang", "Niveaumeter", "Din 61 dop (4,6 cm)", "Din 96 dop (8 cm)", "Ontluchtingsventiel", "Dop voor waterpomp", "Leegloop dop", "Platform voor toiletcassette", "Inclusief spanbanden", "Inclusief schenktuit", "Inclusief flexibele schenktuit", "Ophangoog", "Voorzien van slangsleuf", "Inclusief bevestigingsmateriaal", "Geen", "Inclusief bevestigingsogen", "Voor drinkwater geschikt"], "Elektra > Camping verlichting > Sfeerverlichting": ["Waterbestendig", "Kompas", "Handvat", "Ophanghaak", "Bluetooth speaker", "Telefoonoplader", "Opvouwbaar", "Batterij indicator", "Bewegingssensor", "Lichtsensor", "Extern dimbaar", "Dimbaar", "Touch bediening", "Met schakelaar", "180 graden draaibaar", "360 graden draaibaar", "Blauw en wit licht", "Dimbaar in 3 standen", "Traploos dimbaar", "Met afstandsbediening", "Watervaste strip", "Zelfklevend", "Koppelbaar", "Infrarood schakelaar", "Inclusief klemmen", "Inclusief klittenband", "Handlus", "Niet dimbaar", "Standlicht", "Zonnepaneel", "Niet waterbestendig"], "Water & sanitair > Waterslangen > Drinkwaterslangen": ["Voormenger", "Doorlopend warm water", "Led display", "Regelbare watertemperatuur: 30 - 55 graden", "Schakelaar", "Vermogen 12 volt: 200 watt", "Zuurstofvrije koperen warmtewisselaar", "Slot", "Ontluchting", "Geschikt voor warm water", "Geschikt voor koud water", "Doucheslang en kop", "Regelbare spuitmond", "Handgreep", "Kraanadapter 3/4\"", "Inclusief tuinsproeier", "Inclusief 1/2\" aansluiting", "Eenvoudig in te korten", "Led indicator", "Inclusief sensors", "RVS zeef", "Uitneembare zeef", "Afsluitbaar", "Geschikt voor Twin dompelpomp", "Geschikt voor Powerjet dompelpomp", "Met schroef tule", "Voor ca. 4500 liter", "Volledig automatisch", "Instelbaar waterpeil", "Aansluitbaar op waterleiding", "Geschikt voor drinkwater", "Niet geschikt voor ringleiding", "Vervangbaar filter", "Filtert chloor, geur en smaak"], "Keuken- & huishoudartikelen > Camping keukenspullen > Glazen": ["Bol", "Vlak", "Vlak en bol"]};
 
-// Auth State Check
 sb.auth.onAuthStateChange((event, session) => {
   const loginScreen = document.getElementById('loginScreen');
   const mainApp = document.getElementById('mainApp');
+
   if (session) {
     loginScreen.style.display = 'none';
     mainApp.style.display = 'grid';
+
     if (allProducts.length === 0) {
-      // Laad alles parallel voor snelste opstarttijd
       Promise.all([
         loadProducts(),
         loadTemplates(),
         loadFieldOptions(),
         loadVoorraadInStock(),
-      ]);
+      ]).catch(e => showToast('Fout bij opstarten: ' + e.message, 'error'));
     }
   } else {
     loginScreen.style.display = 'flex';
@@ -604,143 +603,268 @@ sb.auth.onAuthStateChange((event, session) => {
 });
 
 async function handleLogin() {
-  const email = document.getElementById('loginEmail').value;
+  const email = document.getElementById('loginEmail').value.trim();
   const password = document.getElementById('loginPassword').value;
   const btn = document.getElementById('loginBtn');
-  if (!email || !password) { showToast('Vul e-mail en wachtwoord in', 'error'); return; }
-  btn.disabled = true; btn.textContent = 'Bezig...';
-  const { error } = await sb.auth.signInWithPassword({ email, password });
-  if (error) showToast(error.message, 'error');
-  else showToast('Succesvol ingelogd', 'success');
-  btn.disabled = false; btn.textContent = 'Inloggen';
+
+  if (!email || !password) {
+    showToast('Vul e-mail en wachtwoord in', 'error');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Bezig...';
+
+  try {
+    const { error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    showToast('Succesvol ingelogd', 'success');
+  } catch (e) {
+    showToast(e.message || 'Inloggen mislukt', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Inloggen';
+  }
 }
 
 async function handleLogout() {
   await sb.auth.signOut();
   showToast('Uitgelogd', 'success');
   allProducts = [];
+  filteredProducts = [];
+  currentProduct = null;
+  currentAttrs = null;
+  currentCats = null;
+  pendingChanges = {};
+  isDirty = false;
   document.getElementById('productList').innerHTML = '';
   document.getElementById('productEditor').style.display = 'none';
   document.getElementById('noProduct').style.display = 'flex';
 }
 
+// ============================================================
+// HELPERS
+// ============================================================
 
+function escHtml(s) {
+  return String(s ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function escapeAttr(s) {
+  return escHtml(s);
+}
+
+function normalizeEan(ean) {
+  if (ean === null || ean === undefined) return '';
+  return String(ean).replace(/\.0$/, '');
+}
+
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+function setDirty(source, key, value) {
+  if (!pendingChanges[source]) pendingChanges[source] = {};
+  pendingChanges[source][key] = value;
+  isDirty = true;
+  document.getElementById('saveStatus').textContent = '● Niet opgeslagen';
+}
+
+function markDirty(el) {
+  setDirty(el.dataset.source, el.dataset.key, el.value);
+}
+
+function safeCsvValue(value) {
+  let val = String(value ?? '');
+
+  // Voor Rons editor blijft dit gewone CSV. Deze prefix voorkomt alleen dat spreadsheetprogramma's waarden als formule interpreteren.
+  if (/^[=+\-@]/.test(val)) val = "'" + val;
+
+  val = val.replace(/"/g, '""');
+
+  if (val.includes(',') || val.includes('"') || val.includes('\n') || val.includes('\r')) {
+    val = `"${val}"`;
+  }
+
+  return val;
+}
+
+function downloadCSV(csv, filename) {
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+async function fetchAll(table, select, options = {}) {
+  const { order, filter } = options;
+  let all = [];
+  let from = 0;
+  const batchSize = 1000;
+
+  while (true) {
+    let q = sb.from(table).select(select).range(from, from + batchSize - 1);
+    if (order) q = q.order(order);
+    if (typeof filter === 'function') q = filter(q);
+
+    const { data, error } = await q;
+    if (error) throw new Error(`${table}: ${error.message}`);
+    if (!data || data.length === 0) break;
+
+    all = all.concat(data);
+    if (data.length < batchSize) break;
+    from += batchSize;
+  }
+
+  return all.map(r => {
+    if ('ean' in r) r.ean = normalizeEan(r.ean);
+    return r;
+  });
+}
+
+// ============================================================
+// DATA LADEN
+// ============================================================
 
 async function loadProducts() {
   document.getElementById('productList').innerHTML = '<div class="loading">Producten laden...</div>';
 
-  // Haal alle producten op in batches van 1000 (Supabase limiet)
-  async function fetchAll(table, select, order) {
-    let all = [];
-    let from = 0;
-    const batchSize = 1000;
-    while (true) {
-      let q = sb.from(table).select(select).range(from, from + batchSize - 1);
-      if (order) q = q.order(order);
-      const { data, error } = await q;
-      if (error || !data || data.length === 0) break;
-      all = all.concat(data);
-      if (data.length < batchSize) break;
-      from += batchSize;
-    }
-    // Fix EAN .0 suffix (getal werd float bij import)
-    return all.map(r => {
-      if (r.ean && String(r.ean).endsWith('.0')) {
-        r.ean = String(r.ean).replace(/\.0$/, '');
-      }
-      return r;
-    });
-  }
+  try {
+    const [pData, cData] = await Promise.all([
+      fetchAll('products', 'id, ean, naam_nl, mpn, serie, merk', { order: 'naam_nl' }),
+      fetchAll('product_categories', 'product_id, cat_bol, cat_obelink, cat_decathlon')
+    ]);
 
-  const [pData, cData] = await Promise.all([
-    fetchAll('products', 'id, ean, naam_nl, mpn, serie, merk', 'naam_nl'),
-    fetchAll('product_categories', 'product_id, cat_bol, cat_obelink, cat_decathlon', null)
-  ]);
-  const pRes = { data: pData, error: null };
-  const cRes = { data: cData, error: null };
-  if (pRes.error) { showToast('Fout bij laden producten', 'error'); return; }
-  const catMap = {};
-  if (cRes.data) {
-    cRes.data.forEach(c => {
+    const catMap = {};
+    cData.forEach(c => {
       catMap[c.product_id] = [c.cat_bol, c.cat_obelink, c.cat_decathlon].filter(Boolean);
     });
+
+    const uniqueCats = new Set();
+    allProducts = pData.map(p => {
+      const cats = catMap[p.id] || [];
+      cats.forEach(c => uniqueCats.add(c));
+      return { ...p, _categories: cats };
+    });
+
+    document.getElementById('statTotal').textContent = allProducts.length;
+
+    const select = document.getElementById('categoryFilter');
+    select.innerHTML = '<option value="">Alle categorieën</option>' +
+      '<option value="UNASSIGNED">-- Zonder gekoppelde categorie --</option>' +
+      Array.from(uniqueCats).sort().map(c => `<option value="${escapeAttr(c)}">${escHtml(c)}</option>`).join('');
+
+    applyFilters();
+  } catch (e) {
+    console.error(e);
+    showToast('Fout bij laden producten: ' + e.message, 'error');
+    document.getElementById('productList').innerHTML = '<div style="padding:16px;color:var(--red);font-size:13px;text-align:center;">Producten laden mislukt</div>';
   }
-  const uniqueCats = new Set();
-  allProducts = pRes.data.map(p => {
-    const cats = catMap[p.id] || [];
-    cats.forEach(c => uniqueCats.add(c));
-    return { ...p, _categories: cats };
-  });
-  document.getElementById('statTotal').textContent = allProducts.length;
-  const select = document.getElementById('categoryFilter');
-  select.innerHTML = '<option value="">Alle categorieën</option>' +
-    '<option value="UNASSIGNED">-- Zonder gekoppelde categorie --</option>' +
-    Array.from(uniqueCats).sort().map(c => `<option value="${escHtml(c)}">${escHtml(c)}</option>`).join('');
-  applyFilters();
 }
 
 async function loadTemplates() {
-  let all = [];
-  let from = 0;
-  while (true) {
-    const { data } = await sb.from('category_templates')
-      .select('id, marketplace, categorie_naam, categorie_id')
-      .range(from, from + 999);
-    if (!data || data.length === 0) break;
-    all = all.concat(data);
-    if (data.length < 1000) break;
-    from += 1000;
+  try {
+    const all = await fetchAll('category_templates', 'id, marketplace, categorie_naam, categorie_id');
+    allTemplates = {};
+    all.forEach(t => {
+      if (!allTemplates[t.marketplace]) allTemplates[t.marketplace] = [];
+      allTemplates[t.marketplace].push(t);
+    });
+  } catch (e) {
+    console.error(e);
+    showToast('Fout bij laden templates: ' + e.message, 'error');
   }
-  allTemplates = {};
-  all.forEach(t => {
-    if (!allTemplates[t.marketplace]) allTemplates[t.marketplace] = [];
-    allTemplates[t.marketplace].push(t);
-  });
 }
 
-function renderProductList(products) {
-  const list = document.getElementById('productList');
-  if (!products.length) {
-    list.innerHTML = '<div style="padding:16px;color:var(--text3);font-size:13px;text-align:center;">Geen producten gevonden</div>';
-    return;
+async function loadFieldOptions() {
+  try {
+    const { data, error } = await sb.from('field_options').select('master_veld, multi, opties');
+    if (error) throw error;
+    fieldOptions = {};
+    (data || []).forEach(r => {
+      fieldOptions[r.master_veld] = { opties: r.opties || [], multi: !!r.multi };
+    });
+  } catch (e) {
+    console.error(e);
+    showToast('Fout bij laden veldopties: ' + e.message, 'error');
   }
-  list.innerHTML = products.map(p => {
-    const stock = p.ean && voorraadData[p.ean] !== undefined ? voorraadData[p.ean] : null;
-    const stockBadge = stock === null
-      ? ''
-      : stock > 0
-        ? `<span style="color:var(--green);font-size:10px;font-family:'DM Mono',monospace;">${stock} st.</span>`
-        : `<span style="color:var(--text3);font-size:10px;font-family:'DM Mono',monospace;">0 st.</span>`;
-    return `<div class="product-item ${currentProduct?.id === p.id ? 'active' : ''}"
-         onclick="selectProduct('${p.id}')">
-      <div class="product-item-name">${escHtml(p.naam_nl || '—')}</div>
-      <div class="product-item-meta" style="display:flex;justify-content:space-between;align-items:center;">
-        <span>${escHtml(p.mpn || p.ean || '—')}</span>
-        ${stockBadge}
-      </div>
-    </div>`;
-  }).join('');
 }
 
-async function getTemplateFields(marketplace, categorie_naam) {
-  const cacheKey = `${marketplace}::${categorie_naam}`;
+async function loadVoorraadInStock() {
+  try {
+    const rows = await fetchAll('v_voorraad_pim', 'ean, voorraad_totaal', {
+      filter: q => q.gt('voorraad_totaal', 0)
+    });
+    rows.forEach(r => {
+      if (r.ean) voorraadData[r.ean] = r.voorraad_totaal;
+    });
+    applyFilters();
+  } catch (e) {
+    console.error(e);
+    showToast('Fout bij laden voorraad: ' + e.message, 'error');
+  }
+}
+
+async function loadVoorraadOutOfStock() {
+  if (voorraadNulLaden) return;
+  voorraadNulLaden = true;
+
+  try {
+    const rows = await fetchAll('v_voorraad_pim', 'ean, voorraad_totaal', {
+      filter: q => q.eq('voorraad_totaal', 0)
+    });
+    rows.forEach(r => {
+      if (r.ean && voorraadData[r.ean] === undefined) voorraadData[r.ean] = 0;
+    });
+    applyFilters();
+  } catch (e) {
+    console.error(e);
+    showToast('Fout bij laden voorraad 0: ' + e.message, 'error');
+  }
+}
+
+async function getTemplateFields(marketplace, categorieNaam) {
+  const cacheKey = `${marketplace}::${categorieNaam}`;
   if (templateFieldsCache[cacheKey]) return templateFieldsCache[cacheKey];
-  const template = (allTemplates[marketplace] || []).find(t => t.categorie_naam === categorie_naam);
+
+  const template = (allTemplates[marketplace] || []).find(t => t.categorie_naam === categorieNaam);
   if (!template) return [];
-  const { data } = await sb.from('category_template_fields').select('master_veld, verplicht, volgorde').eq('template_id', template.id).order('volgorde');
+
+  const { data, error } = await sb
+    .from('category_template_fields')
+    .select('master_veld, verplicht, volgorde')
+    .eq('template_id', template.id)
+    .order('volgorde');
+
+  if (error) throw error;
   templateFieldsCache[cacheKey] = data || [];
   return data || [];
 }
 
 async function getActiveTemplateFields() {
-  const c = currentCats;
+  const c = currentCats || {};
   const mpMappings = [
     { mp: 'bol', catKey: 'cat_bol' },
     { mp: 'obelink', catKey: 'cat_obelink' },
     { mp: 'decathlon', catKey: 'cat_decathlon' },
   ];
-  let allFields = {};
+
+  const allFields = {};
   let hasAnyTemplate = false;
+
   for (const { mp, catKey } of mpMappings) {
     const cat = c[catKey];
     if (!cat) continue;
@@ -751,46 +875,29 @@ async function getActiveTemplateFields() {
       else if (f.verplicht) allFields[f.master_veld].verplicht = true;
     });
   }
+
   return { fields: allFields, hasAnyTemplate };
 }
 
-function getKenmerkenVoorCategorie() {
-  const obelinkCat = currentCats?.cat_obelink;
-  if (!obelinkCat) return [];
-  return catKenmerken[obelinkCat] || [];
-}
+// ============================================================
+// FILTERS / LIST
+// ============================================================
 
-function getKenmerkenWaardes() {
-  // Lees huidige kenmerken JSON uit attrs
-  const raw = currentAttrs?.kenmerken || '{}';
-  try {
-    // Probeer als JSON, anders als oude pipe-string
-    if (raw.startsWith('{')) return JSON.parse(raw);
-    // Migreer oude pipe-string naar JSON object
-    const obj = {};
-    raw.split(' | ').forEach(k => { if (k.trim()) obj[k.trim()] = 'Ja'; });
-    return obj;
-  } catch(e) { return {}; }
-}
+document.getElementById('searchInput').addEventListener('input', () => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(applyFilters, 150);
+});
 
-function setKenmerkWaarde(kenmerk, waarde) {
-  const huidig = getKenmerkenWaardes();
-  if (waarde === '') {
-    delete huidig[kenmerk];
-  } else {
-    huidig[kenmerk] = waarde;
+document.getElementById('loginPassword').addEventListener('keydown', e => {
+  if (e.key === 'Enter') handleLogin();
+});
+
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+    e.preventDefault();
+    if (isDirty) saveProduct();
   }
-  const newVal = JSON.stringify(huidig);
-  if (!pendingChanges.attrs) pendingChanges.attrs = {};
-  pendingChanges.attrs['kenmerken'] = newVal;
-  isDirty = true;
-  document.getElementById('saveStatus').textContent = '● Niet opgeslagen';
-}
-
-
-
-// Filters & Search
-document.getElementById('searchInput').addEventListener('input', applyFilters);
+});
 
 function applyFilters() {
   const q = document.getElementById('searchInput').value.toLowerCase().trim();
@@ -798,9 +905,10 @@ function applyFilters() {
   const voorraad = document.getElementById('voorraadFilter').value;
 
   filteredProducts = allProducts.filter(p => {
+    const ean = normalizeEan(p.ean);
     const matchText = !q ||
       (p.naam_nl || '').toLowerCase().includes(q) ||
-      (p.ean || '').includes(q) ||
+      ean.includes(q) ||
       (p.mpn || '').toLowerCase().includes(q);
 
     let matchCat = true;
@@ -809,48 +917,183 @@ function applyFilters() {
 
     let matchVoorraad = true;
     if (voorraad === 'IN_STOCK') {
-      matchVoorraad = p.ean && voorraadData[p.ean] !== undefined && voorraadData[p.ean] > 0;
+      matchVoorraad = ean && voorraadData[ean] !== undefined && voorraadData[ean] > 0;
     } else if (voorraad === 'OUT_OF_STOCK') {
-      // Laad voorraad=0 data lazy als nog niet gedaan
-      if (!voorraadNulLaden) { loadVoorraadOutOfStock(); return false; }
-      matchVoorraad = p.ean && voorraadData[p.ean] !== undefined && voorraadData[p.ean] === 0;
+      if (!voorraadNulLaden) {
+        loadVoorraadOutOfStock();
+        return false;
+      }
+      matchVoorraad = ean && voorraadData[ean] !== undefined && voorraadData[ean] === 0;
     } else if (voorraad === 'NOT_IN_EXACT') {
-      matchVoorraad = !p.ean || voorraadData[p.ean] === undefined;
+      matchVoorraad = !ean || voorraadData[ean] === undefined;
     }
 
     return matchText && matchCat && matchVoorraad;
   });
+
   document.getElementById('statLoaded').textContent = filteredProducts.length;
   renderProductList(filteredProducts);
 }
 
+function renderProductList(products) {
+  const list = document.getElementById('productList');
+
+  if (!products.length) {
+    list.innerHTML = '<div style="padding:16px;color:var(--text3);font-size:13px;text-align:center;">Geen producten gevonden</div>';
+    return;
+  }
+
+  const maxVisible = 300;
+  const visible = products.slice(0, maxVisible);
+
+  list.innerHTML = visible.map(p => {
+    const ean = normalizeEan(p.ean);
+    const stock = ean && voorraadData[ean] !== undefined ? voorraadData[ean] : null;
+    const stockBadge = stock === null
+      ? ''
+      : stock > 0
+        ? `<span style="color:var(--green);font-size:10px;font-family:'DM Mono',monospace;">${escHtml(stock)} st.</span>`
+        : `<span style="color:var(--text3);font-size:10px;font-family:'DM Mono',monospace;">0 st.</span>`;
+
+    return `<div class="product-item ${currentProduct?.id === p.id ? 'active' : ''}" onclick="selectProduct('${escapeAttr(p.id)}')">
+      <div class="product-item-name">${escHtml(p.naam_nl || '—')}</div>
+      <div class="product-item-meta" style="display:flex;justify-content:space-between;align-items:center;">
+        <span>${escHtml(p.mpn || ean || '—')}</span>
+        ${stockBadge}
+      </div>
+    </div>`;
+  }).join('') + (products.length > maxVisible
+    ? `<div style="padding:12px 16px;color:var(--text3);font-size:12px;text-align:center;">Toon ${maxVisible} van ${products.length} resultaten. Verfijn je zoekopdracht.</div>`
+    : '');
+}
+
+// ============================================================
+// PRODUCT SELECTEREN / OPSLAAN
+// ============================================================
+
 async function selectProduct(id) {
   if (isDirty && !confirm('Je hebt onopgeslagen wijzigingen. Doorgaan?')) return;
+
   isDirty = false;
   pendingChanges = {};
+  renderToken++;
 
-  // Laad volledig product
-  const [pRes, aRes, cRes] = await Promise.all([
-    sb.from('products').select('*').eq('id', id).single(),
-    sb.from('product_attributes').select('*').eq('product_id', id).single(),
-    sb.from('product_categories').select('*').eq('product_id', id).single(),
-  ]);
+  try {
+    const [pRes, aRes, cRes] = await Promise.all([
+      sb.from('products').select('*').eq('id', id).single(),
+      sb.from('product_attributes').select('*').eq('product_id', id).maybeSingle(),
+      sb.from('product_categories').select('*').eq('product_id', id).maybeSingle(),
+    ]);
 
-  currentProduct = pRes.data;
-  currentAttrs = aRes.data || {};
-  currentCats = cRes.data || {};
+    if (pRes.error) throw pRes.error;
+    if (aRes.error) throw aRes.error;
+    if (cRes.error) throw cRes.error;
 
-  document.getElementById('noProduct').style.display = 'none';
-  const editor = document.getElementById('productEditor');
-  editor.style.display = 'flex';
+    currentProduct = pRes.data;
+    currentProduct.ean = normalizeEan(currentProduct.ean);
+    currentAttrs = aRes.data || {};
+    currentCats = cRes.data || {};
 
-  document.getElementById('editorTitle').textContent = currentProduct.naam_nl || '—';
-  document.getElementById('editorEan').textContent = `EAN: ${currentProduct.ean || '—'} · MPN: ${currentProduct.mpn || '—'}`;
-  document.getElementById('saveStatus').textContent = '';
+    document.getElementById('noProduct').style.display = 'none';
+    document.getElementById('productEditor').style.display = 'flex';
+    document.getElementById('editorTitle').textContent = currentProduct.naam_nl || '—';
+    document.getElementById('editorEan').textContent = `EAN: ${currentProduct.ean || '—'} · MPN: ${currentProduct.mpn || '—'}`;
+    document.getElementById('saveStatus').textContent = '';
 
-  renderProductList(filteredProducts.length ? filteredProducts : allProducts);
-  switchTab(currentTab, document.querySelector('.tab.active'));
+    renderProductList(filteredProducts.length ? filteredProducts : allProducts);
+    switchTab(currentTab, document.querySelector(`.tab[data-tab="${currentTab}"]`));
+  } catch (e) {
+    console.error(e);
+    showToast('Product laden mislukt: ' + e.message, 'error');
+  }
 }
+
+async function saveProduct() {
+  if (!currentProduct) return;
+
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true;
+  btn.textContent = 'Opslaan...';
+
+  try {
+    const updates = pendingChanges;
+    const now = new Date().toISOString();
+
+    if (updates.product && Object.keys(updates.product).length) {
+      const { data, error } = await sb.from('products')
+        .update({ ...updates.product, bijgewerkt_op: now })
+        .eq('id', currentProduct.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      currentProduct = { ...currentProduct, ...data };
+      currentProduct.ean = normalizeEan(currentProduct.ean);
+    }
+
+    if (updates.attrs && Object.keys(updates.attrs).length) {
+      const { data, error } = await sb.from('product_attributes')
+        .upsert({ product_id: currentProduct.id, ...updates.attrs, bijgewerkt_op: now }, { onConflict: 'product_id' })
+        .select()
+        .single();
+
+      if (error) throw error;
+      currentAttrs = data || { ...currentAttrs, ...updates.attrs };
+    }
+
+    if (updates.cats && Object.keys(updates.cats).length) {
+      const { data, error } = await sb.from('product_categories')
+        .upsert({ product_id: currentProduct.id, ...updates.cats, bijgewerkt_op: now }, { onConflict: 'product_id' })
+        .select()
+        .single();
+
+      if (error) throw error;
+      currentCats = data || { ...currentCats, ...updates.cats };
+      templateFieldsCache = {};
+    }
+
+    isDirty = false;
+    pendingChanges = {};
+    document.getElementById('saveStatus').textContent = '✓ Opgeslagen';
+    document.getElementById('editorTitle').textContent = currentProduct.naam_nl || '—';
+    document.getElementById('editorEan').textContent = `EAN: ${currentProduct.ean || '—'} · MPN: ${currentProduct.mpn || '—'}`;
+
+    const idx = allProducts.findIndex(p => p.id === currentProduct.id);
+    if (idx >= 0) {
+      allProducts[idx] = {
+        ...allProducts[idx],
+        naam_nl: currentProduct.naam_nl,
+        ean: currentProduct.ean,
+        mpn: currentProduct.mpn,
+        merk: currentProduct.merk,
+        serie: currentProduct.serie,
+        _categories: [currentCats.cat_bol, currentCats.cat_obelink, currentCats.cat_decathlon].filter(Boolean)
+      };
+    }
+
+    applyFilters();
+    showToast('Product opgeslagen', 'success');
+  } catch (e) {
+    console.error(e);
+    showToast('Fout bij opslaan: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Opslaan';
+  }
+}
+
+function discardChanges() {
+  if (!isDirty || confirm('Wijzigingen weggooien?')) {
+    isDirty = false;
+    pendingChanges = {};
+    document.getElementById('saveStatus').textContent = '';
+    renderTab();
+  }
+}
+
+// ============================================================
+// TABS / RENDERING
+// ============================================================
 
 function switchTab(tab, el) {
   currentTab = tab;
@@ -869,241 +1112,75 @@ function renderTab() {
   else if (currentTab === 'amazon') renderAmazon(content);
 }
 
-// Na opslaan van marketplace categorie: invalideer template cache en herlaad attributen
-function onCategorySaved() {
-  templateFieldsCache = {};
-}
-
-async function loadVoorraadInStock() {
-  // Laad alleen producten MET voorraad (snel, bij opstarten)
-  let all = [];
-  let from = 0;
-  const batchSize = 1000;
-  while (true) {
-    const { data, error } = await sb
-      .from('v_voorraad_pim')
-      .select('ean, voorraad_totaal')
-      .gt('voorraad_totaal', 0)
-      .range(from, from + batchSize - 1);
-    if (error || !data || data.length === 0) break;
-    all = all.concat(data);
-    if (data.length < batchSize) break;
-    from += batchSize;
-  }
-  all.forEach(r => { if (r.ean) voorraadData[r.ean] = r.voorraad_totaal; });
-  applyFilters();
-}
-
-let voorraadNulLaden = false;
-async function loadVoorraadOutOfStock() {
-  // Laad producten met voorraad = 0 (lazy, alleen bij dat filter)
-  if (voorraadNulLaden) return;
-  voorraadNulLaden = true;
-  let from = 0;
-  const batchSize = 1000;
-  while (true) {
-    const { data, error } = await sb
-      .from('v_voorraad_pim')
-      .select('ean, voorraad_totaal')
-      .eq('voorraad_totaal', 0)
-      .range(from, from + batchSize - 1);
-    if (error || !data || data.length === 0) break;
-    data.forEach(r => { if (r.ean && voorraadData[r.ean] === undefined) voorraadData[r.ean] = 0; });
-    if (data.length < batchSize) break;
-    from += batchSize;
-  }
-  applyFilters();
-}
-
-async function loadFieldOptions() {
-  const { data } = await sb.from('field_options').select('master_veld, multi, opties');
-  if (!data) return;
-  data.forEach(r => {
-    fieldOptions[r.master_veld] = { opties: r.opties, multi: r.multi };
-  });
-}
-
-function field(key, label, value, type='text', source='product', required=false, fullWidth=false) {
+function field(key, label, value, type = 'text', source = 'product', required = false, fullWidth = false) {
   const val = value ?? '';
   const fw = fullWidth ? ' field-full' : '';
   const reqHtml = required ? ' <span class="field-required">●</span>' : '';
-
-  // Check of dit veld vaste opties heeft
   const opts = fieldOptions[key];
 
   if (opts && opts.multi) {
-    const selected = val ? val.split(' | ').map(s => s.trim()).filter(Boolean) : [];
+    const selected = val ? String(val).split(' | ').map(s => s.trim()).filter(Boolean) : [];
     const uid = 'ms_' + key + '_' + source;
 
-    if (opts.opties.length <= 6) {
-      // Weinig opties: gewone checkboxes
+    if ((opts.opties || []).length <= 6) {
       const checkboxes = opts.opties.map(o => {
         const checked = selected.includes(o) ? 'checked' : '';
-        const safeO = escHtml(o);
         return `<label style="display:inline-flex;align-items:center;gap:4px;margin:2px 4px 2px 0;padding:3px 8px;background:var(--surface);border:1px solid var(--border);border-radius:4px;cursor:pointer;font-size:12px;">
-          <input type="checkbox" ${checked} data-key="${key}" data-source="${source}" data-multi="true"
-            onchange="markMulti(this, '${key}', '${source}')" style="cursor:pointer;"> ${safeO}
+          <input type="checkbox" ${checked} data-key="${escapeAttr(key)}" data-source="${escapeAttr(source)}" data-multi="true" onchange="markMulti(this, '${escapeAttr(key)}', '${escapeAttr(source)}')" style="cursor:pointer;"> ${escHtml(o)}
         </label>`;
       }).join('');
+
       return `<div class="field${fw}">
         <label class="field-label">${escHtml(label)}${reqHtml}</label>
         <div style="padding:6px 0;line-height:1.8;">${checkboxes}</div>
       </div>`;
     }
 
-    // Veel opties: doorzoekbare multi-select dropdown
     const tagsHtml = selected.map(s =>
-      `<span class="ms-tag">${escHtml(s)}<span class="ms-tag-remove" onclick="msRemoveTag(this,'${uid}','${escHtml(key)}','${escHtml(source)}')" data-val="${escHtml(s)}">×</span></span>`
+      `<span class="ms-tag">${escHtml(s)}<span class="ms-tag-remove" onclick="msRemoveTag(event,this,'${escapeAttr(uid)}')" data-val="${escapeAttr(s)}">×</span></span>`
     ).join('');
-    const allOptsJson = escHtml(JSON.stringify(opts.opties));
-    return `<div class="field${fw} ms-wrap" id="${uid}_wrap">
+
+    return `<div class="field${fw} ms-wrap" id="${escapeAttr(uid)}_wrap">
       <label class="field-label">${escHtml(label)}${reqHtml}</label>
-      <div class="ms-input" onclick="msFocus('${uid}')">
-        <span id="${uid}_tags">${tagsHtml}</span>
-        <input class="ms-search" id="${uid}_search" type="text" placeholder="${selected.length ? '' : 'Zoek of kies...'}"
-          oninput="msFilter('${uid}')"
-          onfocus="msOpen('${uid}')"
-          data-key="${escHtml(key)}" data-source="${escHtml(source)}"
-          data-opts="${allOptsJson}"
-          data-selected="${escHtml(selected.join(' | '))}">
+      <div class="ms-input" onclick="msFocus('${escapeAttr(uid)}')">
+        <span id="${escapeAttr(uid)}_tags">${tagsHtml}</span>
+        <input class="ms-search" id="${escapeAttr(uid)}_search" type="text" placeholder="${selected.length ? '' : 'Zoek of kies...'}"
+          oninput="msFilter('${escapeAttr(uid)}')"
+          onfocus="msOpen('${escapeAttr(uid)}')"
+          data-key="${escapeAttr(key)}"
+          data-source="${escapeAttr(source)}"
+          data-opts="${escapeAttr(JSON.stringify(opts.opties || []))}"
+          data-selected="${escapeAttr(selected.join(' | '))}">
       </div>
-      <div class="ms-dropdown" id="${uid}_dd"></div>
+      <div class="ms-dropdown" id="${escapeAttr(uid)}_dd"></div>
     </div>`;
   }
 
   if (opts && !opts.multi) {
-    // Single-select dropdown
-    const options = opts.opties.map(o =>
-      `<option value="${escHtml(o)}" ${o === val ? 'selected' : ''}>${escHtml(o)}</option>`
+    const options = (opts.opties || []).map(o =>
+      `<option value="${escapeAttr(o)}" ${o === val ? 'selected' : ''}>${escHtml(o)}</option>`
     ).join('');
+
     return `<div class="field${fw}">
       <label class="field-label">${escHtml(label)}${reqHtml}</label>
-      <select data-key="${key}" data-source="${source}" onchange="markDirty(this)">
+      <select data-key="${escapeAttr(key)}" data-source="${escapeAttr(source)}" onchange="markDirty(this)">
         <option value="">— Kies —</option>
         ${options}
       </select>
     </div>`;
   }
 
-  // Vrij tekstveld (geen opties bekend)
   if (type === 'textarea') {
     return `<div class="field${fw}">
       <label class="field-label">${escHtml(label)}${reqHtml}</label>
-      <textarea rows="4" data-key="${key}" data-source="${source}" onchange="markDirty(this)">${escHtml(val)}</textarea>
+      <textarea rows="4" data-key="${escapeAttr(key)}" data-source="${escapeAttr(source)}" onchange="markDirty(this)">${escHtml(val)}</textarea>
     </div>`;
   }
+
   return `<div class="field${fw}">
     <label class="field-label">${escHtml(label)}${reqHtml}</label>
-    <input type="${type}" data-key="${key}" data-source="${source}" value="${escHtml(val)}" oninput="markDirty(this)" placeholder="—">
+    <input type="${escapeAttr(type)}" data-key="${escapeAttr(key)}" data-source="${escapeAttr(source)}" value="${escapeAttr(val)}" oninput="markDirty(this)" placeholder="—">
   </div>`;
-}
-
-function markMulti(el, key, source) {
-  const allCheckboxes = document.querySelectorAll(
-    `input[type=checkbox][data-key="${key}"][data-source="${source}"]`
-  );
-  const selected = Array.from(allCheckboxes)
-    .filter(cb => cb.checked)
-    .map(cb => cb.closest('label').textContent.trim());
-  const combined = selected.join(' | ');
-  if (!pendingChanges[source]) pendingChanges[source] = {};
-  pendingChanges[source][key] = combined;
-  isDirty = true;
-  document.getElementById('saveStatus').textContent = '● Niet opgeslagen';
-}
-
-// Multi-select dropdown functies
-function msOpen(uid) {
-  const dd = document.getElementById(uid + '_dd');
-  const search = document.getElementById(uid + '_search');
-  if (!dd || !search) return;
-  msRender(uid, search.value);
-  dd.classList.add('open');
-  // Sluit bij klik buiten
-  setTimeout(() => {
-    document.addEventListener('click', function handler(e) {
-      const wrap = document.getElementById(uid + '_wrap');
-      if (wrap && !wrap.contains(e.target)) {
-        dd.classList.remove('open');
-        document.removeEventListener('click', handler);
-      }
-    });
-  }, 10);
-}
-
-function msFocus(uid) {
-  const search = document.getElementById(uid + '_search');
-  if (search) { search.focus(); msOpen(uid); }
-}
-
-function msFilter(uid) {
-  msRender(uid, document.getElementById(uid + '_search').value);
-}
-
-function msRender(uid, query) {
-  const search = document.getElementById(uid + '_search');
-  const dd = document.getElementById(uid + '_dd');
-  if (!search || !dd) return;
-  const opts = JSON.parse(search.dataset.opts || '[]');
-  const selected = search.dataset.selected ? search.dataset.selected.split(' | ').filter(Boolean) : [];
-  const q = query.toLowerCase();
-  const filtered = opts.filter(o => !q || o.toLowerCase().includes(q));
-  if (!filtered.length) {
-    dd.innerHTML = '<div class="ms-empty">Geen resultaten</div>';
-    return;
-  }
-  dd.innerHTML = filtered.map(o => {
-    const isSel = selected.includes(o);
-    return `<div class="ms-option ${isSel ? 'selected' : ''}" onclick="msToggle('${uid}','${escHtml(o)}')">
-      <span class="ms-option-check">${isSel ? '✓' : ''}</span>
-      ${escHtml(o)}
-    </div>`;
-  }).join('');
-}
-
-function msToggle(uid, val) {
-  const search = document.getElementById(uid + '_search');
-  if (!search) return;
-  let selected = search.dataset.selected ? search.dataset.selected.split(' | ').filter(Boolean) : [];
-  const idx = selected.indexOf(val);
-  if (idx >= 0) selected.splice(idx, 1);
-  else selected.push(val);
-  search.dataset.selected = selected.join(' | ');
-  // Update tags
-  const tagsEl = document.getElementById(uid + '_tags');
-  if (tagsEl) {
-    tagsEl.innerHTML = selected.map(s =>
-      `<span class="ms-tag">${escHtml(s)}<span class="ms-tag-remove" onclick="msRemoveTag(this,'${uid}','${escHtml(search.dataset.key)}','${escHtml(search.dataset.source)}')" data-val="${escHtml(s)}">×</span></span>`
-    ).join('');
-  }
-  // Update pending
-  const key = search.dataset.key;
-  const source = search.dataset.source;
-  if (!pendingChanges[source]) pendingChanges[source] = {};
-  pendingChanges[source][key] = selected.join(' | ');
-  isDirty = true;
-  document.getElementById('saveStatus').textContent = '● Niet opgeslagen';
-  // Herrender dropdown
-  msRender(uid, search.value);
-}
-
-function msRemoveTag(el, uid, key, source) {
-  event.stopPropagation();
-  const val = el.dataset.val;
-  msToggle(uid, val);
-}
-
-function escHtml(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-function markDirty(el) {
-  isDirty = true;
-  const source = el.dataset.source;
-  const key = el.dataset.key;
-  if (!pendingChanges[source]) pendingChanges[source] = {};
-  pendingChanges[source][key] = el.value;
-  document.getElementById('saveStatus').textContent = '● Niet opgeslagen';
 }
 
 function renderBasis(content) {
@@ -1131,232 +1208,196 @@ function renderBasis(content) {
         ${field('bol_custom_titel', 'BOL custom titel', p.bol_custom_titel, 'text', 'product', false, true)}
       </div>
     </div>
-    ${imgs.length ? `
     <div class="section">
       <div class="section-title">Afbeeldingen</div>
-      <div class="image-preview">
-        ${imgs.map(url => `<img class="image-thumb" src="${url}" onclick="window.open('${url}')" onerror="this.style.display='none'">`).join('')}
-      </div>
+      ${imgs.length ? `<div class="image-preview">
+        ${imgs.map(url => `<img class="image-thumb" src="${escapeAttr(url)}" data-url="${escapeAttr(url)}" onclick="window.open(this.dataset.url)" onerror="this.style.display='none'">`).join('')}
+      </div>` : ''}
       <div style="margin-top:8px;">
         ${field('afbeeldingen', 'Afbeelding URLs (komma gescheiden)', p.afbeeldingen, 'text', 'product', false, true)}
       </div>
-    </div>` : `
-    <div class="section">
-      <div class="section-title">Afbeeldingen</div>
-      ${field('afbeeldingen', 'Afbeelding URLs (komma gescheiden)', p.afbeeldingen, 'text', 'product', false, true)}
-    </div>`}
-  `;
+    </div>`;
 }
 
 async function renderAttributen(content) {
+  const token = ++renderToken;
   content.innerHTML = '<div class="loading">Velden laden...</div>';
-  const a = currentAttrs;
-  const { fields: templateFields, hasAnyTemplate } = await getActiveTemplateFields();
 
-  // Toggle: gefilterd of alles tonen
-  const showAll = document.getElementById('showAllToggle')?.checked || !hasAnyTemplate;
+  try {
+    const a = currentAttrs || {};
+    const { fields: templateFields, hasAnyTemplate } = await getActiveTemplateFields();
+    if (token !== renderToken || currentTab !== 'attributen') return;
 
-  const isVisible = (key) => {
-    if (showAll || !hasAnyTemplate) return true;
-    return !!templateFields[key];
-  };
-  const isRequired = (key) => templateFields[key]?.verplicht || false;
+    const showAll = document.getElementById('showAllToggle')?.checked || !hasAnyTemplate;
+    const isVisible = key => showAll || !hasAnyTemplate || !!templateFields[key];
+    const isRequired = key => templateFields[key]?.verplicht || false;
 
-  const groepen = [
+    const groepen = getAttributeGroups();
+    const visibleGroepen = groepen.map(g => ({
+      ...g,
+      velden: g.velden.filter(([key]) => isVisible(key))
+    })).filter(g => g.velden.length > 0);
+
+    const toggleHtml = hasAnyTemplate ? `
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;padding:10px 12px;background:var(--surface2);border-radius:var(--radius);border:1px solid var(--border);">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text2);">
+          <input type="checkbox" id="showAllToggle" ${showAll ? 'checked' : ''} onchange="renderAttributen(document.getElementById('tabContent'))" style="cursor:pointer;">
+          Alle velden tonen
+        </label>
+        <span style="margin-left:auto;font-size:11px;color:var(--text3);">${showAll ? 'Alle velden' : Object.keys(templateFields).length + ' template velden'}</span>
+      </div>` : `
+      <div style="padding:10px 12px;background:var(--surface2);border-radius:var(--radius);border:1px solid var(--border);font-size:12px;color:var(--text3);margin-bottom:16px;">
+        ℹ️ Koppel eerst een marketplace categorie om alleen relevante velden te zien.
+      </div>`;
+
+    const groepenHtml = visibleGroepen.length
+      ? visibleGroepen.map(g => `
+        <div class="section">
+          <div class="section-title">${escHtml(g.titel)}</div>
+          <div class="fields-grid">
+            ${g.velden.map(([key, label]) => field(key, label, a[key], 'text', 'attrs', isRequired(key))).join('')}
+          </div>
+        </div>`).join('')
+      : '<div style="color:var(--text3);font-size:13px;padding:20px 0;">Geen velden gevonden voor de gekoppelde categorieën.</div>';
+
+    content.innerHTML = toggleHtml + groepenHtml + renderKenmerkenSection();
+  } catch (e) {
+    console.error(e);
+    content.innerHTML = '<div style="color:var(--red);font-size:13px;">Velden laden mislukt.</div>';
+    showToast('Attributen laden mislukt: ' + e.message, 'error');
+  }
+}
+
+function getAttributeGroups() {
+  return [
     { titel: 'Kleur & Materiaal', velden: [
-      ['kleur_primair','Kleur primair'], ['kleur_secundair','Kleur secundair'],
-      ['kleur_tafelblad','Kleur tafelblad'],
-      ['materiaal','Materiaal'], ['materiaal_frame','Materiaal frame'],
-      ['materiaal_zitting','Materiaal zitting'], ['materiaal_blad','Materiaal blad'],
-      ['materiaal_grill','Materiaal grill'], ['materiaal_buitentent','Materiaal buitentent'],
-      ['materiaal_binnentent','Materiaal binnentent'], ['materiaal_grondzeil','Materiaal grondzeil'],
-      ['materiaal_voering','Materiaal voering'], ['materiaal_vulling','Materiaal vulling'],
-      ['materiaal_dak','Materiaal dak'], ['materiaal_zijwand','Materiaal zijwand'],
-      ['materiaal_voorwand','Materiaal voorwand'], ['materiaal_bovenzijde','Materiaal bovenzijde'],
-      ['materiaal_onderzijde','Materiaal onderzijde'], ['materiaal_binnentijk','Materiaal binnentijk'],
-      ['materiaal_buitentijk','Materiaal buitentijk'],
+      ['kleur_primair','Kleur primair'], ['kleur_secundair','Kleur secundair'], ['kleur_tafelblad','Kleur tafelblad'],
+      ['materiaal','Materiaal'], ['materiaal_frame','Materiaal frame'], ['materiaal_zitting','Materiaal zitting'], ['materiaal_blad','Materiaal blad'],
+      ['materiaal_grill','Materiaal grill'], ['materiaal_buitentent','Materiaal buitentent'], ['materiaal_binnentent','Materiaal binnentent'],
+      ['materiaal_grondzeil','Materiaal grondzeil'], ['materiaal_voering','Materiaal voering'], ['materiaal_vulling','Materiaal vulling'],
+      ['materiaal_dak','Materiaal dak'], ['materiaal_zijwand','Materiaal zijwand'], ['materiaal_voorwand','Materiaal voorwand'],
+      ['materiaal_bovenzijde','Materiaal bovenzijde'], ['materiaal_onderzijde','Materiaal onderzijde'], ['materiaal_binnentijk','Materiaal binnentijk'],
+      ['materiaal_buitentijk','Materiaal buitentijk']
     ]},
     { titel: 'Afmetingen product', velden: [
-      ['product_lengte_cm','Lengte (cm)'], ['product_breedte_cm','Breedte (cm)'],
-      ['product_hoogte_cm','Hoogte (cm)'], ['product_gewicht_kg','Gewicht (kg)'],
-      ['maat','Maat'], ['maat_open','Maat open'],
-      ['gevouwen_lengte_cm','Gevouwen lengte (cm)'], ['gevouwen_breedte_cm','Gevouwen breedte (cm)'],
-      ['gevouwen_hoogte_cm','Gevouwen hoogte (cm)'], ['gevouwen_afmeting','Gevouwen afmeting'],
-      ['tafelblad_afmeting','Tafelblad afmeting'], ['afmeting','Afmeting (algemeen)'],
+      ['product_lengte_cm','Lengte (cm)'], ['product_breedte_cm','Breedte (cm)'], ['product_hoogte_cm','Hoogte (cm)'], ['product_gewicht_kg','Gewicht (kg)'],
+      ['maat','Maat'], ['maat_open','Maat open'], ['gevouwen_lengte_cm','Gevouwen lengte (cm)'], ['gevouwen_breedte_cm','Gevouwen breedte (cm)'],
+      ['gevouwen_hoogte_cm','Gevouwen hoogte (cm)'], ['gevouwen_afmeting','Gevouwen afmeting'], ['tafelblad_afmeting','Tafelblad afmeting'], ['afmeting','Afmeting algemeen']
     ]},
     { titel: 'Afmetingen verpakking', velden: [
-      ['verpakking_lengte_cm','Verpakking lengte (cm)'], ['verpakking_breedte_cm','Verpakking breedte (cm)'],
-      ['verpakking_hoogte_cm','Verpakking hoogte (cm)'], ['verpakking_gewicht_kg','Verpakking gewicht (kg)'],
-      ['stuks_per_verpakking','Stuks per verpakking'],
+      ['verpakking_lengte_cm','Verpakking lengte (cm)'], ['verpakking_breedte_cm','Verpakking breedte (cm)'], ['verpakking_hoogte_cm','Verpakking hoogte (cm)'],
+      ['verpakking_gewicht_kg','Verpakking gewicht (kg)'], ['stuks_per_verpakking','Stuks per verpakking']
     ]},
     { titel: 'Stoel / Meubel', velden: [
-      ['zithoogte_cm','Zithoogte (cm)'], ['zitdiepte_cm','Zitdiepte (cm)'],
-      ['zitbreedte_cm','Zitbreedte (cm)'], ['ruglengte_cm','Ruglengte (cm)'],
-      ['draagvermogen_kg','Draagvermogen (kg)'], ['aantal_standen','Aantal standen'],
-      ['type_stoel','Type stoel'], ['bekleding_ademend','Bekleding ademend'],
-      ['bekleding_waterbestendig','Bekleding waterbestendig'], ['bekleding_sneldrogend','Bekleding sneldrogend'],
-      ['bekleding_gepolsterd','Bekleding gepolsterd'],
+      ['zithoogte_cm','Zithoogte (cm)'], ['zitdiepte_cm','Zitdiepte (cm)'], ['zitbreedte_cm','Zitbreedte (cm)'], ['ruglengte_cm','Ruglengte (cm)'],
+      ['draagvermogen_kg','Draagvermogen (kg)'], ['aantal_standen','Aantal standen'], ['type_stoel','Type stoel'], ['bekleding_ademend','Bekleding ademend'],
+      ['bekleding_waterbestendig','Bekleding waterbestendig'], ['bekleding_sneldrogend','Bekleding sneldrogend'], ['bekleding_gepolsterd','Bekleding gepolsterd']
     ]},
     { titel: 'Tafel', velden: [
-      ['blad_hittebestendig','Hittebestendig blad'], ['blad_vochtbestendig','Vochtbestendig blad'],
-      ['krasbestendig_blad','Krasbestendig blad'], ['tafel_lichtgewicht','Lichtgewicht tafel'],
+      ['blad_hittebestendig','Hittebestendig blad'], ['blad_vochtbestendig','Vochtbestendig blad'], ['krasbestendig_blad','Krasbestendig blad'], ['tafel_lichtgewicht','Lichtgewicht tafel']
     ]},
     { titel: 'Tent / Slaap', velden: [
-      ['stahoogte_cm','Stahoogte (cm)'], ['binnenbreedte_cm','Binnenbreedte (cm)'],
-      ['binnenlengte_cm','Binnenlengte (cm)'], ['binnentent_afmeting','Binnentent afmeting'],
-      ['palen_materiaal','Palen materiaal'], ['cabines','Cabines'],
-      ['aantal_personen','Aantal personen'], ['raam_afdekking','Raam afdekking'],
-      ['insectengaas','Insectengaas'], ['afdekking','Afdekking'],
-      ['afgedekte_ykk_ritsen','Afgedekte YKK ritsen'], ['doekkwaliteit','Doekkwaliteit'],
-      ['seizoensgebruik','Seizoensgebruik'], ['temp_min_graden','Min. temperatuur (°C)'],
-      ['temp_max_graden','Max. temperatuur (°C)'], ['temperatuurbereik','Temperatuurbereik'],
+      ['stahoogte_cm','Stahoogte (cm)'], ['binnenbreedte_cm','Binnenbreedte (cm)'], ['binnenlengte_cm','Binnenlengte (cm)'], ['binnentent_afmeting','Binnentent afmeting'],
+      ['palen_materiaal','Palen materiaal'], ['cabines','Cabines'], ['aantal_personen','Aantal personen'], ['raam_afdekking','Raam afdekking'], ['insectengaas','Insectengaas'],
+      ['afdekking','Afdekking'], ['afgedekte_ykk_ritsen','Afgedekte YKK ritsen'], ['doekkwaliteit','Doekkwaliteit'], ['seizoensgebruik','Seizoensgebruik'],
+      ['temp_min_graden','Min. temperatuur (°C)'], ['temp_max_graden','Max. temperatuur (°C)'], ['temperatuurbereik','Temperatuurbereik']
     ]},
     { titel: 'BBQ / Koken', velden: [
-      ['type_barbecue','Type barbecue'], ['type_grill','Type grill'],
-      ['grilloppervlak','Grilloppervlak'], ['aantal_branders','Aantal branders'],
-      ['geschikte_warmtebronnen','Geschikte warmtebronnen'], ['gasverbruik_g_per_uur','Gasverbruik (g/u)'],
+      ['type_barbecue','Type barbecue'], ['type_grill','Type grill'], ['grilloppervlak','Grilloppervlak'], ['aantal_branders','Aantal branders'],
+      ['geschikte_warmtebronnen','Geschikte warmtebronnen'], ['gasverbruik_g_per_uur','Gasverbruik (g/u)']
     ]},
     { titel: 'Servies / Keuken', velden: [
-      ['type_servies','Type servies'], ['diner_bord','Diner bord'],
-      ['ontbijt_bord','Ontbijt bord'], ['diep_bord','Diep bord'],
-      ['mok','Mok'], ['glas','Glas'], ['type_glas','Type glas'],
-      ['saladekom','Saladekom'], ['kom_maat','Kom maat'], ['bestek_stuks','Bestek (stuks)'],
-      ['type_pan','Type pan'], ['aantal_pannen','Aantal pannen'],
-      ['pannenset_inhoud','Pannenset inhoud'], ['type_pannenset','Type pannenset'],
-      ['antikleeflaag','Antikleeflaag'], ['type_antikleeflaag','Type antikleeflaag'],
-      ['inclusief_deksel','Inclusief deksel'],
+      ['type_servies','Type servies'], ['diner_bord','Diner bord'], ['ontbijt_bord','Ontbijt bord'], ['diep_bord','Diep bord'], ['mok','Mok'], ['glas','Glas'],
+      ['type_glas','Type glas'], ['saladekom','Saladekom'], ['kom_maat','Kom maat'], ['bestek_stuks','Bestek (stuks)'], ['type_pan','Type pan'],
+      ['aantal_pannen','Aantal pannen'], ['pannenset_inhoud','Pannenset inhoud'], ['type_pannenset','Type pannenset'], ['antikleeflaag','Antikleeflaag'],
+      ['type_antikleeflaag','Type antikleeflaag'], ['inclusief_deksel','Inclusief deksel']
     ]},
     { titel: 'Technisch', velden: [
-      ['vermogen_watt','Vermogen (W)'], ['inhoud_liter','Inhoud (L)'],
-      ['koeltechnologie','Koeltechnologie'], ['koelbox_aansluiting','Koelbox aansluiting'],
-      ['koelsysteem','Koelsysteem'], ['koelmiddel','Koelmiddel'],
-      ['type_kachel','Type kachel'], ['energielabel','Energielabel'],
-      ['aansluitspanning','Aansluitspanning'], ['aansluitingen','Aansluitingen'],
-      ['druk_bar','Druk (bar)'], ['stroomsnelheid_l_per_min','Stroomsnelheid (l/min)'],
-      ['lumen','Lumen'], ['type_lichtbron','Type lichtbron'], ['type_verlichting','Type verlichting'],
-      ['led','LED'], ['oplaadbaar','Oplaadbaar'], ['batterijduur_uren','Batterijduur (uur)'],
-      ['oplaadtijd_uren','Oplaadtijd (uur)'], ['batterijformaat','Batterijformaat'],
-      ['ip_classificatie','IP classificatie'], ['functies','Functies'],
-      ['oscillerend','Oscillerend'], ['ventilatie','Ventilatie'], ['warmte_standen','Warmte standen'],
-      ['aansluiting','Aansluiting'], ['type_ingangsaansluiting','Type ingangsaansluiting'],
-      ['werkt_met','Werkt met'],
+      ['vermogen_watt','Vermogen (W)'], ['inhoud_liter','Inhoud (L)'], ['koeltechnologie','Koeltechnologie'], ['koelbox_aansluiting','Koelbox aansluiting'],
+      ['koelsysteem','Koelsysteem'], ['koelmiddel','Koelmiddel'], ['type_kachel','Type kachel'], ['energielabel','Energielabel'], ['aansluitspanning','Aansluitspanning'],
+      ['aansluitingen','Aansluitingen'], ['druk_bar','Druk (bar)'], ['stroomsnelheid_l_per_min','Stroomsnelheid (l/min)'], ['lumen','Lumen'],
+      ['type_lichtbron','Type lichtbron'], ['type_verlichting','Type verlichting'], ['led','LED'], ['oplaadbaar','Oplaadbaar'], ['batterijduur_uren','Batterijduur (uur)'],
+      ['oplaadtijd_uren','Oplaadtijd (uur)'], ['batterijformaat','Batterijformaat'], ['ip_classificatie','IP classificatie'], ['functies','Functies'],
+      ['oscillerend','Oscillerend'], ['ventilatie','Ventilatie'], ['warmte_standen','Warmte standen'], ['aansluiting','Aansluiting'], ['type_ingangsaansluiting','Type ingangsaansluiting'],
+      ['werkt_met','Werkt met']
     ]},
     { titel: 'Beschermhoezen', velden: [
-      ['type_hoes','Type hoes'], ['uv_bestendig','UV-bestendig'], ['bescherming_tegen','Bescherming tegen'],
+      ['type_hoes','Type hoes'], ['uv_bestendig','UV-bestendig'], ['bescherming_tegen','Bescherming tegen']
     ]},
     { titel: 'Overige eigenschappen', velden: [
-      ['opvouwbaar','Opvouwbaar'], ['verstelbaar','Verstelbaar'],
-      ['oprolbaar','Oprolbaar'], ['uitbreidbaar','Uitbreidbaar'],
-      ['inbouw','Inbouw'], ['oplaadbaar','Oplaadbaar'],
-      ['inclusief_draagtas','Inclusief draagtas'], ['inclusief_opbergbox','Inclusief opbergbox'],
-      ['draagtas_maat','Draagtas maat'], ['lagen','Lagen'],
-      ['uitvoering','Uitvoering'], ['versie','Versie'], ['type_montage','Type montage'],
-      ['garantie_jaar','Garantie (jaar)'], ['doelgroep','Doelgroep'],
-      ['geschikt_voor','Geschikt voor'], ['geschikt_voor_campinggebruik','Geschikt voor campinggebruik'],
-      ['geschikt_voor_voertuig','Geschikt voor voertuig'],
-      ['geschikt_voor_type_camper','Geschikt voor type camper'],
-      ['geschikt_voor_fiat_ducato','Geschikt voor Fiat Ducato'],
-      ['geschikt_voor_vw_t5_of_t6','Geschikt voor VW T5/T6'],
-      ['geschikt_voor_luifellengte','Geschikt voor luifellengte'],
-      ['geschikt_als_zitplek','Geschikt als zitplek'],
-      ['aanbevolen_voor','Aanbevolen voor'], ['vorm','Vorm'], ['producttype','Producttype'],
-      ['keurmerk','Keurmerk'], ['bandenmaat','Bandenmaat'], ['batterijformaat','Batterijformaat'],
-      ['bevestigingsmogelijkheden','Bevestigingsmogelijkheden'],
-    ]},
+      ['opvouwbaar','Opvouwbaar'], ['verstelbaar','Verstelbaar'], ['oprolbaar','Oprolbaar'], ['uitbreidbaar','Uitbreidbaar'], ['inbouw','Inbouw'],
+      ['inclusief_draagtas','Inclusief draagtas'], ['inclusief_opbergbox','Inclusief opbergbox'], ['draagtas_maat','Draagtas maat'], ['lagen','Lagen'],
+      ['uitvoering','Uitvoering'], ['versie','Versie'], ['type_montage','Type montage'], ['garantie_jaar','Garantie (jaar)'], ['doelgroep','Doelgroep'],
+      ['geschikt_voor','Geschikt voor'], ['geschikt_voor_campinggebruik','Geschikt voor campinggebruik'], ['geschikt_voor_voertuig','Geschikt voor voertuig'],
+      ['geschikt_voor_type_camper','Geschikt voor type camper'], ['geschikt_voor_fiat_ducato','Geschikt voor Fiat Ducato'], ['geschikt_voor_vw_t5_of_t6','Geschikt voor VW T5/T6'],
+      ['geschikt_voor_luifellengte','Geschikt voor luifellengte'], ['geschikt_als_zitplek','Geschikt als zitplek'], ['aanbevolen_voor','Aanbevolen voor'],
+      ['vorm','Vorm'], ['producttype','Producttype'], ['keurmerk','Keurmerk'], ['bandenmaat','Bandenmaat'], ['bevestigingsmogelijkheden','Bevestigingsmogelijkheden']
+    ]}
   ];
+}
 
-  // Filter groepen op basis van template
-  const visibleGroepen = groepen.map(g => ({
-    ...g,
-    velden: g.velden.filter(([key]) => isVisible(key))
-  })).filter(g => g.velden.length > 0);
+function getKenmerkenVoorCategorie() {
+  const obelinkCat = currentCats?.cat_obelink;
+  if (!obelinkCat) return [];
+  return catKenmerken[obelinkCat] || [];
+}
 
-  const toggleHtml = hasAnyTemplate ? `
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;padding:10px 12px;background:var(--surface2);border-radius:var(--radius);border:1px solid var(--border);">
-      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text2);">
-        <input type="checkbox" id="showAllToggle" ${showAll ? 'checked' : ''} onchange="renderAttributen(document.getElementById('tabContent'))" style="cursor:pointer;">
-        Alle velden tonen (ook velden buiten de marketplace templates)
-      </label>
-      <span style="margin-left:auto;font-size:11px;color:var(--text3);">
-        ${showAll ? 'Alle velden' : Object.keys(templateFields).length + ' template velden'}
-      </span>
-    </div>` : `
-    <div style="padding:10px 12px;background:var(--surface2);border-radius:var(--radius);border:1px solid var(--border);font-size:12px;color:var(--text3);margin-bottom:16px;">
-      ℹ️ Koppel eerst een marketplace categorie (tabblad Marketplaces) om alleen de relevante velden te zien.
-    </div>`;
+function getKenmerkenWaardes() {
+  const raw = currentAttrs?.kenmerken;
+  if (!raw) return {};
+  if (typeof raw === 'object') return raw;
 
-  // Bouw kenmerken sectie op basis van Obelink categorie
+  if (typeof raw === 'string') {
+    try {
+      if (raw.trim().startsWith('{')) return JSON.parse(raw);
+      const obj = {};
+      raw.split(' | ').forEach(k => {
+        if (k.trim()) obj[k.trim()] = 'Ja';
+      });
+      return obj;
+    } catch (e) {
+      return {};
+    }
+  }
+
+  return {};
+}
+
+function setKenmerkWaarde(kenmerk, waarde) {
+  const huidig = getKenmerkenWaardes();
+  if (waarde === '') delete huidig[kenmerk];
+  else huidig[kenmerk] = waarde;
+
+  setDirty('attrs', 'kenmerken', huidig);
+  if (currentAttrs) currentAttrs.kenmerken = huidig;
+}
+
+function renderKenmerkenSection() {
   const kenmerkenLijst = getKenmerkenVoorCategorie();
   const kenmerkenWaardes = getKenmerkenWaardes();
-  let kenmerkenHtml = '';
-  if (kenmerkenLijst.length > 0) {
-    const kenmerkenVelden = kenmerkenLijst.map(k => {
-      const val = kenmerkenWaardes[k] || '';
-      const safeK = escHtml(k);
-      return `<div class="field">
-        <label class="field-label">${escHtml(k)}</label>
-        <select onchange="setKenmerkWaarde(this.dataset.k, this.value)" data-k="${safeK}">
-          <option value="" ${val === '' ? 'selected' : ''}>— N.v.t. —</option>
-          <option value="Ja" ${val === 'Ja' ? 'selected' : ''}>Ja</option>
-          <option value="Nee" ${val === 'Nee' ? 'selected' : ''}>Nee</option>
-        </select>
-      </div>`;
-    }).join('');
-    kenmerkenHtml = `<div class="section">
-      <div class="section-title">Kenmerken (Obelink)</div>
-      <div class="fields-grid">${kenmerkenVelden}</div>
+
+  if (!kenmerkenLijst.length) return '';
+
+  const kenmerkenVelden = kenmerkenLijst.map(k => {
+    const val = kenmerkenWaardes[k] || '';
+    return `<div class="field">
+      <label class="field-label">${escHtml(k)}</label>
+      <select onchange="setKenmerkWaarde(this.dataset.k, this.value)" data-k="${escapeAttr(k)}">
+        <option value="" ${val === '' ? 'selected' : ''}>— N.v.t. —</option>
+        <option value="Ja" ${val === 'Ja' ? 'selected' : ''}>Ja</option>
+        <option value="Nee" ${val === 'Nee' ? 'selected' : ''}>Nee</option>
+      </select>
     </div>`;
-  }
+  }).join('');
 
-  const groepenHtml = visibleGroepen.length
-    ? visibleGroepen.map(g => `
-    <div class="section">
-      <div class="section-title">${g.titel}</div>
-      <div class="fields-grid">
-        ${g.velden.map(([key, label]) => field(key, label, a[key], 'text', 'attrs', isRequired(key))).join('')}
-      </div>
-    </div>`).join('')
-    : '<div style="color:var(--text3);font-size:13px;padding:20px 0;">Geen velden gevonden voor de gekoppelde categorieën.</div>';
-
-  content.innerHTML = toggleHtml + groepenHtml + kenmerkenHtml;
-}
-
-function getCatId(mp, catNaam) {
-  // Zoek categorie ID op uit category_templates data
-  const templates = allTemplates[mp] || [];
-  const t = templates.find(t => t.categorie_naam === catNaam);
-  return t?.categorie_id || t?.id || '';
-}
-
-function onCatChange(el, mp) {
-  const catNaam = el.value;
-  markDirty(el);
-
-  // Auto-fill categorie ID
-  if (mp !== 'amazon') {
-    const idKey = `cat_${mp}_id`;
-    // Zoek het ID uit de templates
-    const templates = allTemplates[mp] || [];
-    const template = templates.find(t => t.categorie_naam === catNaam);
-    const catId = template?.categorie_id || '';
-
-    // Update pending changes
-    if (!pendingChanges['cats']) pendingChanges['cats'] = {};
-    pendingChanges['cats'][idKey] = catId;
-
-    // Update het zichtbare ID veld
-    const idInput = document.querySelector(`[data-key="${idKey}"][data-source="cats"]`);
-    if (idInput) idInput.value = catId;
-
-    // Update currentCats
-    if (currentCats) currentCats[idKey] = catId;
-  }
-
-  onCategorySaved();
+  return `<div class="section">
+    <div class="section-title">Kenmerken (Obelink)</div>
+    <div class="fields-grid">${kenmerkenVelden}</div>
+  </div>`;
 }
 
 function renderMarketplaces(content) {
-  const c = currentCats;
+  const c = currentCats || {};
   const marketplaces = [
     { key: 'bol', label: 'BOL.com', badge: 'badge-bol' },
     { key: 'obelink', label: 'Obelink', badge: 'badge-obelink' },
@@ -1364,77 +1405,92 @@ function renderMarketplaces(content) {
     { key: 'amazon', label: 'Amazon', badge: 'badge-amazon' },
   ];
 
-  // Amazon categorieën — vrij tekstveld + vaste lijst van bekende codes
   const amazonCodes = [
     'CAMPING_EQUIPMENT', 'OUTDOOR_FURNITURE', 'COOKWARE', 'TABLEWARE',
     'KITCHEN_STORAGE', 'OUTDOOR_COOKING', 'SLEEPING_BAGS', 'TENTS',
-    'BACKPACKS', 'LIGHTING', 'COOLERS', 'HEATING',
+    'BACKPACKS', 'LIGHTING', 'COOLERS', 'HEATING'
   ];
 
   content.innerHTML = marketplaces.map(mp => {
     const catKey = `cat_${mp.key}`;
     const currentCat = c[catKey] || '';
-    const templates = allTemplates[mp.key] || [];
 
     if (mp.key === 'amazon') {
-      // Amazon: dropdown met bekende codes + vrij tekstveld
-      return `
-        <div class="section">
-          <div class="section-title"><span class="badge ${mp.badge}">${mp.label}</span></div>
-          <div class="fields-grid">
-            <div class="field field-wide">
-              <label class="field-label">Amazon categorie code</label>
-              <select data-key="cat_amazon" data-source="cats" onchange="markDirty(this)">
-                <option value="">— Kies een categorie —</option>
-                ${amazonCodes.map(code => `<option value="${code}" ${code === currentCat ? 'selected' : ''}>${code}</option>`).join('')}
-                ${currentCat && !amazonCodes.includes(currentCat) ? `<option value="${escHtml(currentCat)}" selected>${escHtml(currentCat)}</option>` : ''}
-              </select>
-            </div>
-            <div class="field field-wide">
-              <label class="field-label">Of voer zelf een code in</label>
-              <input type="text" value="${escHtml(currentCat)}"
-                placeholder="bijv. CAMPING_EQUIPMENT"
-                onchange="overrideAmazonCat(this.value)"
-                style="font-family:'DM Mono',monospace;font-size:12px;">
-            </div>
-          </div>
-        </div>`;
-    }
-
-    const currentId = c[`cat_${mp.key}_id`] || '';
-
-    return `
-      <div class="section">
+      return `<div class="section">
         <div class="section-title"><span class="badge ${mp.badge}">${mp.label}</span></div>
-        <div class="cat-select-wrap">
-          <span class="cat-select-label">Categorie:</span>
-          <select data-key="${catKey}" data-source="cats"
-            onchange="onCatChange(this, '${mp.key}')">
-            <option value="">— Geen categorie —</option>
-            ${templates.map(t => `<option value="${escHtml(t.categorie_naam)}" ${t.categorie_naam === currentCat ? 'selected' : ''}>${escHtml(t.categorie_naam)}</option>`).join('')}
-          </select>
-        </div>
-        <div class="fields-grid" style="margin-top:8px;">
-          <div class="field">
-            <label class="field-label">Categorie ID</label>
-            <input type="text" value="${escHtml(currentId)}" readonly
-              data-key="cat_${mp.key}_id" data-source="cats"
-              style="font-family:'DM Mono',monospace;font-size:12px;opacity:.7;"
-              title="Wordt automatisch gevuld bij selectie">
+        <div class="fields-grid">
+          <div class="field field-full">
+            <label class="field-label">Amazon categorie code</label>
+            <select data-key="cat_amazon" data-source="cats" onchange="onAmazonCatDropdown(this)">
+              <option value="">— Kies een categorie —</option>
+              ${amazonCodes.map(code => `<option value="${escapeAttr(code)}" ${code === currentCat ? 'selected' : ''}>${escHtml(code)}</option>`).join('')}
+              ${currentCat && !amazonCodes.includes(currentCat) ? `<option value="${escapeAttr(currentCat)}" selected>${escHtml(currentCat)}</option>` : ''}
+            </select>
+          </div>
+          <div class="field field-full">
+            <label class="field-label">Of voer zelf een code in</label>
+            <input type="text" value="${escapeAttr(currentCat)}" placeholder="bijv. CAMPING_EQUIPMENT" onchange="overrideAmazonCat(this.value)" style="font-family:'DM Mono',monospace;font-size:12px;">
           </div>
         </div>
       </div>`;
+    }
+
+    const templates = allTemplates[mp.key] || [];
+    const currentId = c[`cat_${mp.key}_id`] || '';
+
+    return `<div class="section">
+      <div class="section-title"><span class="badge ${mp.badge}">${mp.label}</span></div>
+      <div class="cat-select-wrap">
+        <span class="cat-select-label">Categorie:</span>
+        <select data-key="${escapeAttr(catKey)}" data-source="cats" onchange="onCatChange(this, '${escapeAttr(mp.key)}')">
+          <option value="">— Geen categorie —</option>
+          ${templates.map(t => `<option value="${escapeAttr(t.categorie_naam)}" ${t.categorie_naam === currentCat ? 'selected' : ''}>${escHtml(t.categorie_naam)}</option>`).join('')}
+        </select>
+      </div>
+      <div class="fields-grid" style="margin-top:8px;">
+        <div class="field">
+          <label class="field-label">Categorie ID</label>
+          <input type="text" value="${escapeAttr(currentId)}" readonly data-key="cat_${escapeAttr(mp.key)}_id" data-source="cats" style="font-family:'DM Mono',monospace;font-size:12px;opacity:.7;" title="Wordt automatisch gevuld bij selectie">
+        </div>
+      </div>
+    </div>`;
   }).join('');
 }
 
+function onCatChange(el, mp) {
+  const catNaam = el.value;
+  const catKey = `cat_${mp}`;
+
+  setDirty('cats', catKey, catNaam);
+  if (currentCats) currentCats[catKey] = catNaam;
+
+  if (mp !== 'amazon') {
+    const idKey = `cat_${mp}_id`;
+    const templates = allTemplates[mp] || [];
+    const template = templates.find(t => t.categorie_naam === catNaam);
+    const catId = template?.categorie_id || '';
+
+    setDirty('cats', idKey, catId);
+    if (currentCats) currentCats[idKey] = catId;
+
+    const idInput = document.querySelector(`[data-key="${idKey}"][data-source="cats"]`);
+    if (idInput) idInput.value = catId;
+  }
+
+  templateFieldsCache = {};
+}
+
+function onAmazonCatDropdown(el) {
+  setDirty('cats', 'cat_amazon', el.value);
+  if (currentCats) currentCats.cat_amazon = el.value;
+}
+
 function overrideAmazonCat(val) {
-  if (!pendingChanges['cats']) pendingChanges['cats'] = {};
-  pendingChanges['cats']['cat_amazon'] = val;
-  // Sync de dropdown
-  const sel = document.querySelector('[data-key="cat_amazon"][data-source="cats"] select, select[data-key="cat_amazon"]');
+  setDirty('cats', 'cat_amazon', val);
+  if (currentCats) currentCats.cat_amazon = val;
+
+  const sel = document.querySelector('select[data-key="cat_amazon"]');
   if (sel) sel.value = val;
-  isDirty = true;
-  document.getElementById('saveStatus').textContent = '● Niet opgeslagen';
 }
 
 function renderAmazon(content) {
@@ -1451,92 +1507,102 @@ function renderAmazon(content) {
       <div class="fields-grid">
         ${field('amazon_zoektrefwoorden', 'Zoektrefwoorden (puntkomma gescheiden)', p.amazon_zoektrefwoorden, 'textarea', 'product', false, true)}
       </div>
-    </div>
-  `;
+    </div>`;
 }
 
-async function saveProduct() {
-  if (!currentProduct) return;
-  const btn = document.getElementById('saveBtn');
-  btn.disabled = true;
-  btn.textContent = 'Opslaan...';
+// ============================================================
+// MULTI SELECT
+// ============================================================
 
-  try {
-    const updates = pendingChanges;
+function markMulti(el, key, source) {
+  const allCheckboxes = document.querySelectorAll(`input[type=checkbox][data-key="${CSS.escape(key)}"][data-source="${CSS.escape(source)}"]`);
+  const selected = Array.from(allCheckboxes)
+    .filter(cb => cb.checked)
+    .map(cb => cb.closest('label').textContent.trim());
 
-    // Update products tabel
-    if (updates.product && Object.keys(updates.product).length) {
-      const { error } = await sb.from('products')
-        .update({ ...updates.product, bijgewerkt_op: new Date().toISOString() })
-        .eq('id', currentProduct.id);
-      if (error) throw error;
-      Object.assign(currentProduct, updates.product);
-    }
-
-    // Update product_attributes
-    if (updates.attrs && Object.keys(updates.attrs).length) {
-      if (currentAttrs.id) {
-        const { error } = await sb.from('product_attributes')
-          .update({ ...updates.attrs, bijgewerkt_op: new Date().toISOString() })
-          .eq('product_id', currentProduct.id);
-        if (error) throw error;
-      } else {
-        const { error } = await sb.from('product_attributes')
-          .insert({ product_id: currentProduct.id, ...updates.attrs });
-        if (error) throw error;
-      }
-      Object.assign(currentAttrs, updates.attrs);
-    }
-
-    // Update product_categories
-    if (updates.cats && Object.keys(updates.cats).length) {
-      if (currentCats.id) {
-        const { error } = await sb.from('product_categories')
-          .update({ ...updates.cats, bijgewerkt_op: new Date().toISOString() })
-          .eq('product_id', currentProduct.id);
-        if (error) throw error;
-      } else {
-        const { error } = await sb.from('product_categories')
-          .insert({ product_id: currentProduct.id, ...updates.cats });
-        if (error) throw error;
-      }
-      Object.assign(currentCats, updates.cats);
-      onCategorySaved(); // invalideer template velden cache
-    }
-
-    isDirty = false;
-    pendingChanges = {};
-    document.getElementById('saveStatus').textContent = '✓ Opgeslagen';
-    document.getElementById('editorTitle').textContent = currentProduct.naam_nl || '—';
-
-    // Update sidebar
-    const idx = allProducts.findIndex(p => p.id === currentProduct.id);
-    if (idx >= 0 && updates.product?.naam_nl) allProducts[idx].naam_nl = updates.product.naam_nl;
-    renderProductList(filteredProducts.length ? filteredProducts : allProducts);
-
-    showToast('Product opgeslagen', 'success');
-  } catch(e) {
-    showToast('Fout bij opslaan: ' + e.message, 'error');
-  }
-
-  btn.disabled = false;
-  btn.textContent = 'Opslaan';
+  setDirty(source, key, selected.join(' | '));
 }
 
-function discardChanges() {
-  if (!isDirty || confirm('Wijzigingen weggooien?')) {
-    isDirty = false;
-    pendingChanges = {};
-    document.getElementById('saveStatus').textContent = '';
-    renderTab();
+function msOpen(uid) {
+  const dd = document.getElementById(uid + '_dd');
+  const search = document.getElementById(uid + '_search');
+  if (!dd || !search) return;
+
+  msRender(uid, search.value);
+  dd.classList.add('open');
+
+  setTimeout(() => {
+    document.addEventListener('click', function handler(e) {
+      const wrap = document.getElementById(uid + '_wrap');
+      if (wrap && !wrap.contains(e.target)) {
+        dd.classList.remove('open');
+        document.removeEventListener('click', handler);
+      }
+    });
+  }, 10);
+}
+
+function msFocus(uid) {
+  const search = document.getElementById(uid + '_search');
+  if (search) {
+    search.focus();
+    msOpen(uid);
   }
 }
 
-function showToast(msg, type='success') {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = `toast ${type} show`;
-  setTimeout(() => t.classList.remove('show'), 3000);
+function msFilter(uid) {
+  msRender(uid, document.getElementById(uid + '_search').value);
+}
+
+function msRender(uid, query) {
+  const search = document.getElementById(uid + '_search');
+  const dd = document.getElementById(uid + '_dd');
+  if (!search || !dd) return;
+
+  const opts = JSON.parse(search.dataset.opts || '[]');
+  const selected = search.dataset.selected ? search.dataset.selected.split(' | ').filter(Boolean) : [];
+  const q = (query || '').toLowerCase();
+  const filtered = opts.filter(o => !q || String(o).toLowerCase().includes(q));
+
+  if (!filtered.length) {
+    dd.innerHTML = '<div class="ms-empty">Geen resultaten</div>';
+    return;
+  }
+
+  dd.innerHTML = filtered.map(o => {
+    const isSel = selected.includes(o);
+    return `<div class="ms-option ${isSel ? 'selected' : ''}" onclick="msToggle('${escapeAttr(uid)}','${escapeAttr(o)}')">
+      <span class="ms-option-check">${isSel ? '✓' : ''}</span>
+      ${escHtml(o)}
+    </div>`;
+  }).join('');
+}
+
+function msToggle(uid, val) {
+  const search = document.getElementById(uid + '_search');
+  if (!search) return;
+
+  let selected = search.dataset.selected ? search.dataset.selected.split(' | ').filter(Boolean) : [];
+  const idx = selected.indexOf(val);
+  if (idx >= 0) selected.splice(idx, 1);
+  else selected.push(val);
+
+  search.dataset.selected = selected.join(' | ');
+
+  const tagsEl = document.getElementById(uid + '_tags');
+  if (tagsEl) {
+    tagsEl.innerHTML = selected.map(s =>
+      `<span class="ms-tag">${escHtml(s)}<span class="ms-tag-remove" onclick="msRemoveTag(event,this,'${escapeAttr(uid)}')" data-val="${escapeAttr(s)}">×</span></span>`
+    ).join('');
+  }
+
+  setDirty(search.dataset.source, search.dataset.key, selected.join(' | '));
+  msRender(uid, search.value);
+}
+
+function msRemoveTag(e, el, uid) {
+  e.stopPropagation();
+  msToggle(uid, el.dataset.val);
 }
 
 // ============================================================
@@ -1546,105 +1612,79 @@ function showToast(msg, type='success') {
 async function exportChannable() {
   showToast('Channable CSV wordt voorbereid...', 'success');
 
-  // Haal alle producten op met attributen
-  let allProds = [];
-  let from = 0;
-  while (true) {
-    const { data } = await sb.from('products')
-      .select('id,ean,naam_nl,naam_de,naam_en,beschrijving_nl,beschrijving_de,merk,mpn,serie,afbeeldingen,bol_custom_titel,amazon_bulletpoint_1,amazon_bulletpoint_2,amazon_bulletpoint_3,amazon_bulletpoint_4,amazon_bulletpoint_5,amazon_zoektrefwoorden')
-      .range(from, from + 999);
-    if (!data || data.length === 0) break;
-    allProds = allProds.concat(data);
-    if (data.length < 1000) break;
-    from += 1000;
-  }
+  try {
+    const allProds = await fetchAll('products', 'id,ean,naam_nl,naam_de,naam_en,beschrijving_nl,beschrijving_de,merk,mpn,serie,afbeeldingen,bol_custom_titel,amazon_bulletpoint_1,amazon_bulletpoint_2,amazon_bulletpoint_3,amazon_bulletpoint_4,amazon_bulletpoint_5,amazon_zoektrefwoorden');
 
-  // Haal attributen op
-  let allAttrs = {};
-  from = 0;
-  while (true) {
-    const { data } = await sb.from('product_attributes').select('*').range(from, from + 999);
-    if (!data || data.length === 0) break;
-    data.forEach(a => { allAttrs[a.product_id] = a; });
-    if (data.length < 1000) break;
-    from += 1000;
-  }
+    const attrsRows = await fetchAll('product_attributes', '*');
+    const catsRows = await fetchAll('product_categories', '*');
 
-  // Haal categories op
-  let allCats = {};
-  from = 0;
-  while (true) {
-    const { data } = await sb.from('product_categories').select('*').range(from, from + 999);
-    if (!data || data.length === 0) break;
-    data.forEach(c => { allCats[c.product_id] = c; });
-    if (data.length < 1000) break;
-    from += 1000;
-  }
+    const allAttrs = {};
+    attrsRows.forEach(a => { allAttrs[a.product_id] = a; });
 
-  // Definieer alle kolommen
-  const attrCols = [
-    'product_lengte_cm','product_breedte_cm','product_hoogte_cm','product_gewicht_kg',
-    'verpakking_lengte_cm','verpakking_breedte_cm','verpakking_hoogte_cm','verpakking_gewicht_kg',
-    'stuks_per_verpakking','kleur_primair','kleur_secundair','materiaal','materiaal_frame',
-    'materiaal_zitting','materiaal_blad','materiaal_grill','materiaal_buitentent',
-    'materiaal_binnentent','materiaal_grondzeil','materiaal_voering','materiaal_vulling',
-    'materiaal_dak','materiaal_zijwand','materiaal_voorwand','materiaal_bovenzijde',
-    'materiaal_onderzijde','zithoogte_cm','zitdiepte_cm','zitbreedte_cm','ruglengte_cm',
-    'draagvermogen_kg','type_stoel','aantal_standen','bekleding_ademend','bekleding_gepolsterd',
-    'bekleding_waterbestendig','bekleding_sneldrogend','blad_hittebestendig','blad_vochtbestendig',
-    'tafel_lichtgewicht','tafelblad_afmeting','gevouwen_lengte_cm','gevouwen_breedte_cm',
-    'gevouwen_hoogte_cm','gevouwen_afmeting','afmeting','maat','maat_open',
-    'type_servies','diner_bord','ontbijt_bord','diep_bord','mok','glas','type_glas',
-    'saladekom','kom_maat','bestek_stuks','type_pan','aantal_pannen','pannenset_inhoud',
-    'type_pannenset','antikleeflaag','type_antikleeflaag','inclusief_deksel',
-    'type_barbecue','type_grill','grilloppervlak','aantal_branders','geschikte_warmtebronnen',
-    'gasverbruik_g_per_uur','stahoogte_cm','binnenbreedte_cm','binnenlengte_cm',
-    'binnentent_afmeting','palen_materiaal','cabines','aantal_personen','raam_afdekking',
-    'insectengaas','afdekking','seizoensgebruik','temp_min_graden','temp_max_graden',
-    'temperatuurbereik','vermogen_watt','inhoud_liter','koeltechnologie','koelbox_aansluiting',
-    'koelsysteem','koelmiddel','aansluitspanning','aansluitingen','druk_bar',
-    'stroomsnelheid_l_per_min','lumen','type_lichtbron','type_verlichting','led',
-    'oplaadbaar','batterijduur_uren','oplaadtijd_uren','batterijformaat','ip_classificatie',
-    'functies','oscillerend','ventilatie','warmte_standen','energielabel','type_kachel',
-    'type_hoes','uv_bestendig','bescherming_tegen','opvouwbaar','verstelbaar','oprolbaar',
-    'uitbreidbaar','inclusief_draagtas','inclusief_opbergbox','draagtas_maat','lagen',
-    'uitvoering','versie','type_montage','aansluiting','werkt_met','garantie_jaar',
-    'doelgroep','geschikt_voor','geschikt_voor_voertuig','geschikt_voor_type_camper',
-    'aanbevolen_voor','vorm','producttype','keurmerk','bandenmaat','kenmerken',
-  ];
+    const allCats = {};
+    catsRows.forEach(c => { allCats[c.product_id] = c; });
 
-  const catCols = ['cat_bol','cat_bol_id','cat_obelink','cat_obelink_id',
-                   'cat_decathlon','cat_decathlon_id','cat_amazon'];
+    const attrCols = [
+      'product_lengte_cm','product_breedte_cm','product_hoogte_cm','product_gewicht_kg',
+      'verpakking_lengte_cm','verpakking_breedte_cm','verpakking_hoogte_cm','verpakking_gewicht_kg',
+      'stuks_per_verpakking','kleur_primair','kleur_secundair','materiaal','materiaal_frame',
+      'materiaal_zitting','materiaal_blad','materiaal_grill','materiaal_buitentent',
+      'materiaal_binnentent','materiaal_grondzeil','materiaal_voering','materiaal_vulling',
+      'materiaal_dak','materiaal_zijwand','materiaal_voorwand','materiaal_bovenzijde',
+      'materiaal_onderzijde','zithoogte_cm','zitdiepte_cm','zitbreedte_cm','ruglengte_cm',
+      'draagvermogen_kg','type_stoel','aantal_standen','bekleding_ademend','bekleding_gepolsterd',
+      'bekleding_waterbestendig','bekleding_sneldrogend','blad_hittebestendig','blad_vochtbestendig',
+      'tafel_lichtgewicht','tafelblad_afmeting','gevouwen_lengte_cm','gevouwen_breedte_cm',
+      'gevouwen_hoogte_cm','gevouwen_afmeting','afmeting','maat','maat_open',
+      'type_servies','diner_bord','ontbijt_bord','diep_bord','mok','glas','type_glas',
+      'saladekom','kom_maat','bestek_stuks','type_pan','aantal_pannen','pannenset_inhoud',
+      'type_pannenset','antikleeflaag','type_antikleeflaag','inclusief_deksel',
+      'type_barbecue','type_grill','grilloppervlak','aantal_branders','geschikte_warmtebronnen',
+      'gasverbruik_g_per_uur','stahoogte_cm','binnenbreedte_cm','binnenlengte_cm',
+      'binnentent_afmeting','palen_materiaal','cabines','aantal_personen','raam_afdekking',
+      'insectengaas','afdekking','seizoensgebruik','temp_min_graden','temp_max_graden',
+      'temperatuurbereik','vermogen_watt','inhoud_liter','koeltechnologie','koelbox_aansluiting',
+      'koelsysteem','koelmiddel','aansluitspanning','aansluitingen','druk_bar',
+      'stroomsnelheid_l_per_min','lumen','type_lichtbron','type_verlichting','led',
+      'oplaadbaar','batterijduur_uren','oplaadtijd_uren','batterijformaat','ip_classificatie',
+      'functies','oscillerend','ventilatie','warmte_standen','energielabel','type_kachel',
+      'type_hoes','uv_bestendig','bescherming_tegen','opvouwbaar','verstelbaar','oprolbaar',
+      'uitbreidbaar','inclusief_draagtas','inclusief_opbergbox','draagtas_maat','lagen',
+      'uitvoering','versie','type_montage','aansluiting','werkt_met','garantie_jaar',
+      'doelgroep','geschikt_voor','geschikt_voor_voertuig','geschikt_voor_type_camper',
+      'aanbevolen_voor','vorm','producttype','keurmerk','bandenmaat','kenmerken'
+    ];
 
-  const headers = [
-    'ean','naam_nl','naam_de','naam_en','beschrijving_nl','beschrijving_de',
-    'merk','mpn','serie','afbeeldingen','bol_custom_titel',
-    'amazon_bulletpoint_1','amazon_bulletpoint_2','amazon_bulletpoint_3',
-    'amazon_bulletpoint_4','amazon_bulletpoint_5','amazon_zoektrefwoorden',
-    ...attrCols, ...catCols
-  ];
+    const catCols = ['cat_bol','cat_bol_id','cat_obelink','cat_obelink_id','cat_decathlon','cat_decathlon_id','cat_amazon'];
 
-  const rows = allProds.map(p => {
-    const a = allAttrs[p.id] || {};
-    const c = allCats[p.id] || {};
-    return headers.map(h => {
-      let val = p[h] ?? a[h] ?? c[h] ?? '';
-      // Escape CSV
-      val = String(val).replace(/"/g, '""');
-      if (val.includes(',') || val.includes('"') || val.includes('\n')) {
-        val = `"${val}"`;
-      }
-      return val;
+    const headers = [
+      'ean','naam_nl','naam_de','naam_en','beschrijving_nl','beschrijving_de',
+      'merk','mpn','serie','afbeeldingen','bol_custom_titel',
+      'amazon_bulletpoint_1','amazon_bulletpoint_2','amazon_bulletpoint_3',
+      'amazon_bulletpoint_4','amazon_bulletpoint_5','amazon_zoektrefwoorden',
+      ...attrCols, ...catCols
+    ];
+
+    const rows = allProds.map(p => {
+      const a = allAttrs[p.id] || {};
+      const c = allCats[p.id] || {};
+      return headers.map(h => {
+        let val = p[h] ?? a[h] ?? c[h] ?? '';
+        if (typeof val === 'object') val = JSON.stringify(val);
+        return safeCsvValue(val);
+      });
     });
-  });
 
-  const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-  downloadCSV(csv, `brunner_channable_${new Date().toISOString().slice(0,10)}.csv`);
-  showToast(`${allProds.length} producten geëxporteerd`, 'success');
+    const csv = [headers.map(safeCsvValue).join(','), ...rows.map(r => r.join(','))].join('\n');
+    downloadCSV(csv, `brunner_channable_${new Date().toISOString().slice(0,10)}.csv`);
+    showToast(`${allProds.length} producten geëxporteerd`, 'success');
+  } catch (e) {
+    console.error(e);
+    showToast('Export mislukt: ' + e.message, 'error');
+  }
 }
 
 function showWooExport() {
-  // Stel standaard datum in op een week geleden
   const weekAgo = new Date();
   weekAgo.setDate(weekAgo.getDate() - 7);
   document.getElementById('wooExportDate').value = weekAgo.toISOString().slice(0,10);
@@ -1656,84 +1696,73 @@ async function exportWooCommerce() {
   document.getElementById('wooModal').style.display = 'none';
   showToast('WooCommerce CSV wordt voorbereid...', 'success');
 
-  // Bouw query
-  let query = sb.from('products')
-    .select('id,ean,naam_nl,beschrijving_nl,merk,mpn,afbeeldingen,bijgewerkt_op');
-  if (datumStr) query = query.gte('bijgewerkt_op', datumStr);
+  try {
+    let query = sb.from('products').select('id,ean,naam_nl,beschrijving_nl,merk,mpn,afbeeldingen,bijgewerkt_op');
+    if (datumStr) query = query.gte('bijgewerkt_op', datumStr);
 
-  // Haal producten op
-  let allProds = [];
-  let from = 0;
-  while (true) {
-    const { data } = await query.range(from, from + 999);
-    if (!data || data.length === 0) break;
-    allProds = allProds.concat(data);
-    if (data.length < 1000) break;
-    from += 1000;
-  }
-
-  if (!allProds.length) {
-    showToast('Geen producten gevonden voor deze periode', 'error');
-    return;
-  }
-
-  // Haal attributen op voor deze producten
-  const ids = allProds.map(p => p.id);
-  let allAttrs = {};
-  for (let i = 0; i < ids.length; i += 100) {
-    const chunk = ids.slice(i, i + 100);
-    const { data } = await sb.from('product_attributes')
-      .select('product_id,kleur_primair,materiaal,materiaal_frame,product_breedte_cm,product_hoogte_cm,product_gewicht_kg,garantie_jaar')
-      .in('product_id', chunk);
-    if (data) data.forEach(a => { allAttrs[a.product_id] = a; });
-  }
-
-  // WooCommerce CSV formaat
-  const headers = ['ID','SKU','Name','Description','Images',
-    'Attribute 1 name','Attribute 1 value(s)',
-    'Attribute 2 name','Attribute 2 value(s)',
-    'Attribute 3 name','Attribute 3 value(s)',
-    'Attribute 4 name','Attribute 4 value(s)',
-  ];
-
-  const rows = allProds.map(p => {
-    const a = allAttrs[p.id] || {};
-    const attrs = [
-      ['Kleur', a.kleur_primair || ''],
-      ['Materiaal', a.materiaal || ''],
-      ['Breedte (cm)', a.product_breedte_cm || ''],
-      ['Hoogte (cm)', a.product_hoogte_cm || ''],
-    ].filter(([,v]) => v);
-
-    const row = [
-      '', p.ean || '', p.naam_nl || '',
-      (p.beschrijving_nl || '').replace(/"/g,'""'),
-      p.afbeeldingen || '',
-    ];
-    for (let i = 0; i < 4; i++) {
-      row.push(attrs[i] ? attrs[i][0] : '');
-      row.push(attrs[i] ? attrs[i][1] : '');
+    let allProds = [];
+    let from = 0;
+    while (true) {
+      const { data, error } = await query.range(from, from + 999);
+      if (error) throw error;
+      if (!data || data.length === 0) break;
+      allProds = allProds.concat(data.map(p => ({ ...p, ean: normalizeEan(p.ean) })));
+      if (data.length < 1000) break;
+      from += 1000;
     }
-    return row.map(v => {
-      v = String(v);
-      if (v.includes(',') || v.includes('"') || v.includes('\n')) v = `"${v}"`;
-      return v;
+
+    if (!allProds.length) {
+      showToast('Geen producten gevonden voor deze periode', 'error');
+      return;
+    }
+
+    const ids = allProds.map(p => p.id);
+    const allAttrs = {};
+
+    for (let i = 0; i < ids.length; i += 100) {
+      const chunk = ids.slice(i, i + 100);
+      const { data, error } = await sb.from('product_attributes')
+        .select('product_id,kleur_primair,materiaal,materiaal_frame,product_breedte_cm,product_hoogte_cm,product_gewicht_kg,garantie_jaar')
+        .in('product_id', chunk);
+
+      if (error) throw error;
+      (data || []).forEach(a => { allAttrs[a.product_id] = a; });
+    }
+
+    const headers = ['ID','SKU','Name','Description','Images',
+      'Attribute 1 name','Attribute 1 value(s)',
+      'Attribute 2 name','Attribute 2 value(s)',
+      'Attribute 3 name','Attribute 3 value(s)',
+      'Attribute 4 name','Attribute 4 value(s)'
+    ];
+
+    const rows = allProds.map(p => {
+      const a = allAttrs[p.id] || {};
+      const attrs = [
+        ['Kleur', a.kleur_primair || ''],
+        ['Materiaal', a.materiaal || ''],
+        ['Breedte (cm)', a.product_breedte_cm || ''],
+        ['Hoogte (cm)', a.product_hoogte_cm || '']
+      ].filter(([,v]) => v);
+
+      const row = ['', p.ean || '', p.naam_nl || '', p.beschrijving_nl || '', p.afbeeldingen || ''];
+
+      for (let i = 0; i < 4; i++) {
+        row.push(attrs[i] ? attrs[i][0] : '');
+        row.push(attrs[i] ? attrs[i][1] : '');
+      }
+
+      return row.map(safeCsvValue);
     });
-  });
 
-  const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-  downloadCSV(csv, `brunner_woocommerce_${datumStr || 'alles'}_${new Date().toISOString().slice(0,10)}.csv`);
-  showToast(`${allProds.length} producten geëxporteerd`, 'success');
+    const csv = [headers.map(safeCsvValue).join(','), ...rows.map(r => r.join(','))].join('\n');
+    downloadCSV(csv, `brunner_woocommerce_${datumStr || 'alles'}_${new Date().toISOString().slice(0,10)}.csv`);
+    showToast(`${allProds.length} producten geëxporteerd`, 'success');
+  } catch (e) {
+    console.error(e);
+    showToast('WooCommerce export mislukt: ' + e.message, 'error');
+  }
 }
-
-function downloadCSV(csv, filename) {
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = filename; a.click();
-  URL.revokeObjectURL(url);
-}
-
 </script>
 </body>
 </html>
