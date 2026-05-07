@@ -2074,8 +2074,13 @@ async function saveSettingsCategory() {
 
 function parseSettingsOptions(raw) {
   if (Array.isArray(raw)) return raw;
-  return String(raw || '').split(/
-|\|/).map(s => s.trim()).filter(Boolean);
+
+  return String(raw || '')
+    .replaceAll(String.fromCharCode(13), '')
+    .split('|')
+    .flatMap(part => part.split(String.fromCharCode(10)))
+    .map(s => s.trim())
+    .filter(Boolean);
 }
 
 async function saveSettingsFields() {
