@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Brunner PIM</title>
+<title>Brunner PIM v2</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
@@ -23,7 +23,6 @@
     --radius: 6px;
   }
 
-  
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
@@ -461,7 +460,7 @@
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    width: min(1100px, calc(100vw - 40px));
+    width: min(1450px, calc(100vw - 32px));
     max-height: calc(100vh - 40px);
     display: flex;
     flex-direction: column;
@@ -480,13 +479,19 @@
   .modal-title { font-size: 15px; font-weight: 600; }
   .modal-body { padding: 20px; overflow-y: auto; }
 
-  .settings-grid { display: grid; grid-template-columns: 320px 1fr; gap: 18px; }
+  .settings-grid {
+    display: grid;
+    grid-template-columns: 360px minmax(0, 1fr);
+    gap: 18px;
+    align-items: start;
+  }
 
   .settings-card {
     background: var(--surface2);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     padding: 14px;
+    overflow: auto;
   }
 
   .settings-list { display: flex; flex-direction: column; gap: 6px; max-height: 520px; overflow-y: auto; }
@@ -503,12 +508,18 @@
   .settings-cat-item:hover,
   .settings-cat-item.active { color: var(--text); background: var(--surface); border-color: var(--accent); }
 
-  .settings-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .settings-table {
+    width: 100%;
+    min-width: 1180px;
+    border-collapse: collapse;
+    font-size: 13px;
+    table-layout: fixed;
+  }
 
   .settings-table th,
   .settings-table td {
     border-bottom: 1px solid var(--border);
-    padding: 7px 6px;
+    padding: 10px 8px;
     vertical-align: top;
     text-align: left;
   }
@@ -532,9 +543,16 @@
     border: 1px solid var(--border);
     border-radius: var(--radius);
     color: var(--text);
-    padding: 6px 8px;
+    padding: 8px 10px;
     font-family: 'DM Sans', sans-serif;
-    font-size: 12px;
+    font-size: 13px;
+    min-height: 38px;
+  }
+
+  .settings-table textarea {
+    min-height: 72px;
+    resize: vertical;
+    line-height: 1.4;
   }
 
   .completeness-dot {
@@ -705,13 +723,13 @@
             <table class="settings-table">
               <thead>
                 <tr>
-                  <th style="width:190px;">Master veld</th>
-                  <th style="width:70px;">Verplicht</th>
-                  <th style="width:90px;">Type</th>
-                  <th>Opties</th>
-                  <th style="width:130px;">Standaardwaarde</th>
-                  <th style="width:70px;">Volgorde</th>
-                  <th style="width:50px;"></th>
+                  <th style="width:220px;">Master veld</th>
+                  <th style="width:90px;">Verplicht</th>
+                  <th style="width:130px;">Type</th>
+                  <th style="width:320px;">Opties</th>
+                  <th style="width:180px;">Standaardwaarde</th>
+                  <th style="width:100px;">Volgorde</th>
+                  <th style="width:60px;"></th>
                 </tr>
               </thead>
               <tbody id="settingsFieldsBody"></tbody>
@@ -745,7 +763,7 @@
 
 <script>
 const SUPABASE_URL = 'https://furblfnwplmpnqlbxbcm.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ1cmJsZm53cGxtcG5xbGJ4YmNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3NTUzNTUsImV4cCI6MjA5MjMzMTM1NX0.tRbB2rbkjUm0Fsi0xP0eZXZZ379o6a0Dy3SKipTlEy4';
+const SUPABASE_KEY = 'PLAATS_HIER_JE_SUPABASE_ANON_KEY';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let allProducts = [];
@@ -759,9 +777,25 @@ let pendingChanges = {};
 let allTemplates = {};
 let templateFieldsCache = {};
 let fieldOptions = {};
-let voorraadData = {}; // ean -> voorraad_totaal
-const catKenmerken = {"Caravan & camper accessoires > Opzetspiegels > Caravanspiegels": ["Trillingsvrij", "Inclusief opbergtas"], "Caravan & camper accessoires > Opzetspiegels > Dodehoekspiegels": ["Trillingsvrij", "Inclusief opbergtas"], "Slapen > Luchtbedden": ["Inclusief opberghoes", "Inclusief reparatiesetje", "Ingebouwde pomp", "Geïntegreerd hoofdkussen"], "Caravan & camper accessoires > Chassis > Levellers": ["Inclusief draagtas", "Anti-slip laag", "Voorkomt vervorming van de band", "Koppelbaar", "Stapelbaar", "Geschikt voor elke ondergrond", "Voor banden van 13 t/m 16 inch"], "Caravan & camper accessoires > Opstapjes & ladders > Opstapjes": ["Antislip", "Verstelbare voetjes", "Inklapbaar", "Draagbaar", "Handmatig in- en uitklappen", "Elektrisch in- en uitklappen", "Vouwbaar"], "Kampeermeubelen > Campingtafels > Campingtafels inklapbaar": ["Deelbaar blad", "Handvat", "Inclusief draagtas", "Opbergnet", "Stelvoetjes", "Afneembare poten", "Verstelbare poten", "Afneembaar blad", "Geïntegreerde waterpas"], "Kampeermeubelen > Campingtafels > Roltafels camping": ["Deelbaar blad", "Handvat", "Inclusief draagtas", "Opbergnet", "Stelvoetjes", "Afneembare poten", "Verstelbare poten", "Afneembaar blad", "Geïntegreerde waterpas"], "Keuken- & huishoudartikelen > Camping keukenspullen > Pannen": ["Anti-aanbaklaag", "Afneembaar handvat", "Wegklapbare handgreep", "Te gebruiken als ovenschaal", "Thermo spot", "Inclusief deksel", "Inclusief draagtas", "Vaatwasserbestendig", "Opvouwbaar"], "Keuken- & huishoudartikelen > Huishoudelijke apparaten > Stofzuigers": ["Telescopische buis", "Vaste wielen", "HEPA filter", "Draaghendel", "High efficiency borstel", "Flexibele buis", "Uitwasbaar filter", "Inclusief accessoires", "Handgreep", "Lichtgewicht"], "Kampeermeubelen > Campingkeukens": ["Draagtas", "Ventilatiegaas aan achterzijde", "Verstelbare poten", "Windscherm", "Zijvakjes", "Ruimte voor gasfles", "Wasbak", "Oprolbaar blad", "MDF legplanken", "Ophanghaakjes", "Voor kooktoestellen tot 60 cm breed", "Opvouwbaar", "Met opbergboxen"], "Caravan & camper accessoires > Ramen > Raamisolatie": ["Regen", "Zon", "Sneeuw", "Stof", "Vuil", "Condensvorming", "Vorst", "Krassen", "Slijtage", "Warmte", "Kou", "UV-straling", "Kleurvervaging", "Wind"], "Klimaatbeheersing > Airco's > Split airco's": ["Afstandsbediening", "Aftapkraantje", "Digitale timer", "Geïntegreerd handvat", "Inclusief afvoerslang", "Slaapmode", "Temperatuur instelbaar", "Voelers ter bescherming bij ijsvorming", "Warmtepomp", "Watertankvol indicator", "Werkt tot een omgevingstemperatuur van 42°C", "Voelers ter detectie van ijsvorming", "Filters zijn verwisselbaar en reinigbaar", "Soft start (laag opstartvermogen)", "Voorzien van Chillout Airbox luchtverdeler"], "Klimaatbeheersing > Airco's > Ventilatoren": ["Afstandsbediening", "Aftapkraantje", "Digitale timer", "Geïntegreerd handvat", "Inclusief afvoerslang", "Slaapmode", "Temperatuur instelbaar", "Voelers ter bescherming bij ijsvorming", "Warmtepomp", "Watertankvol indicator", "Werkt tot een omgevingstemperatuur van 42°C", "Voelers ter detectie van ijsvorming", "Filters zijn verwisselbaar en reinigbaar", "Soft start (laag opstartvermogen)", "Voorzien van Chillout Airbox luchtverdeler"], "Kampeermeubelen > Campingstoelen > Klapstoelen": ["Inklapbaar", "Stapelbaar", "Verstelbaar", "Bekerhouder", "Draagband", "Hoofdsteun", "Inclusief draagtas", "Safety-lock", "Verstelbare hoofdsteun", "Veiligheidsriem", "Zonnedakje", "Geen", "Zijtafel", "Ergonomisch gevormde rugleuning", "Grondverankering mogelijk", "(Afneembaar) eetblad"], "Kampeermeubelen > Campingstoelen > Ligbedden": ["Inklapbaar", "Stapelbaar", "Verstelbaar", "Bekerhouder", "Draagband", "Hoofdsteun", "Inclusief draagtas", "Safety-lock", "Verstelbare hoofdsteun", "Veiligheidsriem", "Zonnedakje", "Geen", "Zijtafel", "Ergonomisch gevormde rugleuning", "Grondverankering mogelijk", "(Afneembaar) eetblad"], "Kampeermeubelen > Campingstoelen > Strandstoelen": ["Inklapbaar", "Stapelbaar", "Verstelbaar", "Bekerhouder", "Draagband", "Hoofdsteun", "Inclusief draagtas", "Safety-lock", "Verstelbare hoofdsteun", "Veiligheidsriem", "Zonnedakje", "Geen", "Zijtafel", "Ergonomisch gevormde rugleuning", "Grondverankering mogelijk", "(Afneembaar) eetblad"], "Kampeermeubelen > Campingstoelen > Vouwstoelen": ["Inklapbaar", "Stapelbaar", "Verstelbaar", "Bekerhouder", "Draagband", "Hoofdsteun", "Inclusief draagtas", "Safety-lock", "Verstelbare hoofdsteun", "Veiligheidsriem", "Zonnedakje", "Geen", "Zijtafel", "Ergonomisch gevormde rugleuning", "Grondverankering mogelijk", "(Afneembaar) eetblad"], "Caravan & camper accessoires > Beschermhoezen > Camperhoezen": ["Elastische band voor betere pasvorm", "2 bevestigingsogen", "Wasbaar tot 30°C", "Toegang tot caravan mogelijk", "Toegang tot camper mogelijk", "Versterkte hoeken", "Vermindert schimmelvorming", "Verstevigde zeilringen", "Biedt privacy", "Eenzijdige doorkijk", "Afritsbaar paneel", "Weerbestendig", "Oprolmogelijkheid", "Voor alle seizoenen geschikt", "Met reflectorstrepen", "Onderkant fietsendrager ook beschermd", "Met insteekhoes voor veiligheidsbord"], "Caravan & camper accessoires > Beschermhoezen > Caravanhoezen": ["Elastische band voor betere pasvorm", "2 bevestigingsogen", "Wasbaar tot 30°C", "Toegang tot caravan mogelijk", "Toegang tot camper mogelijk", "Versterkte hoeken", "Vermindert schimmelvorming", "Verstevigde zeilringen", "Biedt privacy", "Eenzijdige doorkijk", "Afritsbaar paneel", "Weerbestendig", "Oprolmogelijkheid", "Voor alle seizoenen geschikt", "Met reflectorstrepen", "Onderkant fietsendrager ook beschermd", "Met insteekhoes voor veiligheidsbord"], "Caravan & camper accessoires > Beschermhoezen > Disselhoezen": ["Elastische band voor betere pasvorm", "2 bevestigingsogen", "Wasbaar tot 30°C", "Toegang tot caravan mogelijk", "Toegang tot camper mogelijk", "Versterkte hoeken", "Vermindert schimmelvorming", "Verstevigde zeilringen", "Biedt privacy", "Eenzijdige doorkijk", "Afritsbaar paneel", "Weerbestendig", "Oprolmogelijkheid", "Voor alle seizoenen geschikt", "Met reflectorstrepen", "Onderkant fietsendrager ook beschermd", "Met insteekhoes voor veiligheidsbord"], "Caravan & camper accessoires > Beschermhoezen > Wielhoezen": ["Elastische band voor betere pasvorm", "2 bevestigingsogen", "Wasbaar tot 30°C", "Toegang tot caravan mogelijk", "Toegang tot camper mogelijk", "Versterkte hoeken", "Vermindert schimmelvorming", "Verstevigde zeilringen", "Biedt privacy", "Eenzijdige doorkijk", "Afritsbaar paneel", "Weerbestendig", "Oprolmogelijkheid", "Voor alle seizoenen geschikt", "Met reflectorstrepen", "Onderkant fietsendrager ook beschermd", "Met insteekhoes voor veiligheidsbord"], "Koelboxen & koelkasten > Koelboxen > Compressor koelboxen": ["Afneembare deksel", "Bekerhouder in deksel", "Geïntegreerde handvatten", "Geschikt voor 0,33-liter flessen", "Geschikt voor 0,5-liter flessen", "Geschikt voor 1-liter flessen", "Geschikt voor 1,5-liter flessen", "Geschikt voor 2-liter flessen", "Kabelvak in deksel", "Wieltjes", "Binnenverlichting", "Elektronische thermostaat", "Turbo functie", "Geschikt voor 0,75-liter flessen", "Condensafvoer", "USB-A aansluiting", "USB-C aansluiting"], "Water & sanitair > Camping toiletten > Draagbare toiletten": ["Aansluiting centrale watertank", "Afvaltank met wielen", "Geïntegreerde dekselvergrendeling", "Geïntegreerde schenktuit", "Niveau-indicator afvaltank", "Niveau-indicator spoelwater-tank", "Toiletrolhouder", "Beluchtingsknop op afvaltank", "Keramische binnenpot", "Inclusief hold down kit", "Geschikt voor kinderen", "Geschikt voor volwassenen", "Geïntegreerde watertank", "Bedieningspaneel", "Draaibare pot", "Dekselvergrendeling", "Geschikt voor SOG", "Inclusief uitneembare afvaltank"], "BBQ's & kooktoestellen > Kooktoestellen > Campinggasstellen": ["Deksel", "Windscherm", "Anti-slip voetjes", "Vaatwasserbestendige pannendragers", "Afneembare pannendragers", "Geïntegreerd handvat", "In hoogte verstelbare poten", "Legplanken", "Vermogen traploos instelbaar", "Spoelbak links", "Spoelbak rechts", "Hittebestendige glazen afdekplaat", "Geëmailleerde pannendragers", "Geëmailleerde branderdeksels", "Minimale afstand van muur: 4,5 cm", "Inclusief opbergkoffer", "Inclusief opbergtas", "Aansluiting links achter", "Aansluiting rechts achter"], "BBQ's & kooktoestellen > Kooktoestellen > Elektrische kookplaten": ["Deksel", "Windscherm", "Anti-slip voetjes", "Vaatwasserbestendige pannendragers", "Afneembare pannendragers", "Geïntegreerd handvat", "In hoogte verstelbare poten", "Legplanken", "Vermogen traploos instelbaar", "Spoelbak links", "Spoelbak rechts", "Hittebestendige glazen afdekplaat", "Geëmailleerde pannendragers", "Geëmailleerde branderdeksels", "Minimale afstand van muur: 4,5 cm", "Inclusief opbergkoffer", "Inclusief opbergtas", "Aansluiting links achter", "Aansluiting rechts achter"], "Keuken- & huishoudartikelen > Camping keukenspullen > Serviessets": ["BPA vrij", "Biologisch afbreekbaar", "Ftalaten vrij", "Inclusief mes", "Inclusief opbergtas", "Maataanduiding", "Onbreekbaar", "Lekvrij", "Stapelbaar", "Opvouwbaar", "Inclusief deksel", "Inclusief vork", "Inclusief lepel", "Anti-slip", "Krasbestendig", "Magnetisch", "Dubbelwandig", "Duurzaam", "Isolerend", "Lichtgewicht"], "BBQ's & kooktoestellen > Gasbarbecues": ["Afdekhoes", "Asopvang", "Bakplaat", "Brikettenhouders", "Brikettenrails", "Deksel", "Dekselhouder", "Gasfleshouder", "Gereedschapshaken", "Maatbeker", "Opberghoes", "Opbergtas", "Thermometer", "Verrijdbaar", "Vetafvoer", "Zijtafel", "Verstelbare grill", "Warmhoudrooster", "Zijbrander", "Geen", "Draaispit", "Stelvoetjes"], "Water & sanitair > Watertanks > Jerrycans": ["Aansluiting voor optionele kraan", "Kraantje", "Wieltjes", "Handvat", "Vouwbaar", "Afvoerslang", "Niveaumeter", "Din 61 dop (4,6 cm)", "Din 96 dop (8 cm)", "Ontluchtingsventiel", "Dop voor waterpomp", "Leegloop dop", "Platform voor toiletcassette", "Inclusief spanbanden", "Inclusief schenktuit", "Inclusief flexibele schenktuit", "Ophangoog", "Voorzien van slangsleuf", "Inclusief bevestigingsmateriaal", "Geen", "Inclusief bevestigingsogen", "Voor drinkwater geschikt"], "Elektra > Camping verlichting > Sfeerverlichting": ["Waterbestendig", "Kompas", "Handvat", "Ophanghaak", "Bluetooth speaker", "Telefoonoplader", "Opvouwbaar", "Batterij indicator", "Bewegingssensor", "Lichtsensor", "Extern dimbaar", "Dimbaar", "Touch bediening", "Met schakelaar", "180 graden draaibaar", "360 graden draaibaar", "Blauw en wit licht", "Dimbaar in 3 standen", "Traploos dimbaar", "Met afstandsbediening", "Watervaste strip", "Zelfklevend", "Koppelbaar", "Infrarood schakelaar", "Inclusief klemmen", "Inclusief klittenband", "Handlus", "Niet dimbaar", "Standlicht", "Zonnepaneel", "Niet waterbestendig"], "Water & sanitair > Waterslangen > Drinkwaterslangen": ["Voormenger", "Doorlopend warm water", "Led display", "Regelbare watertemperatuur: 30 - 55 graden", "Schakelaar", "Vermogen 12 volt: 200 watt", "Zuurstofvrije koperen warmtewisselaar", "Slot", "Ontluchting", "Geschikt voor warm water", "Geschikt voor koud water", "Doucheslang en kop", "Regelbare spuitmond", "Handgreep", "Kraanadapter 3/4\"", "Inclusief tuinsproeier", "Inclusief 1/2\" aansluiting", "Eenvoudig in te korten", "Led indicator", "Inclusief sensors", "RVS zeef", "Uitneembare zeef", "Afsluitbaar", "Geschikt voor Twin dompelpomp", "Geschikt voor Powerjet dompelpomp", "Met schroef tule", "Voor ca. 4500 liter", "Volledig automatisch", "Instelbaar waterpeil", "Aansluitbaar op waterleiding", "Geschikt voor drinkwater", "Niet geschikt voor ringleiding", "Vervangbaar filter", "Filtert chloor, geur en smaak"], "Keuken- & huishoudartikelen > Camping keukenspullen > Glazen": ["Bol", "Vlak", "Vlak en bol"]};
+let voorraadData = {};
+let voorraadNulLaden = false;
+let productAttrsMap = {};
+let productCatsMap = {};
+let templateFieldsByTemplateId = {};
+let templateRequiredByCat = {};
+let settingsCurrentMarketplace = 'bol';
+let settingsCurrentTemplate = null;
+let settingsCurrentFields = [];
+let settingsIsNewCategory = false;
+let renderToken = 0;
+let searchTimer = null;
 
+// Plak hier jouw bestaande volledige catKenmerken-object terug.
+// Ik heb dit in v2 bewust apart gehouden omdat het statische data is en geen logica-fix nodig heeft.
+const catKenmerken = {
+  // Voorbeeld:
+  // "Kampeermeubelen > Campingstoelen > Klapstoelen": ["Inklapbaar", "Verstelbaar"]
+};
 
 // ============================================================
 // AUTH
@@ -1110,6 +1144,14 @@ document.getElementById('searchInput').addEventListener('input', () => {
   searchTimer = setTimeout(applyFilters, 150);
 });
 
+// Klikken op producten via event delegation. Dit is stabieler dan inline onclick in gerenderde HTML.
+document.getElementById('productList').addEventListener('click', e => {
+  const item = e.target.closest('.product-item');
+  if (!item) return;
+  const id = item.dataset.productId;
+  if (id) selectProduct(id);
+});
+
 document.getElementById('loginPassword').addEventListener('keydown', e => {
   if (e.key === 'Enter') handleLogin();
 });
@@ -1182,7 +1224,7 @@ function renderProductList(products) {
       ? '<span class="completeness-dot complete" title="Alle verplichte data gevuld">✓</span>'
       : `<span class="completeness-dot incomplete" title="${escapeAttr(completeness.missing.length ? 'Mist: ' + completeness.missing.join(', ') : 'Nog niet te bepalen')}">•</span>`;
 
-    return `<div class="product-item ${currentProduct?.id === p.id ? 'active' : ''}" onclick="selectProduct('${escapeAttr(p.id)}')">
+    return `<div class="product-item ${currentProduct?.id === p.id ? 'active' : ''}" data-product-id="${escapeAttr(p.id)}">
       <div class="product-item-name" style="display:flex;align-items:center;gap:7px;">
         ${completenessHtml}
         <span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(p.naam_nl || '—')}</span>
@@ -1993,7 +2035,7 @@ function renderSettingsFieldsTable() {
           <option value="textarea" ${f.veld_type === 'textarea' ? 'selected' : ''}>Textarea</option>
         </select>
       </td>
-      <td><textarea rows="2" onchange="settingsUpdateField(${i}, 'opties', this.value)" placeholder="Opties, gescheiden met | of nieuwe regel">${escHtml(Array.isArray(f.opties) ? f.opties.join(' | ') : (f.opties || ''))}</textarea></td>
+      <td><textarea rows="3" onchange="settingsUpdateField(${i}, 'opties', this.value)" placeholder="Opties, gescheiden met | of nieuwe regel">${escHtml(Array.isArray(f.opties) ? f.opties.join(' | ') : (f.opties || ''))}</textarea></td>
       <td><input value="${escapeAttr(f.standaardwaarde || '')}" onchange="settingsUpdateField(${i}, 'standaardwaarde', this.value)" placeholder="optioneel"></td>
       <td><input type="number" value="${escapeAttr(f.volgorde ?? i + 1)}" onchange="settingsUpdateField(${i}, 'volgorde', Number(this.value || 0))"></td>
       <td><button class="btn btn-ghost" style="padding:5px 8px;" onclick="removeSettingsFieldRow(${i})">×</button></td>
@@ -2075,6 +2117,8 @@ async function saveSettingsCategory() {
 function parseSettingsOptions(raw) {
   if (Array.isArray(raw)) return raw;
 
+  // Geen regex literal gebruiken hier: in sommige HTML/build situaties werd 
+ omgezet naar een echte newline in de regex.
   return String(raw || '')
     .replaceAll(String.fromCharCode(13), '')
     .split('|')
