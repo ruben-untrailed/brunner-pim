@@ -1629,18 +1629,59 @@ function renderSettingsEditor() {
   renderSettingsFieldsTable();
 }
 
+function hydrateSettingsFieldFromGlobalOptions(f) {
+  if (!f || !f.master_veld) return f;
+
+  const currentOptions = parseSettingsOptions(f.opties);
+  if (currentOptions.length) return f;
+
+  const global = fieldOptions[f.master_veld];
+  if (!global || !Array.isArray(global.opties) || !global.opties.length) return f;
+
+  // Als de categorie-template nog geen opties heeft, neem de globale field_options over.
+  // Na 'Velden opslaan' worden ze vastgelegd in category_template_fields.
+  f.opties = [...global.opties];
+
+  if (!f.veld_type || f.veld_type === 'text') {
+    f.veld_type = global.multi ? 'multi' : 'dropdown';
+  }
+
+  f._optionsFromGlobal = true;
+  return f;
+}
+
 function renderSettingsFieldsTable() {
   const body = document.getElementById('settingsFieldsBody');
-  if (!settingsCurrentFields.length) { body.innerHTML = '<tr><td colspan="7" style="color:var(--text3);padding:14px 6px;">Nog geen velden toegevoegd.</td></tr>'; return; }
-  body.innerHTML = settingsCurrentFields.map((f, i) => `<tr data-index="${i}">
-    <td><input value="${escapeAttr(f.master_veld || '')}" onchange="settingsUpdateField(${i}, 'master_veld', this.value)" placeholder="bijv. kleur_primair"></td>
+  if (!settingsCurrentFields.length) {
+    body.innerHTML = '<tr><td colspan="7" style="color:var(--text3);padding:14px 6px;">Nog geen velden toegevoegd.</td></tr>';
+    return;
+  }
+
+  settingsCurrentFields = settingsCurrentFields.map(hydrateSettingsFieldFromGlobalOptions);
+
+  body.innerHTML = settingsCurrentFields.map((f, i) => {
+    const optionsText = Array.isArray(f.opties) ? f.opties.join(' | ') : (f.opties || '');
+    const sourceHint = f._optionsFromGlobal
+      ? '<div style="font-size:10px;color:var(--accent);margin-top:4px;">overgenomen uit globale veldopties</div>'
+      : '';
+
+    return `<tr data-index="${i}">
+    <td><input value="${escapeAttr(f.master_veld || '')}" onchange="settingsUpdateField(${i}, 'master_veld', this.value); hydrateSettingsFieldAfterNameChange(${i});" placeholder="bijv. kleur_primair"></td>
     <td style="text-align:center;"><input type="checkbox" ${f.verplicht ? 'checked' : ''} onchange="settingsUpdateField(${i}, 'verplicht', this.checked)"></td>
     <td><select onchange="settingsUpdateField(${i}, 'veld_type', this.value)"><option value="text" ${(f.veld_type || 'text') === 'text' ? 'selected' : ''}>Tekst</option><option value="dropdown" ${f.veld_type === 'dropdown' ? 'selected' : ''}>Dropdown</option><option value="multi" ${f.veld_type === 'multi' ? 'selected' : ''}>Multi</option><option value="number" ${f.veld_type === 'number' ? 'selected' : ''}>Getal</option><option value="textarea" ${f.veld_type === 'textarea' ? 'selected' : ''}>Textarea</option></select></td>
-    <td><textarea rows="3" onchange="settingsUpdateField(${i}, 'opties', this.value)" placeholder="Opties, gescheiden met | of nieuwe regel">${escHtml(Array.isArray(f.opties) ? f.opties.join(' | ') : (f.opties || ''))}</textarea></td>
+    <td><textarea rows="3" onchange="settingsUpdateField(${i}, 'opties', this.value)" placeholder="Opties, gescheiden met | of nieuwe regel">${escHtml(optionsText)}</textarea>${sourceHint}</td>
     <td><input value="${escapeAttr(f.standaardwaarde || '')}" onchange="settingsUpdateField(${i}, 'standaardwaarde', this.value)" placeholder="optioneel"></td>
     <td><input type="number" value="${escapeAttr(f.volgorde ?? i + 1)}" onchange="settingsUpdateField(${i}, 'volgorde', Number(this.value || 0))"></td>
     <td><button class="btn btn-ghost" style="padding:5px 8px;" onclick="removeSettingsFieldRow(${i})">×</button></td>
-  </tr>`).join('');
+  </tr>`;
+  }).join('');
+}
+
+function hydrateSettingsFieldAfterNameChange(index) {
+  if (!settingsCurrentFields[index]) return;
+  settingsCurrentFields[index]._optionsFromGlobal = false;
+  settingsCurrentFields[index] = hydrateSettingsFieldFromGlobalOptions(settingsCurrentFields[index]);
+  renderSettingsFieldsTable();
 }
 function settingsUpdateField(index, key, value) { if (settingsCurrentFields[index]) settingsCurrentFields[index][key] = value; }
 function addSettingsFieldRow() { settingsCurrentFields.push({ id: null, template_id: settingsCurrentTemplate?.id || null, master_veld: '', verplicht: false, volgorde: settingsCurrentFields.length + 1, veld_type: 'text', opties: [], standaardwaarde: '' }); renderSettingsFieldsTable(); }
