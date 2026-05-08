@@ -1322,13 +1322,19 @@ function getFieldOptionsForKey(key) {
   const templateField = currentFields.find(f => f.master_veld === key);
 
   if (templateField) {
-    const opties = parseSettingsOptions(templateField.opties);
+    const templateOptions = parseSettingsOptions(templateField.opties);
 
-    if (['dropdown', 'multi'].includes(templateField.veld_type) && opties.length) {
+    // Template heeft eigen opties: die zijn leidend.
+    if (['dropdown', 'multi'].includes(templateField.veld_type) && templateOptions.length) {
       return {
-        opties,
+        opties: templateOptions,
         multi: templateField.veld_type === 'multi'
       };
+    }
+
+    // Template heeft geen opties: gebruik globale field_options als fallback.
+    if (fieldOptions[key]) {
+      return fieldOptions[key];
     }
 
     return null;
@@ -1354,30 +1360,32 @@ function field(key, label, value, type = 'text', source = 'product', required = 
   const reqHtml = required ? ' <span class="field-required">●</span>' : '';
   const opts = getFieldOptionsForKey(key);
 
-  if (opts && opts.multi) {
-    const selected = val ? String(val).split(' | ').map(s => s.trim()).filter(Boolean) : [];
-    const uid = 'ms_' + key + '_' + source;
+if (opts && opts.multi) {
+  const selected = val ? String(val).split(' | ').map(s => s.trim()).filter(Boolean) : [];
+  const uid = 'ms_' + key + '_' + source;
 
-    if ((opts.opties || []).length <= 6) {
-      const checkboxes = opts.opties.map(o => {
-        const checked = selected.includes(o) ? 'checked' : '';
-        return `<label style="display:inline-flex;align-items:center;gap:4px;margin:2px 4px 2px 0;padding:3px 8px;background:var(--surface);border:1px solid var(--border);border-radius:4px;cursor:pointer;font-size:12px;">
-          <input type="checkbox" ${checked} data-key="${escapeAttr(key)}" data-source="${escapeAttr(source)}" onchange="markMulti(this, '${escapeAttr(key)}', '${escapeAttr(source)}')" style="cursor:pointer;"> ${escHtml(o)}
-        </label>`;
-      }).join('');
-      return `<div class="field${fw}"><label class="field-label">${escHtml(label)}${reqHtml}</label><div style="padding:6px 0;line-height:1.8;">${checkboxes}</div></div>`;
-    }
+  const tagsHtml = selected.map(s =>
+    `<span class="ms-tag">${escHtml(s)}<span class="ms-tag-remove" onclick="msRemoveTag(event,this,'${escapeAttr(uid)}')" data-val="${escapeAttr(s)}">×</span></span>`
+  ).join('');
 
-    const tagsHtml = selected.map(s => `<span class="ms-tag">${escHtml(s)}<span class="ms-tag-remove" onclick="msRemoveTag(event,this,'${escapeAttr(uid)}')" data-val="${escapeAttr(s)}">×</span></span>`).join('');
-    return `<div class="field${fw} ms-wrap" id="${escapeAttr(uid)}_wrap">
-      <label class="field-label">${escHtml(label)}${reqHtml}</label>
-      <div class="ms-input" onclick="msFocus('${escapeAttr(uid)}')">
-        <span id="${escapeAttr(uid)}_tags">${tagsHtml}</span>
-        <input class="ms-search" id="${escapeAttr(uid)}_search" type="text" placeholder="${selected.length ? '' : 'Zoek of kies...'}" oninput="msFilter('${escapeAttr(uid)}')" onfocus="msOpen('${escapeAttr(uid)}')" data-key="${escapeAttr(key)}" data-source="${escapeAttr(source)}" data-opts="${escapeAttr(JSON.stringify(opts.opties || []))}" data-selected="${escapeAttr(selected.join(' | '))}">
-      </div>
-      <div class="ms-dropdown" id="${escapeAttr(uid)}_dd"></div>
-    </div>`;
-  }
+  return `<div class="field${fw} ms-wrap" id="${escapeAttr(uid)}_wrap">
+    <label class="field-label">${escHtml(label)}${reqHtml}</label>
+    <div class="ms-input" onclick="msFocus('${escapeAttr(uid)}')">
+      <span id="${escapeAttr(uid)}_tags">${tagsHtml}</span>
+      <input class="ms-search"
+        id="${escapeAttr(uid)}_search"
+        type="text"
+        placeholder="${selected.length ? '' : 'Zoek of kies...'}"
+        oninput="msFilter('${escapeAttr(uid)}')"
+        onfocus="msOpen('${escapeAttr(uid)}')"
+        data-key="${escapeAttr(key)}"
+        data-source="${escapeAttr(source)}"
+        data-opts="${escapeAttr(JSON.stringify(opts.opties || []))}"
+        data-selected="${escapeAttr(selected.join(' | '))}">
+    </div>
+    <div class="ms-dropdown" id="${escapeAttr(uid)}_dd"></div>
+  </div>`;
+}
 
   if (opts && !opts.multi) {
     const options = (opts.opties || []).map(o => `<option value="${escapeAttr(o)}" ${o === val ? 'selected' : ''}>${escHtml(o)}</option>`).join('');
