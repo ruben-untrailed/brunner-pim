@@ -409,6 +409,56 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
   margin-bottom: 5px;
 }
 
+.progress-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+  margin: 12px 0;
+  display: none;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: var(--border);
+  border-radius: 99px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--accent);
+  border-radius: 99px;
+  transition: width .2s ease;
+}
+
+.import-result {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 12px;
+  margin-top: 12px;
+  font-size: 12px;
+  display: none;
+}
+
+.import-result.success { border-color: var(--green); color: var(--green); }
+.import-result.error { border-color: var(--red); color: var(--red); }
+.import-result.warning { border-color: var(--accent); color: var(--text); }
+
+.error-list {
+  margin-top: 8px;
+  max-height: 180px;
+  overflow-y: auto;
+  color: var(--text2);
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
 @media (max-width: 900px) {
   .app { grid-template-columns: 1fr; }
   .sidebar { display: none; }
@@ -656,8 +706,13 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
       </div>
       <div style="display:flex;gap:8px;justify-content:flex-end;margin:12px 0 18px;">
         <button class="btn btn-ghost" onclick="previewImportCsv()">Preview</button>
-        <button class="btn btn-primary" onclick="runImportCsv()">Importeren</button>
+        <button class="btn btn-primary" id="importRunBtn" onclick="runImportCsv()">Importeren</button>
       </div>
+      <div class="progress-wrap" id="importProgressWrap">
+        <div id="importProgressText" style="font-size:12px;color:var(--text2);">Import voorbereiden...</div>
+        <div class="progress-bar"><div class="progress-fill" id="importProgressFill"></div></div>
+      </div>
+      <div class="import-result" id="importResult"></div>
       <div id="importPreview" style="overflow:auto;color:var(--text2);font-size:12px;">Nog geen preview.</div>
     </div>
   </div>
@@ -723,6 +778,7 @@ let searchTimer = null;
 let selectedProductIds = new Set();
 let importRows = [];
 const catKenmerken = {"Caravan & camper accessoires > Opzetspiegels > Caravanspiegels": ["Trillingsvrij", "Inclusief opbergtas"], "Caravan & camper accessoires > Opzetspiegels > Dodehoekspiegels": ["Trillingsvrij", "Inclusief opbergtas"], "Slapen > Luchtbedden": ["Inclusief opberghoes", "Inclusief reparatiesetje", "Ingebouwde pomp", "Geïntegreerd hoofdkussen"], "Caravan & camper accessoires > Chassis > Levellers": ["Inclusief draagtas", "Anti-slip laag", "Voorkomt vervorming van de band", "Koppelbaar", "Stapelbaar", "Geschikt voor elke ondergrond", "Voor banden van 13 t/m 16 inch"], "Caravan & camper accessoires > Opstapjes & ladders > Opstapjes": ["Antislip", "Verstelbare voetjes", "Inklapbaar", "Draagbaar", "Handmatig in- en uitklappen", "Elektrisch in- en uitklappen", "Vouwbaar"], "Kampeermeubelen > Campingtafels > Campingtafels inklapbaar": ["Deelbaar blad", "Handvat", "Inclusief draagtas", "Opbergnet", "Stelvoetjes", "Afneembare poten", "Verstelbare poten", "Afneembaar blad", "Geïntegreerde waterpas"], "Kampeermeubelen > Campingtafels > Roltafels camping": ["Deelbaar blad", "Handvat", "Inclusief draagtas", "Opbergnet", "Stelvoetjes", "Afneembare poten", "Verstelbare poten", "Afneembaar blad", "Geïntegreerde waterpas"], "Keuken- & huishoudartikelen > Camping keukenspullen > Pannen": ["Anti-aanbaklaag", "Afneembaar handvat", "Wegklapbare handgreep", "Te gebruiken als ovenschaal", "Thermo spot", "Inclusief deksel", "Inclusief draagtas", "Vaatwasserbestendig", "Opvouwbaar"], "Keuken- & huishoudartikelen > Huishoudelijke apparaten > Stofzuigers": ["Telescopische buis", "Vaste wielen", "HEPA filter", "Draaghendel", "High efficiency borstel", "Flexibele buis", "Uitwasbaar filter", "Inclusief accessoires", "Handgreep", "Lichtgewicht"], "Kampeermeubelen > Campingkeukens": ["Draagtas", "Ventilatiegaas aan achterzijde", "Verstelbare poten", "Windscherm", "Zijvakjes", "Ruimte voor gasfles", "Wasbak", "Oprolbaar blad", "MDF legplanken", "Ophanghaakjes", "Voor kooktoestellen tot 60 cm breed", "Opvouwbaar", "Met opbergboxen"], "Caravan & camper accessoires > Ramen > Raamisolatie": ["Regen", "Zon", "Sneeuw", "Stof", "Vuil", "Condensvorming", "Vorst", "Krassen", "Slijtage", "Warmte", "Kou", "UV-straling", "Kleurvervaging", "Wind"], "Klimaatbeheersing > Airco's > Split airco's": ["Afstandsbediening", "Aftapkraantje", "Digitale timer", "Geïntegreerd handvat", "Inclusief afvoerslang", "Slaapmode", "Temperatuur instelbaar", "Voelers ter bescherming bij ijsvorming", "Warmtepomp", "Watertankvol indicator", "Werkt tot een omgevingstemperatuur van 42°C", "Voelers ter detectie van ijsvorming", "Filters zijn verwisselbaar en reinigbaar", "Soft start (laag opstartvermogen)", "Voorzien van Chillout Airbox luchtverdeler"], "Klimaatbeheersing > Airco's > Ventilatoren": ["Afstandsbediening", "Aftapkraantje", "Digitale timer", "Geïntegreerd handvat", "Inclusief afvoerslang", "Slaapmode", "Temperatuur instelbaar", "Voelers ter bescherming bij ijsvorming", "Warmtepomp", "Watertankvol indicator", "Werkt tot een omgevingstemperatuur van 42°C", "Voelers ter detectie van ijsvorming", "Filters zijn verwisselbaar en reinigbaar", "Soft start (laag opstartvermogen)", "Voorzien van Chillout Airbox luchtverdeler"], "Kampeermeubelen > Campingstoelen > Klapstoelen": ["Inklapbaar", "Stapelbaar", "Verstelbaar", "Bekerhouder", "Draagband", "Hoofdsteun", "Inclusief draagtas", "Safety-lock", "Verstelbare hoofdsteun", "Veiligheidsriem", "Zonnedakje", "Geen", "Zijtafel", "Ergonomisch gevormde rugleuning", "Grondverankering mogelijk", "(Afneembaar) eetblad"], "Kampeermeubelen > Campingstoelen > Ligbedden": ["Inklapbaar", "Stapelbaar", "Verstelbaar", "Bekerhouder", "Draagband", "Hoofdsteun", "Inclusief draagtas", "Safety-lock", "Verstelbare hoofdsteun", "Veiligheidsriem", "Zonnedakje", "Geen", "Zijtafel", "Ergonomisch gevormde rugleuning", "Grondverankering mogelijk", "(Afneembaar) eetblad"], "Kampeermeubelen > Campingstoelen > Strandstoelen": ["Inklapbaar", "Stapelbaar", "Verstelbaar", "Bekerhouder", "Draagband", "Hoofdsteun", "Inclusief draagtas", "Safety-lock", "Verstelbare hoofdsteun", "Veiligheidsriem", "Zonnedakje", "Geen", "Zijtafel", "Ergonomisch gevormde rugleuning", "Grondverankering mogelijk", "(Afneembaar) eetblad"], "Kampeermeubelen > Campingstoelen > Vouwstoelen": ["Inklapbaar", "Stapelbaar", "Verstelbaar", "Bekerhouder", "Draagband", "Hoofdsteun", "Inclusief draagtas", "Safety-lock", "Verstelbare hoofdsteun", "Veiligheidsriem", "Zonnedakje", "Geen", "Zijtafel", "Ergonomisch gevormde rugleuning", "Grondverankering mogelijk", "(Afneembaar) eetblad"], "Caravan & camper accessoires > Beschermhoezen > Camperhoezen": ["Elastische band voor betere pasvorm", "2 bevestigingsogen", "Wasbaar tot 30°C", "Toegang tot caravan mogelijk", "Toegang tot camper mogelijk", "Versterkte hoeken", "Vermindert schimmelvorming", "Verstevigde zeilringen", "Biedt privacy", "Eenzijdige doorkijk", "Afritsbaar paneel", "Weerbestendig", "Oprolmogelijkheid", "Voor alle seizoenen geschikt", "Met reflectorstrepen", "Onderkant fietsendrager ook beschermd", "Met insteekhoes voor veiligheidsbord"], "Caravan & camper accessoires > Beschermhoezen > Caravanhoezen": ["Elastische band voor betere pasvorm", "2 bevestigingsogen", "Wasbaar tot 30°C", "Toegang tot caravan mogelijk", "Toegang tot camper mogelijk", "Versterkte hoeken", "Vermindert schimmelvorming", "Verstevigde zeilringen", "Biedt privacy", "Eenzijdige doorkijk", "Afritsbaar paneel", "Weerbestendig", "Oprolmogelijkheid", "Voor alle seizoenen geschikt", "Met reflectorstrepen", "Onderkant fietsendrager ook beschermd", "Met insteekhoes voor veiligheidsbord"], "Caravan & camper accessoires > Beschermhoezen > Disselhoezen": ["Elastische band voor betere pasvorm", "2 bevestigingsogen", "Wasbaar tot 30°C", "Toegang tot caravan mogelijk", "Toegang tot camper mogelijk", "Versterkte hoeken", "Vermindert schimmelvorming", "Verstevigde zeilringen", "Biedt privacy", "Eenzijdige doorkijk", "Afritsbaar paneel", "Weerbestendig", "Oprolmogelijkheid", "Voor alle seizoenen geschikt", "Met reflectorstrepen", "Onderkant fietsendrager ook beschermd", "Met insteekhoes voor veiligheidsbord"], "Caravan & camper accessoires > Beschermhoezen > Wielhoezen": ["Elastische band voor betere pasvorm", "2 bevestigingsogen", "Wasbaar tot 30°C", "Toegang tot caravan mogelijk", "Toegang tot camper mogelijk", "Versterkte hoeken", "Vermindert schimmelvorming", "Verstevigde zeilringen", "Biedt privacy", "Eenzijdige doorkijk", "Afritsbaar paneel", "Weerbestendig", "Oprolmogelijkheid", "Voor alle seizoenen geschikt", "Met reflectorstrepen", "Onderkant fietsendrager ook beschermd", "Met insteekhoes voor veiligheidsbord"], "Koelboxen & koelkasten > Koelboxen > Compressor koelboxen": ["Afneembare deksel", "Bekerhouder in deksel", "Geïntegreerde handvatten", "Geschikt voor 0,33-liter flessen", "Geschikt voor 0,5-liter flessen", "Geschikt voor 1-liter flessen", "Geschikt voor 1,5-liter flessen", "Geschikt voor 2-liter flessen", "Kabelvak in deksel", "Wieltjes", "Binnenverlichting", "Elektronische thermostaat", "Turbo functie", "Geschikt voor 0,75-liter flessen", "Condensafvoer", "USB-A aansluiting", "USB-C aansluiting"], "Water & sanitair > Camping toiletten > Draagbare toiletten": ["Aansluiting centrale watertank", "Afvaltank met wielen", "Geïntegreerde dekselvergrendeling", "Geïntegreerde schenktuit", "Niveau-indicator afvaltank", "Niveau-indicator spoelwater-tank", "Toiletrolhouder", "Beluchtingsknop op afvaltank", "Keramische binnenpot", "Inclusief hold down kit", "Geschikt voor kinderen", "Geschikt voor volwassenen", "Geïntegreerde watertank", "Bedieningspaneel", "Draaibare pot", "Dekselvergrendeling", "Geschikt voor SOG", "Inclusief uitneembare afvaltank"], "BBQ's & kooktoestellen > Kooktoestellen > Campinggasstellen": ["Deksel", "Windscherm", "Anti-slip voetjes", "Vaatwasserbestendige pannendragers", "Afneembare pannendragers", "Geïntegreerd handvat", "In hoogte verstelbare poten", "Legplanken", "Vermogen traploos instelbaar", "Spoelbak links", "Spoelbak rechts", "Hittebestendige glazen afdekplaat", "Geëmailleerde pannendragers", "Geëmailleerde branderdeksels", "Minimale afstand van muur: 4,5 cm", "Inclusief opbergkoffer", "Inclusief opbergtas", "Aansluiting links achter", "Aansluiting rechts achter"], "BBQ's & kooktoestellen > Kooktoestellen > Elektrische kookplaten": ["Deksel", "Windscherm", "Anti-slip voetjes", "Vaatwasserbestendige pannendragers", "Afneembare pannendragers", "Geïntegreerd handvat", "In hoogte verstelbare poten", "Legplanken", "Vermogen traploos instelbaar", "Spoelbak links", "Spoelbak rechts", "Hittebestendige glazen afdekplaat", "Geëmailleerde pannendragers", "Geëmailleerde branderdeksels", "Minimale afstand van muur: 4,5 cm", "Inclusief opbergkoffer", "Inclusief opbergtas", "Aansluiting links achter", "Aansluiting rechts achter"], "Keuken- & huishoudartikelen > Camping keukenspullen > Serviessets": ["BPA vrij", "Biologisch afbreekbaar", "Ftalaten vrij", "Inclusief mes", "Inclusief opbergtas", "Maataanduiding", "Onbreekbaar", "Lekvrij", "Stapelbaar", "Opvouwbaar", "Inclusief deksel", "Inclusief vork", "Inclusief lepel", "Anti-slip", "Krasbestendig", "Magnetisch", "Dubbelwandig", "Duurzaam", "Isolerend", "Lichtgewicht"], "BBQ's & kooktoestellen > Gasbarbecues": ["Afdekhoes", "Asopvang", "Bakplaat", "Brikettenhouders", "Brikettenrails", "Deksel", "Dekselhouder", "Gasfleshouder", "Gereedschapshaken", "Maatbeker", "Opberghoes", "Opbergtas", "Thermometer", "Verrijdbaar", "Vetafvoer", "Zijtafel", "Verstelbare grill", "Warmhoudrooster", "Zijbrander", "Geen", "Draaispit", "Stelvoetjes"], "Water & sanitair > Watertanks > Jerrycans": ["Aansluiting voor optionele kraan", "Kraantje", "Wieltjes", "Handvat", "Vouwbaar", "Afvoerslang", "Niveaumeter", "Din 61 dop (4,6 cm)", "Din 96 dop (8 cm)", "Ontluchtingsventiel", "Dop voor waterpomp", "Leegloop dop", "Platform voor toiletcassette", "Inclusief spanbanden", "Inclusief schenktuit", "Inclusief flexibele schenktuit", "Ophangoog", "Voorzien van slangsleuf", "Inclusief bevestigingsmateriaal", "Geen", "Inclusief bevestigingsogen", "Voor drinkwater geschikt"], "Elektra > Camping verlichting > Sfeerverlichting": ["Waterbestendig", "Kompas", "Handvat", "Ophanghaak", "Bluetooth speaker", "Telefoonoplader", "Opvouwbaar", "Batterij indicator", "Bewegingssensor", "Lichtsensor", "Extern dimbaar", "Dimbaar", "Touch bediening", "Met schakelaar", "180 graden draaibaar", "360 graden draaibaar", "Blauw en wit licht", "Dimbaar in 3 standen", "Traploos dimbaar", "Met afstandsbediening", "Watervaste strip", "Zelfklevend", "Koppelbaar", "Infrarood schakelaar", "Inclusief klemmen", "Inclusief klittenband", "Handlus", "Niet dimbaar", "Standlicht", "Zonnepaneel", "Niet waterbestendig"], "Water & sanitair > Waterslangen > Drinkwaterslangen": ["Voormenger", "Doorlopend warm water", "Led display", "Regelbare watertemperatuur: 30 - 55 graden", "Schakelaar", "Vermogen 12 volt: 200 watt", "Zuurstofvrije koperen warmtewisselaar", "Slot", "Ontluchting", "Geschikt voor warm water", "Geschikt voor koud water", "Doucheslang en kop", "Regelbare spuitmond", "Handgreep", "Kraanadapter 3/4\"", "Inclusief tuinsproeier", "Inclusief 1/2\" aansluiting", "Eenvoudig in te korten", "Led indicator", "Inclusief sensors", "RVS zeef", "Uitneembare zeef", "Afsluitbaar", "Geschikt voor Twin dompelpomp", "Geschikt voor Powerjet dompelpomp", "Met schroef tule", "Voor ca. 4500 liter", "Volledig automatisch", "Instelbaar waterpeil", "Aansluitbaar op waterleiding", "Geschikt voor drinkwater", "Niet geschikt voor ringleiding", "Vervangbaar filter", "Filtert chloor, geur en smaak"], "Keuken- & huishoudartikelen > Camping keukenspullen > Glazen": ["Bol", "Vlak", "Vlak en bol"]};
+
 
 
 sb.auth.onAuthStateChange((event, session) => {
@@ -866,7 +922,7 @@ async function loadProducts() {
 
   try {
     const [pData, cData] = await Promise.all([
-      fetchAll('products', 'id, ean, naam_nl, beschrijving_nl, mpn, serie, merk', { order: 'naam_nl' }),
+      fetchAll('products', 'id, ean, naam_nl, naam_de, naam_en, beschrijving_nl, mpn, serie, merk', { order: 'naam_nl' }),
       fetchAll('product_categories', 'id, product_id, cat_bol, cat_bol_id, cat_obelink, cat_obelink_id, cat_decathlon, cat_decathlon_id, cat_amazon')
     ]);
 
@@ -1109,7 +1165,7 @@ function renderProductList(products) {
       : `<span class="completeness-dot incomplete" title="${escapeAttr(completeness.missing.length ? 'Mist: ' + completeness.missing.join(', ') : 'Nog niet te bepalen')}">•</span>`;
 
     return `<div class="product-item ${currentProduct?.id === p.id ? 'active' : ''}" data-product-id="${escapeAttr(p.id)}">
-      <div class="product-item-name"><input class="product-select-box" type="checkbox" data-product-id="${escapeAttr(p.id)}" ${selectedProductIds.has(String(p.id)) ? 'checked' : ''}>${completenessHtml}<span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(p.naam_nl || '—')}</span></div>
+      <div class="product-item-name"><input class="product-select-box" type="checkbox" data-product-id="${escapeAttr(p.id)}" ${selectedProductIds.has(String(p.id)) ? 'checked' : ''}>${completenessHtml}<span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(p.naam_nl || p.naam_de || p.naam_en || ean || '—')}</span></div>
       <div class="product-item-meta"><span>${escHtml(p.mpn || ean || '—')}</span>${stockBadge}</div>
     </div>`;
   }).join('') + (products.length > maxVisible
@@ -1228,6 +1284,8 @@ async function saveProduct() {
       allProducts[idx] = {
         ...allProducts[idx],
         naam_nl: currentProduct.naam_nl,
+        naam_de: currentProduct.naam_de,
+        naam_en: currentProduct.naam_en,
         beschrijving_nl: currentProduct.beschrijving_nl,
         ean: currentProduct.ean,
         mpn: currentProduct.mpn,
@@ -1307,40 +1365,21 @@ function parseSettingsOptions(raw) {
 }
 
 function getFieldOptionsForKey(key) {
+  if (fieldOptions[key]) return fieldOptions[key];
+
   const currentFields = [];
   const c = currentCats || {};
-
   [['bol', c.cat_bol], ['obelink', c.cat_obelink], ['decathlon', c.cat_decathlon]].forEach(([mp, cat]) => {
     const template = (allTemplates[mp] || []).find(t => t.categorie_naam === cat);
     if (!template) return;
-
     (templateFieldsByTemplateId[template.id] || []).forEach(f => {
       if (f.master_veld === key) currentFields.push(f);
     });
   });
 
-  const templateField = currentFields.find(f => f.master_veld === key);
-
-  if (templateField) {
-    const templateOptions = parseSettingsOptions(templateField.opties);
-
-    // Template heeft eigen opties: die zijn leidend.
-    if (['dropdown', 'multi'].includes(templateField.veld_type) && templateOptions.length) {
-      return {
-        opties: templateOptions,
-        multi: templateField.veld_type === 'multi'
-      };
-    }
-
-    // Template heeft geen opties: gebruik globale field_options als fallback.
-    if (fieldOptions[key]) {
-      return fieldOptions[key];
-    }
-
-    return null;
-  }
-
-  return fieldOptions[key] || null;
+  const optionField = currentFields.find(f => ['dropdown', 'multi'].includes(f.veld_type) && parseSettingsOptions(f.opties).length);
+  if (!optionField) return null;
+  return { opties: parseSettingsOptions(optionField.opties), multi: optionField.veld_type === 'multi' };
 }
 
 function getDefaultValueForKey(key) {
@@ -1360,32 +1399,30 @@ function field(key, label, value, type = 'text', source = 'product', required = 
   const reqHtml = required ? ' <span class="field-required">●</span>' : '';
   const opts = getFieldOptionsForKey(key);
 
-if (opts && opts.multi) {
-  const selected = val ? String(val).split(' | ').map(s => s.trim()).filter(Boolean) : [];
-  const uid = 'ms_' + key + '_' + source;
+  if (opts && opts.multi) {
+    const selected = val ? String(val).split(' | ').map(s => s.trim()).filter(Boolean) : [];
+    const uid = 'ms_' + key + '_' + source;
 
-  const tagsHtml = selected.map(s =>
-    `<span class="ms-tag">${escHtml(s)}<span class="ms-tag-remove" onclick="msRemoveTag(event,this,'${escapeAttr(uid)}')" data-val="${escapeAttr(s)}">×</span></span>`
-  ).join('');
+    if ((opts.opties || []).length <= 6) {
+      const checkboxes = opts.opties.map(o => {
+        const checked = selected.includes(o) ? 'checked' : '';
+        return `<label style="display:inline-flex;align-items:center;gap:4px;margin:2px 4px 2px 0;padding:3px 8px;background:var(--surface);border:1px solid var(--border);border-radius:4px;cursor:pointer;font-size:12px;">
+          <input type="checkbox" ${checked} data-key="${escapeAttr(key)}" data-source="${escapeAttr(source)}" onchange="markMulti(this, '${escapeAttr(key)}', '${escapeAttr(source)}')" style="cursor:pointer;"> ${escHtml(o)}
+        </label>`;
+      }).join('');
+      return `<div class="field${fw}"><label class="field-label">${escHtml(label)}${reqHtml}</label><div style="padding:6px 0;line-height:1.8;">${checkboxes}</div></div>`;
+    }
 
-  return `<div class="field${fw} ms-wrap" id="${escapeAttr(uid)}_wrap">
-    <label class="field-label">${escHtml(label)}${reqHtml}</label>
-    <div class="ms-input" onclick="msFocus('${escapeAttr(uid)}')">
-      <span id="${escapeAttr(uid)}_tags">${tagsHtml}</span>
-      <input class="ms-search"
-        id="${escapeAttr(uid)}_search"
-        type="text"
-        placeholder="${selected.length ? '' : 'Zoek of kies...'}"
-        oninput="msFilter('${escapeAttr(uid)}')"
-        onfocus="msOpen('${escapeAttr(uid)}')"
-        data-key="${escapeAttr(key)}"
-        data-source="${escapeAttr(source)}"
-        data-opts="${escapeAttr(JSON.stringify(opts.opties || []))}"
-        data-selected="${escapeAttr(selected.join(' | '))}">
-    </div>
-    <div class="ms-dropdown" id="${escapeAttr(uid)}_dd"></div>
-  </div>`;
-}
+    const tagsHtml = selected.map(s => `<span class="ms-tag">${escHtml(s)}<span class="ms-tag-remove" onclick="msRemoveTag(event,this,'${escapeAttr(uid)}')" data-val="${escapeAttr(s)}">×</span></span>`).join('');
+    return `<div class="field${fw} ms-wrap" id="${escapeAttr(uid)}_wrap">
+      <label class="field-label">${escHtml(label)}${reqHtml}</label>
+      <div class="ms-input" onclick="msFocus('${escapeAttr(uid)}')">
+        <span id="${escapeAttr(uid)}_tags">${tagsHtml}</span>
+        <input class="ms-search" id="${escapeAttr(uid)}_search" type="text" placeholder="${selected.length ? '' : 'Zoek of kies...'}" oninput="msFilter('${escapeAttr(uid)}')" onfocus="msOpen('${escapeAttr(uid)}')" data-key="${escapeAttr(key)}" data-source="${escapeAttr(source)}" data-opts="${escapeAttr(JSON.stringify(opts.opties || []))}" data-selected="${escapeAttr(selected.join(' | '))}">
+      </div>
+      <div class="ms-dropdown" id="${escapeAttr(uid)}_dd"></div>
+    </div>`;
+  }
 
   if (opts && !opts.multi) {
     const options = (opts.opties || []).map(o => `<option value="${escapeAttr(o)}" ${o === val ? 'selected' : ''}>${escHtml(o)}</option>`).join('');
@@ -1932,78 +1969,165 @@ function previewImportCsv() {
   preview.innerHTML = `<div style="margin-bottom:8px;">${importRows.length} rijen gevonden.</div><table class="preview-table"><thead><tr>${headers.map(h => `<th>${escHtml(h)}</th>`).join('')}</tr></thead><tbody>${importRows.slice(0, 10).map(row => `<tr>${headers.map(h => `<td>${escHtml(row[h])}</td>`).join('')}</tr>`).join('')}</tbody></table>${importRows.length > 10 ? '<div style="margin-top:8px;color:var(--text3);">Alleen de eerste 10 rijen worden getoond.</div>' : ''}`;
 }
 
+function resetImportStatus() {
+  const wrap = document.getElementById('importProgressWrap');
+  const fill = document.getElementById('importProgressFill');
+  const text = document.getElementById('importProgressText');
+  const result = document.getElementById('importResult');
+  if (wrap) wrap.style.display = 'none';
+  if (fill) fill.style.width = '0%';
+  if (text) text.textContent = 'Import voorbereiden...';
+  if (result) {
+    result.style.display = 'none';
+    result.className = 'import-result';
+    result.innerHTML = '';
+  }
+}
+
+function setImportProgress(done, total, message = '') {
+  const wrap = document.getElementById('importProgressWrap');
+  const fill = document.getElementById('importProgressFill');
+  const text = document.getElementById('importProgressText');
+  const pct = total ? Math.round((done / total) * 100) : 0;
+  if (wrap) wrap.style.display = 'block';
+  if (fill) fill.style.width = pct + '%';
+  if (text) text.textContent = message || `Importeren: ${done} van ${total} regels (${pct}%)`;
+}
+
+function showImportResult(type, html) {
+  const result = document.getElementById('importResult');
+  if (!result) return;
+  result.style.display = 'block';
+  result.className = `import-result ${type}`;
+  result.innerHTML = html;
+}
+
 async function runImportCsv() {
   if (!importRows.length) previewImportCsv();
   if (!importRows.length) {
     showToast('Geen importregels gevonden', 'error');
+    showImportResult('error', 'Geen importregels gevonden. Controleer of de CSV een headerregel en minimaal één productregel bevat.');
     return;
   }
 
   if (!confirm(`Weet je zeker dat je ${importRows.length} regels wilt importeren?`)) return;
 
+  resetImportStatus();
+  setImportProgress(0, importRows.length, 'Import voorbereiden...');
+
+  const btn = document.getElementById('importRunBtn');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Importeren...';
+  }
+
   const productFields = ['ean','naam_nl','naam_de','naam_en','beschrijving_nl','beschrijving_de','merk','mpn','serie','afbeeldingen','bol_custom_titel','amazon_bulletpoint_1','amazon_bulletpoint_2','amazon_bulletpoint_3','amazon_bulletpoint_4','amazon_bulletpoint_5','amazon_zoektrefwoorden'];
   const catFields = ['cat_bol','cat_bol_id','cat_obelink','cat_obelink_id','cat_decathlon','cat_decathlon_id','cat_amazon'];
 
+  let created = 0;
+  let updated = 0;
+  let skipped = 0;
+  let firstImportedEan = '';
+  const errors = [];
+
   try {
-    let created = 0;
-    let updated = 0;
+    for (let index = 0; index < importRows.length; index++) {
+      const row = importRows[index];
+      const lineNumber = index + 2;
 
-    for (const row of importRows) {
-      const ean = normalizeEan(row.ean || row.EAN || '');
-      if (!ean) continue;
+      try {
+        const ean = normalizeEan(row.ean || row.EAN || '');
+        if (!ean) {
+          skipped++;
+          errors.push(`Regel ${lineNumber}: overgeslagen, EAN ontbreekt.`);
+          setImportProgress(index + 1, importRows.length);
+          continue;
+        }
+        if (!firstImportedEan) firstImportedEan = ean;
 
-      const productPayload = {};
-      productFields.forEach(f => {
-        if (row[f] !== undefined && String(row[f]).trim() !== '') productPayload[f] = f === 'ean' ? ean : row[f];
-      });
-      productPayload.ean = ean;
-      productPayload.bijgewerkt_op = new Date().toISOString();
+        const productPayload = {};
+        productFields.forEach(f => {
+          if (row[f] !== undefined && String(row[f]).trim() !== '') productPayload[f] = f === 'ean' ? ean : row[f];
+        });
+        productPayload.ean = ean;
+        productPayload.bijgewerkt_op = new Date().toISOString();
 
-      const existing = await sb.from('products').select('id').eq('ean', ean).maybeSingle();
-      if (existing.error) throw existing.error;
+        const existing = await sb.from('products').select('id').eq('ean', ean).maybeSingle();
+        if (existing.error) throw existing.error;
 
-      let productId;
-      if (existing.data?.id) {
-        productId = existing.data.id;
-        const oldProduct = allProducts.find(p => normalizeEan(p.ean) === ean) || {};
-        await logPendingChanges('product', productPayload, productId, oldProduct, 'csv_import_update');
-        const { error } = await sb.from('products').update(productPayload).eq('id', productId);
-        if (error) throw error;
-        updated++;
-      } else {
-        const { data, error } = await sb.from('products').insert(productPayload).select('id').single();
-        if (error) throw error;
-        productId = data.id;
-        await logPendingChanges('product', productPayload, productId, {}, 'csv_import_create');
-        created++;
+        let productId;
+        if (existing.data?.id) {
+          productId = existing.data.id;
+          const oldProduct = allProducts.find(p => normalizeEan(p.ean) === ean) || {};
+          await logPendingChanges('product', productPayload, productId, oldProduct, 'csv_import_update');
+          const { error } = await sb.from('products').update(productPayload).eq('id', productId);
+          if (error) throw error;
+          updated++;
+        } else {
+          const { data, error } = await sb.from('products').insert(productPayload).select('id').single();
+          if (error) throw error;
+          productId = data.id;
+          await logPendingChanges('product', productPayload, productId, {}, 'csv_import_create');
+          created++;
+        }
+
+        const catsPayload = {};
+        catFields.forEach(f => {
+          if (row[f] !== undefined && String(row[f]).trim() !== '') catsPayload[f] = row[f];
+        });
+        if (Object.keys(catsPayload).length) {
+          await logPendingChanges('cats', catsPayload, productId, productCatsMap[productId] || {}, 'csv_import_update');
+          const { error } = await sb.from('product_categories').upsert({ product_id: productId, ...catsPayload, bijgewerkt_op: new Date().toISOString() }, { onConflict: 'product_id' });
+          if (error) throw error;
+        }
+
+        const attrsPayload = {};
+        Object.entries(row).forEach(([key, val]) => {
+          if (!key || productFields.includes(key) || catFields.includes(key)) return;
+          if (String(val).trim() !== '') attrsPayload[key] = val;
+        });
+        if (Object.keys(attrsPayload).length) {
+          await logPendingChanges('attrs', attrsPayload, productId, productAttrsMap[productId] || {}, 'csv_import_update');
+          const { error } = await sb.from('product_attributes').upsert({ product_id: productId, ...attrsPayload, bijgewerkt_op: new Date().toISOString() }, { onConflict: 'product_id' });
+          if (error) throw error;
+        }
+      } catch (rowError) {
+        skipped++;
+        errors.push(`Regel ${lineNumber}: ${rowError.message || rowError}`);
       }
 
-      const catsPayload = {};
-      catFields.forEach(f => { if (row[f] !== undefined && String(row[f]).trim() !== '') catsPayload[f] = row[f]; });
-      if (Object.keys(catsPayload).length) {
-        await logPendingChanges('cats', catsPayload, productId, productCatsMap[productId] || {}, 'csv_import_update');
-        const { error } = await sb.from('product_categories').upsert({ product_id: productId, ...catsPayload, bijgewerkt_op: new Date().toISOString() }, { onConflict: 'product_id' });
-        if (error) throw error;
-      }
-
-      const attrsPayload = {};
-      Object.entries(row).forEach(([key, val]) => {
-        if (!key || productFields.includes(key) || catFields.includes(key)) return;
-        if (String(val).trim() !== '') attrsPayload[key] = val;
-      });
-      if (Object.keys(attrsPayload).length) {
-        await logPendingChanges('attrs', attrsPayload, productId, productAttrsMap[productId] || {}, 'csv_import_update');
-        const { error } = await sb.from('product_attributes').upsert({ product_id: productId, ...attrsPayload, bijgewerkt_op: new Date().toISOString() }, { onConflict: 'product_id' });
-        if (error) throw error;
-      }
+      setImportProgress(index + 1, importRows.length);
+      await new Promise(resolve => setTimeout(resolve, 0));
     }
 
+    if (firstImportedEan) {
+      document.getElementById('voorraadFilter').value = '';
+      document.getElementById('categoryFilter').value = '';
+      document.getElementById('searchInput').value = firstImportedEan;
+    }
+
+    setImportProgress(importRows.length, importRows.length, 'Productlijst opnieuw laden...');
     await loadProducts();
     await loadAllProductAttributesForCompleteness();
-    showToast(`Import klaar: ${created} nieuw, ${updated} bijgewerkt`, 'success');
+    applyFilters();
+
+    const errorHtml = errors.length
+      ? `<div class="error-list">${errors.slice(0, 30).map(e => `<div>${escHtml(e)}</div>`).join('')}${errors.length > 30 ? `<div>... en nog ${errors.length - 30} meldingen</div>` : ''}</div>`
+      : '';
+
+    const resultType = errors.length ? 'warning' : 'success';
+    showImportResult(resultType, `<strong>Import voltooid.</strong><br>Nieuw: ${created} · Bijgewerkt: ${updated} · Overgeslagen/fout: ${skipped}${firstImportedEan ? `<br>Zoekfilter is gezet op eerste geïmporteerde EAN: ${escHtml(firstImportedEan)}` : ''}${errorHtml}`);
+    showToast(`Import voltooid: ${created} nieuw, ${updated} bijgewerkt, ${skipped} overgeslagen`, errors.length ? 'error' : 'success');
   } catch (e) {
     console.error(e);
+    showImportResult('error', `<strong>Import afgebroken.</strong><br>${escHtml(e.message || e)}`);
     showToast('Import mislukt: ' + e.message, 'error');
+  } finally {
+    setImportProgress(importRows.length, importRows.length, 'Import voltooid');
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'Importeren';
+    }
   }
 }
 
