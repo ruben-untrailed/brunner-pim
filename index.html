@@ -7,7 +7,6 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
-
 :root {
   --bg: #0f0f0f;
   --surface: #1a1a1a;
@@ -22,9 +21,7 @@
   --red: #e05252;
   --radius: 6px;
 }
-
 * { box-sizing: border-box; margin: 0; padding: 0; }
-
 body {
   font-family: 'DM Sans', sans-serif;
   background: var(--bg);
@@ -32,7 +29,6 @@ body {
   min-height: 100vh;
   font-size: 14px;
 }
-
 .login-screen {
   position: fixed;
   inset: 0;
@@ -42,7 +38,6 @@ body {
   justify-content: center;
   z-index: 9999;
 }
-
 .login-box {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -54,16 +49,13 @@ body {
   flex-direction: column;
   gap: 16px;
 }
-
 .login-header { text-align: center; margin-bottom: 8px; }
-
 .app {
   display: grid;
   grid-template-columns: 300px 1fr;
   height: 100vh;
   overflow: hidden;
 }
-
 .sidebar {
   background: var(--surface);
   border-right: 1px solid var(--border);
@@ -71,9 +63,7 @@ body {
   flex-direction: column;
   overflow: hidden;
 }
-
 .sidebar-header { padding: 20px; border-bottom: 1px solid var(--border); }
-
 .logo {
   font-family: 'DM Mono', monospace;
   font-size: 11px;
@@ -82,13 +72,11 @@ body {
   color: var(--accent);
   margin-bottom: 4px;
 }
-
 .logo-sub {
   font-size: 11px;
   color: var(--text3);
   font-family: 'DM Mono', monospace;
 }
-
 .search-wrap {
   padding: 12px 16px;
   border-bottom: 1px solid var(--border);
@@ -96,7 +84,6 @@ body {
   flex-direction: column;
   gap: 8px;
 }
-
 input, select, textarea {
   background: var(--surface2);
   border: 1px solid var(--border);
@@ -108,29 +95,24 @@ input, select, textarea {
   outline: none;
   width: 100%;
 }
-
 input:focus, select:focus, textarea:focus { border-color: var(--accent2); }
 input::placeholder, textarea::placeholder { color: var(--text3); }
 select { cursor: pointer; }
 select option { background: var(--surface); }
 textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
-
 .product-list {
   flex: 1;
   overflow-y: auto;
   padding: 8px 0;
 }
-
 .product-list::-webkit-scrollbar,
 .content::-webkit-scrollbar,
 .modal-body::-webkit-scrollbar,
 .settings-list::-webkit-scrollbar { width: 5px; height: 5px; }
-
 .product-list::-webkit-scrollbar-thumb,
 .content::-webkit-scrollbar-thumb,
 .modal-body::-webkit-scrollbar-thumb,
 .settings-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-
 .product-item {
   padding: 10px 16px;
   cursor: pointer;
@@ -139,7 +121,6 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
 }
 .product-item:hover { background: var(--surface2); }
 .product-item.active { background: var(--surface2); border-left-color: var(--accent); }
-
 .product-item-name {
   font-size: 13px;
   font-weight: 500;
@@ -151,7 +132,6 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
   align-items: center;
   gap: 7px;
 }
-
 .product-item-meta {
   font-size: 11px;
   color: var(--text3);
@@ -161,7 +141,6 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
   align-items: center;
   padding-left: 21px;
 }
-
 .completeness-dot {
   width: 14px;
   height: 14px;
@@ -175,9 +154,7 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
 }
 .completeness-dot.complete { background: var(--green); color: #06120c; }
 .completeness-dot.incomplete { background: var(--border); color: var(--text3); }
-
 .main { display: flex; flex-direction: column; overflow: hidden; }
-
 .main-header {
   padding: 16px 24px;
   border-bottom: 1px solid var(--border);
@@ -188,7 +165,6 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
   gap: 12px;
   flex-shrink: 0;
 }
-
 .product-title {
   font-size: 16px;
   font-weight: 600;
@@ -196,14 +172,12 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
 .product-ean {
   font-family: 'DM Mono', monospace;
   font-size: 11px;
   color: var(--text3);
   margin-top: 2px;
 }
-
 .btn {
   padding: 7px 16px;
   border-radius: var(--radius);
@@ -222,7 +196,6 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
 .btn-ghost:hover { border-color: var(--text2); color: var(--text); }
 .btn-danger { background: transparent; color: var(--red); border: 1px solid var(--border); }
 .btn-danger:hover { border-color: var(--red); }
-
 .tabs {
   display: flex;
   padding: 0 24px;
@@ -230,7 +203,6 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
   background: var(--surface);
   flex-shrink: 0;
 }
-
 .tab {
   padding: 12px 16px;
   font-size: 13px;
@@ -241,10 +213,8 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
 }
 .tab:hover { color: var(--text); }
 .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-
 .content { flex: 1; overflow-y: auto; padding: 24px; }
 .section { margin-bottom: 28px; }
-
 .section-title {
   font-size: 11px;
   font-weight: 600;
@@ -257,18 +227,15 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
   gap: 8px;
 }
 .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-
 .fields-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 12px;
 }
-
 .field { display: flex; flex-direction: column; gap: 4px; }
 .field-full { grid-column: 1 / -1; }
 .field-label { font-size: 11px; font-weight: 500; color: var(--text2); display: flex; gap: 4px; }
 .field-required { color: var(--accent); font-size: 10px; }
-
 .cat-select-wrap {
   background: var(--surface2);
   border: 1px solid var(--border);
@@ -280,7 +247,6 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
   gap: 12px;
 }
 .cat-select-label { font-size: 12px; color: var(--text2); white-space: nowrap; }
-
 .toast {
   position: fixed;
   bottom: 24px;
@@ -299,22 +265,19 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
 .toast.show { transform: translateY(0); opacity: 1; }
 .toast.success { border-color: var(--green); color: var(--green); }
 .toast.error { border-color: var(--red); color: var(--red); }
-
 .badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 500; }
 .badge-bol { background: #fff3; color: #4a9eff; }
 .badge-obelink { background: #fff3; color: #f0a050; }
 .badge-decathlon { background: #fff3; color: #4caf7d; }
 .badge-amazon { background: #fff3; color: #f0c040; }
-
+.badge-woocommerce { background: #fff3; color: #96588a; }
 .loading { display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text3); font-size: 13px; }
 .stats-row { display: flex; gap: 12px; padding: 12px 16px; border-top: 1px solid var(--border); flex-shrink: 0; }
 .stat { font-size: 11px; color: var(--text3); font-family: 'DM Mono', monospace; }
 .stat span { color: var(--text2); }
-
 .image-preview { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
 .image-thumb { width: 60px; height: 60px; object-fit: cover; border-radius: var(--radius); border: 1px solid var(--border); cursor: pointer; }
 .no-product { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 12px; color: var(--text3); }
-
 .ms-wrap { position: relative; }
 .ms-input { min-height: 36px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 5px 8px; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; cursor: text; }
 .ms-input:focus-within { border-color: var(--accent2); }
@@ -329,7 +292,6 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
 .ms-tag-remove { cursor: pointer; color: var(--text3); }
 .ms-tag-remove:hover { color: var(--red); }
 .ms-empty { padding: 10px; color: var(--text3); font-size: 12px; }
-
 .modal-backdrop {
   display: none;
   position: fixed;
@@ -362,21 +324,18 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
 .settings-table th { color: var(--text3); font-weight: 600; text-transform: uppercase; font-size: 10px; letter-spacing: .08em; }
 .settings-table input, .settings-table select, .settings-table textarea, .settings-card input, .settings-card select, .settings-card textarea { background: var(--surface); min-height: 38px; font-size: 13px; }
 .settings-table textarea { min-height: 72px; resize: vertical; line-height: 1.4; }
-
 .product-select-box {
   width: 14px;
   height: 14px;
   flex-shrink: 0;
   accent-color: var(--accent);
 }
-
 .preview-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 12px;
   min-width: 900px;
 }
-
 .preview-table th,
 .preview-table td {
   border-bottom: 1px solid var(--border);
@@ -384,7 +343,6 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
   text-align: left;
   vertical-align: top;
 }
-
 .preview-table th {
   color: var(--text3);
   font-weight: 600;
@@ -392,7 +350,6 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
   font-size: 10px;
   letter-spacing: .08em;
 }
-
 .history-item {
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -401,14 +358,12 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
   margin-bottom: 8px;
   font-size: 12px;
 }
-
 .history-meta {
   color: var(--text3);
   font-family: 'DM Mono', monospace;
   font-size: 10px;
   margin-bottom: 5px;
 }
-
 .progress-wrap {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -417,7 +372,6 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
   margin: 12px 0;
   display: none;
 }
-
 .progress-bar {
   width: 100%;
   height: 8px;
@@ -426,7 +380,6 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
   overflow: hidden;
   margin-top: 8px;
 }
-
 .progress-fill {
   height: 100%;
   width: 0%;
@@ -434,7 +387,6 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
   border-radius: 99px;
   transition: width .2s ease;
 }
-
 .import-result {
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -444,11 +396,9 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
   font-size: 12px;
   display: none;
 }
-
 .import-result.success { border-color: var(--green); color: var(--green); }
 .import-result.error { border-color: var(--red); color: var(--red); }
 .import-result.warning { border-color: var(--accent); color: var(--text); }
-
 .error-list {
   margin-top: 8px;
   max-height: 180px;
@@ -458,7 +408,6 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
   font-size: 11px;
   line-height: 1.5;
 }
-
 @media (max-width: 900px) {
   .app { grid-template-columns: 1fr; }
   .sidebar { display: none; }
@@ -467,7 +416,6 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
 </style>
 </head>
 <body>
-
 <div class="login-screen" id="loginScreen">
   <div class="login-box">
     <div class="login-header">
@@ -485,7 +433,6 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
     <button class="btn btn-primary" id="loginBtn" onclick="handleLogin()" style="width:100%;margin-top:8px;">Inloggen</button>
   </div>
 </div>
-
 <div class="app" id="mainApp" style="display:none;">
   <div class="sidebar">
     <div class="sidebar-header">
@@ -502,7 +449,6 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
       <button class="btn btn-ghost" style="font-size:11px;padding:4px 8px;width:100%;margin-top:8px;" onclick="openSettings()">Instellingen</button>
       <button class="btn btn-ghost" style="font-size:11px;padding:4px 8px;width:100%;margin-top:8px;" onclick="handleLogout()">Uitloggen</button>
     </div>
-
     <div class="search-wrap">
       <input type="text" id="searchInput" placeholder="Zoek op naam, EAN, MPN..." autocomplete="off">
       <select id="categoryFilter" onchange="applyFilters()">
@@ -515,21 +461,17 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
         <option value="NOT_IN_EXACT">Niet in Exact</option>
       </select>
     </div>
-
     <div class="product-list" id="productList"><div class="loading">Producten laden...</div></div>
-
     <div class="stats-row">
       <div class="stat">Totaal: <span id="statTotal">—</span></div>
       <div class="stat">Geladen: <span id="statLoaded">—</span></div>
     </div>
   </div>
-
   <div class="main">
     <div id="noProduct" class="no-product">
       <div style="font-size:32px;opacity:.2">◈</div>
       <div style="font-size:14px">Selecteer een product</div>
     </div>
-
     <div id="productEditor" style="display:none;flex-direction:column;height:100%;overflow:hidden;">
       <div class="main-header">
         <div style="min-width:0;">
@@ -543,21 +485,17 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
           <button class="btn btn-primary" id="saveBtn" onclick="saveProduct()">Opslaan</button>
         </div>
       </div>
-
       <div class="tabs">
         <div class="tab active" data-tab="basis" onclick="switchTab('basis', this)">Basisinfo</div>
         <div class="tab" data-tab="attributen" onclick="switchTab('attributen', this)">Attributen</div>
         <div class="tab" data-tab="marketplaces" onclick="switchTab('marketplaces', this)">Marketplaces</div>
         <div class="tab" data-tab="amazon" onclick="switchTab('amazon', this)">Amazon teksten</div>
       </div>
-
       <div class="content" id="tabContent"><div class="loading">Product laden...</div></div>
     </div>
   </div>
 </div>
-
 <div class="toast" id="toast"></div>
-
 <div class="modal-backdrop" id="settingsModal">
   <div class="modal-panel">
     <div class="modal-header">
@@ -578,6 +516,7 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
               <option value="obelink">Obelink</option>
               <option value="decathlon">Decathlon</option>
               <option value="amazon">Amazon</option>
+              <option value="woocommerce">WooCommerce</option>
             </select>
           </div>
           <div class="field" style="margin-bottom:10px;">
@@ -587,7 +526,6 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
           <button class="btn btn-primary" style="width:100%;margin-bottom:12px;" onclick="newSettingsCategory()">+ Nieuwe categorie</button>
           <div class="settings-list" id="settingsCategoryList"></div>
         </div>
-
         <div class="settings-card">
           <div class="section-title">Categorie template</div>
           <div id="settingsEditorEmpty" style="color:var(--text3);font-size:13px;padding:20px 0;">Selecteer of maak een categorie.</div>
@@ -605,12 +543,10 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
                 <button class="btn btn-primary" onclick="saveSettingsCategory()">Categorie opslaan</button>
               </div>
             </div>
-
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px;">
               <div style="font-size:12px;color:var(--text2);">Velden voor deze categorie</div>
               <button class="btn btn-ghost" onclick="addSettingsFieldRow()">+ Veld toevoegen</button>
             </div>
-
             <table class="settings-table">
               <thead>
                 <tr>
@@ -625,7 +561,6 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
               </thead>
               <tbody id="settingsFieldsBody"></tbody>
             </table>
-
             <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;">
               <button class="btn btn-ghost" onclick="reloadSettingsFields()">Herlaad</button>
               <button class="btn btn-primary" onclick="saveSettingsFields()">Velden opslaan</button>
@@ -636,7 +571,6 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
     </div>
   </div>
 </div>
-
 <div class="modal-backdrop" id="bulkModal">
   <div class="modal-panel" style="width:min(760px, calc(100vw - 32px));">
     <div class="modal-header">
@@ -680,7 +614,6 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
     </div>
   </div>
 </div>
-
 <div class="modal-backdrop" id="importModal">
   <div class="modal-panel">
     <div class="modal-header">
@@ -717,7 +650,6 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
     </div>
   </div>
 </div>
-
 <div class="modal-backdrop" id="historyModal">
   <div class="modal-panel" style="width:min(900px, calc(100vw - 32px));">
     <div class="modal-header">
@@ -732,7 +664,6 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
     </div>
   </div>
 </div>
-
 <div id="wooModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9998;align-items:center;justify-content:center;">
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;width:360px;display:flex;flex-direction:column;gap:16px;">
     <div style="font-weight:600;font-size:15px;">WooCommerce Export</div>
@@ -747,12 +678,10 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
     </div>
   </div>
 </div>
-
 <script>
 const SUPABASE_URL = 'https://furblfnwplmpnqlbxbcm.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ1cmJsZm53cGxtcG5xbGJ4YmNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3NTUzNTUsImV4cCI6MjA5MjMzMTM1NX0.tRbB2rbkjUm0Fsi0xP0eZXZZ379o6a0Dy3SKipTlEy4';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
 let allProducts = [];
 let filteredProducts = [];
 let currentProduct = null;
@@ -777,18 +706,20 @@ let renderToken = 0;
 let searchTimer = null;
 let selectedProductIds = new Set();
 let importRows = [];
+const MARKETPLACES = [
+  { key: 'bol', label: 'BOL.com', badge: 'badge-bol', catKey: 'cat_bol', idKey: 'cat_bol_id' },
+  { key: 'obelink', label: 'Obelink', badge: 'badge-obelink', catKey: 'cat_obelink', idKey: 'cat_obelink_id' },
+  { key: 'decathlon', label: 'Decathlon', badge: 'badge-decathlon', catKey: 'cat_decathlon', idKey: 'cat_decathlon_id' },
+  { key: 'amazon', label: 'Amazon', badge: 'badge-amazon', catKey: 'cat_amazon', idKey: 'cat_amazon_id' },
+  { key: 'woocommerce', label: 'WooCommerce', badge: 'badge-woocommerce', catKey: 'cat_woocommerce', idKey: 'cat_woocommerce_id' }
+];
 const catKenmerken = {"Caravan & camper accessoires > Opzetspiegels > Caravanspiegels": ["Trillingsvrij", "Inclusief opbergtas"], "Caravan & camper accessoires > Opzetspiegels > Dodehoekspiegels": ["Trillingsvrij", "Inclusief opbergtas"], "Slapen > Luchtbedden": ["Inclusief opberghoes", "Inclusief reparatiesetje", "Ingebouwde pomp", "Geïntegreerd hoofdkussen"], "Caravan & camper accessoires > Chassis > Levellers": ["Inclusief draagtas", "Anti-slip laag", "Voorkomt vervorming van de band", "Koppelbaar", "Stapelbaar", "Geschikt voor elke ondergrond", "Voor banden van 13 t/m 16 inch"], "Caravan & camper accessoires > Opstapjes & ladders > Opstapjes": ["Antislip", "Verstelbare voetjes", "Inklapbaar", "Draagbaar", "Handmatig in- en uitklappen", "Elektrisch in- en uitklappen", "Vouwbaar"], "Kampeermeubelen > Campingtafels > Campingtafels inklapbaar": ["Deelbaar blad", "Handvat", "Inclusief draagtas", "Opbergnet", "Stelvoetjes", "Afneembare poten", "Verstelbare poten", "Afneembaar blad", "Geïntegreerde waterpas"], "Kampeermeubelen > Campingtafels > Roltafels camping": ["Deelbaar blad", "Handvat", "Inclusief draagtas", "Opbergnet", "Stelvoetjes", "Afneembare poten", "Verstelbare poten", "Afneembaar blad", "Geïntegreerde waterpas"], "Keuken- & huishoudartikelen > Camping keukenspullen > Pannen": ["Anti-aanbaklaag", "Afneembaar handvat", "Wegklapbare handgreep", "Te gebruiken als ovenschaal", "Thermo spot", "Inclusief deksel", "Inclusief draagtas", "Vaatwasserbestendig", "Opvouwbaar"], "Keuken- & huishoudartikelen > Huishoudelijke apparaten > Stofzuigers": ["Telescopische buis", "Vaste wielen", "HEPA filter", "Draaghendel", "High efficiency borstel", "Flexibele buis", "Uitwasbaar filter", "Inclusief accessoires", "Handgreep", "Lichtgewicht"], "Kampeermeubelen > Campingkeukens": ["Draagtas", "Ventilatiegaas aan achterzijde", "Verstelbare poten", "Windscherm", "Zijvakjes", "Ruimte voor gasfles", "Wasbak", "Oprolbaar blad", "MDF legplanken", "Ophanghaakjes", "Voor kooktoestellen tot 60 cm breed", "Opvouwbaar", "Met opbergboxen"], "Caravan & camper accessoires > Ramen > Raamisolatie": ["Regen", "Zon", "Sneeuw", "Stof", "Vuil", "Condensvorming", "Vorst", "Krassen", "Slijtage", "Warmte", "Kou", "UV-straling", "Kleurvervaging", "Wind"], "Klimaatbeheersing > Airco's > Split airco's": ["Afstandsbediening", "Aftapkraantje", "Digitale timer", "Geïntegreerd handvat", "Inclusief afvoerslang", "Slaapmode", "Temperatuur instelbaar", "Voelers ter bescherming bij ijsvorming", "Warmtepomp", "Watertankvol indicator", "Werkt tot een omgevingstemperatuur van 42°C", "Voelers ter detectie van ijsvorming", "Filters zijn verwisselbaar en reinigbaar", "Soft start (laag opstartvermogen)", "Voorzien van Chillout Airbox luchtverdeler"], "Klimaatbeheersing > Airco's > Ventilatoren": ["Afstandsbediening", "Aftapkraantje", "Digitale timer", "Geïntegreerd handvat", "Inclusief afvoerslang", "Slaapmode", "Temperatuur instelbaar", "Voelers ter bescherming bij ijsvorming", "Warmtepomp", "Watertankvol indicator", "Werkt tot een omgevingstemperatuur van 42°C", "Voelers ter detectie van ijsvorming", "Filters zijn verwisselbaar en reinigbaar", "Soft start (laag opstartvermogen)", "Voorzien van Chillout Airbox luchtverdeler"], "Kampeermeubelen > Campingstoelen > Klapstoelen": ["Inklapbaar", "Stapelbaar", "Verstelbaar", "Bekerhouder", "Draagband", "Hoofdsteun", "Inclusief draagtas", "Safety-lock", "Verstelbare hoofdsteun", "Veiligheidsriem", "Zonnedakje", "Geen", "Zijtafel", "Ergonomisch gevormde rugleuning", "Grondverankering mogelijk", "(Afneembaar) eetblad"], "Kampeermeubelen > Campingstoelen > Ligbedden": ["Inklapbaar", "Stapelbaar", "Verstelbaar", "Bekerhouder", "Draagband", "Hoofdsteun", "Inclusief draagtas", "Safety-lock", "Verstelbare hoofdsteun", "Veiligheidsriem", "Zonnedakje", "Geen", "Zijtafel", "Ergonomisch gevormde rugleuning", "Grondverankering mogelijk", "(Afneembaar) eetblad"], "Kampeermeubelen > Campingstoelen > Strandstoelen": ["Inklapbaar", "Stapelbaar", "Verstelbaar", "Bekerhouder", "Draagband", "Hoofdsteun", "Inclusief draagtas", "Safety-lock", "Verstelbare hoofdsteun", "Veiligheidsriem", "Zonnedakje", "Geen", "Zijtafel", "Ergonomisch gevormde rugleuning", "Grondverankering mogelijk", "(Afneembaar) eetblad"], "Kampeermeubelen > Campingstoelen > Vouwstoelen": ["Inklapbaar", "Stapelbaar", "Verstelbaar", "Bekerhouder", "Draagband", "Hoofdsteun", "Inclusief draagtas", "Safety-lock", "Verstelbare hoofdsteun", "Veiligheidsriem", "Zonnedakje", "Geen", "Zijtafel", "Ergonomisch gevormde rugleuning", "Grondverankering mogelijk", "(Afneembaar) eetblad"], "Caravan & camper accessoires > Beschermhoezen > Camperhoezen": ["Elastische band voor betere pasvorm", "2 bevestigingsogen", "Wasbaar tot 30°C", "Toegang tot caravan mogelijk", "Toegang tot camper mogelijk", "Versterkte hoeken", "Vermindert schimmelvorming", "Verstevigde zeilringen", "Biedt privacy", "Eenzijdige doorkijk", "Afritsbaar paneel", "Weerbestendig", "Oprolmogelijkheid", "Voor alle seizoenen geschikt", "Met reflectorstrepen", "Onderkant fietsendrager ook beschermd", "Met insteekhoes voor veiligheidsbord"], "Caravan & camper accessoires > Beschermhoezen > Caravanhoezen": ["Elastische band voor betere pasvorm", "2 bevestigingsogen", "Wasbaar tot 30°C", "Toegang tot caravan mogelijk", "Toegang tot camper mogelijk", "Versterkte hoeken", "Vermindert schimmelvorming", "Verstevigde zeilringen", "Biedt privacy", "Eenzijdige doorkijk", "Afritsbaar paneel", "Weerbestendig", "Oprolmogelijkheid", "Voor alle seizoenen geschikt", "Met reflectorstrepen", "Onderkant fietsendrager ook beschermd", "Met insteekhoes voor veiligheidsbord"], "Caravan & camper accessoires > Beschermhoezen > Disselhoezen": ["Elastische band voor betere pasvorm", "2 bevestigingsogen", "Wasbaar tot 30°C", "Toegang tot caravan mogelijk", "Toegang tot camper mogelijk", "Versterkte hoeken", "Vermindert schimmelvorming", "Verstevigde zeilringen", "Biedt privacy", "Eenzijdige doorkijk", "Afritsbaar paneel", "Weerbestendig", "Oprolmogelijkheid", "Voor alle seizoenen geschikt", "Met reflectorstrepen", "Onderkant fietsendrager ook beschermd", "Met insteekhoes voor veiligheidsbord"], "Caravan & camper accessoires > Beschermhoezen > Wielhoezen": ["Elastische band voor betere pasvorm", "2 bevestigingsogen", "Wasbaar tot 30°C", "Toegang tot caravan mogelijk", "Toegang tot camper mogelijk", "Versterkte hoeken", "Vermindert schimmelvorming", "Verstevigde zeilringen", "Biedt privacy", "Eenzijdige doorkijk", "Afritsbaar paneel", "Weerbestendig", "Oprolmogelijkheid", "Voor alle seizoenen geschikt", "Met reflectorstrepen", "Onderkant fietsendrager ook beschermd", "Met insteekhoes voor veiligheidsbord"], "Koelboxen & koelkasten > Koelboxen > Compressor koelboxen": ["Afneembare deksel", "Bekerhouder in deksel", "Geïntegreerde handvatten", "Geschikt voor 0,33-liter flessen", "Geschikt voor 0,5-liter flessen", "Geschikt voor 1-liter flessen", "Geschikt voor 1,5-liter flessen", "Geschikt voor 2-liter flessen", "Kabelvak in deksel", "Wieltjes", "Binnenverlichting", "Elektronische thermostaat", "Turbo functie", "Geschikt voor 0,75-liter flessen", "Condensafvoer", "USB-A aansluiting", "USB-C aansluiting"], "Water & sanitair > Camping toiletten > Draagbare toiletten": ["Aansluiting centrale watertank", "Afvaltank met wielen", "Geïntegreerde dekselvergrendeling", "Geïntegreerde schenktuit", "Niveau-indicator afvaltank", "Niveau-indicator spoelwater-tank", "Toiletrolhouder", "Beluchtingsknop op afvaltank", "Keramische binnenpot", "Inclusief hold down kit", "Geschikt voor kinderen", "Geschikt voor volwassenen", "Geïntegreerde watertank", "Bedieningspaneel", "Draaibare pot", "Dekselvergrendeling", "Geschikt voor SOG", "Inclusief uitneembare afvaltank"], "BBQ's & kooktoestellen > Kooktoestellen > Campinggasstellen": ["Deksel", "Windscherm", "Anti-slip voetjes", "Vaatwasserbestendige pannendragers", "Afneembare pannendragers", "Geïntegreerd handvat", "In hoogte verstelbare poten", "Legplanken", "Vermogen traploos instelbaar", "Spoelbak links", "Spoelbak rechts", "Hittebestendige glazen afdekplaat", "Geëmailleerde pannendragers", "Geëmailleerde branderdeksels", "Minimale afstand van muur: 4,5 cm", "Inclusief opbergkoffer", "Inclusief opbergtas", "Aansluiting links achter", "Aansluiting rechts achter"], "BBQ's & kooktoestellen > Kooktoestellen > Elektrische kookplaten": ["Deksel", "Windscherm", "Anti-slip voetjes", "Vaatwasserbestendige pannendragers", "Afneembare pannendragers", "Geïntegreerd handvat", "In hoogte verstelbare poten", "Legplanken", "Vermogen traploos instelbaar", "Spoelbak links", "Spoelbak rechts", "Hittebestendige glazen afdekplaat", "Geëmailleerde pannendragers", "Geëmailleerde branderdeksels", "Minimale afstand van muur: 4,5 cm", "Inclusief opbergkoffer", "Inclusief opbergtas", "Aansluiting links achter", "Aansluiting rechts achter"], "Keuken- & huishoudartikelen > Camping keukenspullen > Serviessets": ["BPA vrij", "Biologisch afbreekbaar", "Ftalaten vrij", "Inclusief mes", "Inclusief opbergtas", "Maataanduiding", "Onbreekbaar", "Lekvrij", "Stapelbaar", "Opvouwbaar", "Inclusief deksel", "Inclusief vork", "Inclusief lepel", "Anti-slip", "Krasbestendig", "Magnetisch", "Dubbelwandig", "Duurzaam", "Isolerend", "Lichtgewicht"], "BBQ's & kooktoestellen > Gasbarbecues": ["Afdekhoes", "Asopvang", "Bakplaat", "Brikettenhouders", "Brikettenrails", "Deksel", "Dekselhouder", "Gasfleshouder", "Gereedschapshaken", "Maatbeker", "Opberghoes", "Opbergtas", "Thermometer", "Verrijdbaar", "Vetafvoer", "Zijtafel", "Verstelbare grill", "Warmhoudrooster", "Zijbrander", "Geen", "Draaispit", "Stelvoetjes"], "Water & sanitair > Watertanks > Jerrycans": ["Aansluiting voor optionele kraan", "Kraantje", "Wieltjes", "Handvat", "Vouwbaar", "Afvoerslang", "Niveaumeter", "Din 61 dop (4,6 cm)", "Din 96 dop (8 cm)", "Ontluchtingsventiel", "Dop voor waterpomp", "Leegloop dop", "Platform voor toiletcassette", "Inclusief spanbanden", "Inclusief schenktuit", "Inclusief flexibele schenktuit", "Ophangoog", "Voorzien van slangsleuf", "Inclusief bevestigingsmateriaal", "Geen", "Inclusief bevestigingsogen", "Voor drinkwater geschikt"], "Elektra > Camping verlichting > Sfeerverlichting": ["Waterbestendig", "Kompas", "Handvat", "Ophanghaak", "Bluetooth speaker", "Telefoonoplader", "Opvouwbaar", "Batterij indicator", "Bewegingssensor", "Lichtsensor", "Extern dimbaar", "Dimbaar", "Touch bediening", "Met schakelaar", "180 graden draaibaar", "360 graden draaibaar", "Blauw en wit licht", "Dimbaar in 3 standen", "Traploos dimbaar", "Met afstandsbediening", "Watervaste strip", "Zelfklevend", "Koppelbaar", "Infrarood schakelaar", "Inclusief klemmen", "Inclusief klittenband", "Handlus", "Niet dimbaar", "Standlicht", "Zonnepaneel", "Niet waterbestendig"], "Water & sanitair > Waterslangen > Drinkwaterslangen": ["Voormenger", "Doorlopend warm water", "Led display", "Regelbare watertemperatuur: 30 - 55 graden", "Schakelaar", "Vermogen 12 volt: 200 watt", "Zuurstofvrije koperen warmtewisselaar", "Slot", "Ontluchting", "Geschikt voor warm water", "Geschikt voor koud water", "Doucheslang en kop", "Regelbare spuitmond", "Handgreep", "Kraanadapter 3/4\"", "Inclusief tuinsproeier", "Inclusief 1/2\" aansluiting", "Eenvoudig in te korten", "Led indicator", "Inclusief sensors", "RVS zeef", "Uitneembare zeef", "Afsluitbaar", "Geschikt voor Twin dompelpomp", "Geschikt voor Powerjet dompelpomp", "Met schroef tule", "Voor ca. 4500 liter", "Volledig automatisch", "Instelbaar waterpeil", "Aansluitbaar op waterleiding", "Geschikt voor drinkwater", "Niet geschikt voor ringleiding", "Vervangbaar filter", "Filtert chloor, geur en smaak"], "Keuken- & huishoudartikelen > Camping keukenspullen > Glazen": ["Bol", "Vlak", "Vlak en bol"]};
-
-
-
 sb.auth.onAuthStateChange((event, session) => {
   const loginScreen = document.getElementById('loginScreen');
   const mainApp = document.getElementById('mainApp');
-
   if (session) {
     loginScreen.style.display = 'none';
     mainApp.style.display = 'grid';
-
     if (allProducts.length === 0) {
       Promise.all([
         loadProducts(),
@@ -803,20 +734,16 @@ sb.auth.onAuthStateChange((event, session) => {
     mainApp.style.display = 'none';
   }
 });
-
 async function handleLogin() {
   const email = document.getElementById('loginEmail').value.trim();
   const password = document.getElementById('loginPassword').value;
   const btn = document.getElementById('loginBtn');
-
   if (!email || !password) {
     showToast('Vul e-mail en wachtwoord in', 'error');
     return;
   }
-
   btn.disabled = true;
   btn.textContent = 'Bezig...';
-
   try {
     const { error } = await sb.auth.signInWithPassword({ email, password });
     if (error) throw error;
@@ -828,7 +755,6 @@ async function handleLogin() {
     btn.textContent = 'Inloggen';
   }
 }
-
 async function handleLogout() {
   await sb.auth.signOut();
   showToast('Uitgelogd', 'success');
@@ -843,7 +769,6 @@ async function handleLogout() {
   document.getElementById('productEditor').style.display = 'none';
   document.getElementById('noProduct').style.display = 'flex';
 }
-
 function escHtml(s) {
   return String(s ?? '')
     .replaceAll('&', '&amp;')
@@ -852,17 +777,14 @@ function escHtml(s) {
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#39;');
 }
-
 function escapeAttr(s) { return escHtml(s); }
 function normalizeEan(ean) { return ean === null || ean === undefined ? '' : String(ean).replace(/\.0$/, ''); }
-
 function showToast(msg, type = 'success') {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.className = `toast ${type} show`;
   setTimeout(() => t.classList.remove('show'), 3500);
 }
-
 function setDirty(source, key, value) {
   if (!pendingChanges[source]) pendingChanges[source] = {};
   pendingChanges[source][key] = value;
@@ -870,9 +792,7 @@ function setDirty(source, key, value) {
   const status = document.getElementById('saveStatus');
   if (status) status.textContent = '● Niet opgeslagen';
 }
-
 function markDirty(el) { setDirty(el.dataset.source, el.dataset.key, el.value); }
-
 function safeCsvValue(value) {
   let val = String(value ?? '');
   if (/^[=+\-@]/.test(val)) val = "'" + val;
@@ -880,7 +800,6 @@ function safeCsvValue(value) {
   if (val.includes(',') || val.includes('"') || val.includes(String.fromCharCode(10)) || val.includes(String.fromCharCode(13))) val = `"${val}"`;
   return val;
 }
-
 function downloadCSV(csv, filename) {
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
@@ -892,13 +811,11 @@ function downloadCSV(csv, filename) {
   a.remove();
   URL.revokeObjectURL(url);
 }
-
 async function fetchAll(table, select, options = {}) {
   const { order, filter } = options;
   let all = [];
   let from = 0;
   const batchSize = 1000;
-
   while (true) {
     let q = sb.from(table).select(select).range(from, from + batchSize - 1);
     if (order) q = q.order(order);
@@ -910,41 +827,34 @@ async function fetchAll(table, select, options = {}) {
     if (data.length < batchSize) break;
     from += batchSize;
   }
-
   return all.map(r => {
     if (r && Object.prototype.hasOwnProperty.call(r, 'ean')) r.ean = normalizeEan(r.ean);
     return r;
   });
 }
-
 async function loadProducts() {
   document.getElementById('productList').innerHTML = '<div class="loading">Producten laden...</div>';
-
   try {
     const [pData, cData] = await Promise.all([
       fetchAll('products', 'id, ean, naam_nl, naam_de, naam_en, beschrijving_nl, mpn, serie, merk', { order: 'naam_nl' }),
-      fetchAll('product_categories', 'id, product_id, cat_bol, cat_bol_id, cat_obelink, cat_obelink_id, cat_decathlon, cat_decathlon_id, cat_amazon')
+      fetchAll('product_categories', 'id, product_id, cat_bol, cat_bol_id, cat_obelink, cat_obelink_id, cat_decathlon, cat_decathlon_id, cat_amazon, cat_amazon_id, cat_woocommerce, cat_woocommerce_id')
     ]);
-
     const catMap = {};
     productCatsMap = {};
     cData.forEach(c => {
       productCatsMap[c.product_id] = c;
-      catMap[c.product_id] = [c.cat_bol, c.cat_obelink, c.cat_decathlon].filter(Boolean);
+      catMap[c.product_id] = MARKETPLACES.map(mp => c[mp.catKey]).filter(Boolean);
     });
-
     const uniqueCats = new Set();
     allProducts = pData.map(p => {
       const cats = catMap[p.id] || [];
       cats.forEach(c => uniqueCats.add(c));
       return { ...p, _categories: cats };
     });
-
     document.getElementById('statTotal').textContent = allProducts.length;
     document.getElementById('categoryFilter').innerHTML = '<option value="">Alle categorieën</option>' +
       '<option value="UNASSIGNED">-- Zonder gekoppelde categorie --</option>' +
       Array.from(uniqueCats).sort().map(c => `<option value="${escapeAttr(c)}">${escHtml(c)}</option>`).join('');
-
     applyFilters();
   } catch (e) {
     console.error(e);
@@ -952,7 +862,6 @@ async function loadProducts() {
     document.getElementById('productList').innerHTML = '<div style="padding:16px;color:var(--red);font-size:13px;text-align:center;">Producten laden mislukt</div>';
   }
 }
-
 async function loadTemplates() {
   try {
     const all = await fetchAll('category_templates', 'id, marketplace, categorie_naam, categorie_id');
@@ -968,17 +877,14 @@ async function loadTemplates() {
     showToast('Fout bij laden templates: ' + e.message, 'error');
   }
 }
-
 async function loadTemplateFieldIndex() {
   const rows = await fetchAll('category_template_fields', 'id, template_id, master_veld, verplicht, volgorde, veld_type, opties, standaardwaarde');
   templateFieldsByTemplateId = {};
   templateRequiredByCat = {};
-
   rows.forEach(r => {
     if (!templateFieldsByTemplateId[r.template_id]) templateFieldsByTemplateId[r.template_id] = [];
     templateFieldsByTemplateId[r.template_id].push(r);
   });
-
   Object.entries(allTemplates).forEach(([mp, templates]) => {
     templates.forEach(t => {
       const fields = templateFieldsByTemplateId[t.id] || [];
@@ -986,7 +892,6 @@ async function loadTemplateFieldIndex() {
     });
   });
 }
-
 async function loadAllProductAttributesForCompleteness() {
   try {
     const rows = await fetchAll('product_attributes', '*');
@@ -998,7 +903,6 @@ async function loadAllProductAttributesForCompleteness() {
     showToast('Fout bij laden compleetheidsdata: ' + e.message, 'error');
   }
 }
-
 async function loadFieldOptions() {
   try {
     const { data, error } = await sb.from('field_options').select('master_veld, multi, opties');
@@ -1007,10 +911,30 @@ async function loadFieldOptions() {
     (data || []).forEach(r => {
       fieldOptions[r.master_veld] = { opties: r.opties || [], multi: !!r.multi };
     });
+    ensureDefaultFieldOptions();
   } catch (e) {
     console.error(e);
     showToast('Fout bij laden veldopties: ' + e.message, 'error');
   }
+}
+
+function ensureDefaultFieldOptions() {
+  const defaults = {
+    garantie_jaar: { opties: ['1', '2', '3', '5'], multi: false },
+    geschikt_voor_type_camper: { opties: ['Buscamper', 'Half-integraal', 'Integraal', 'Alkoof', 'Campervan', 'Caravan', 'Vouwwagen'], multi: true },
+    materiaal_buitentent: { opties: ['Polyester', 'Katoen', 'Polycotton', 'Nylon', 'PVC', 'Acryl', 'Ripstop polyester', 'Ademend polyester'], multi: false },
+    palen_materiaal: { opties: ['Aluminium', 'Carbon', 'Glasfiber', 'Hout', 'Luchtslangen', 'Staal', 'Staaldraad'], multi: false },
+    tafel_lichtgewicht: { opties: ['Ja', 'Nee'], multi: false },
+    krasbestendig_blad: { opties: ['Ja', 'Nee'], multi: false }
+  };
+  Object.entries(defaults).forEach(([key, def]) => {
+    if (!fieldOptions[key]) fieldOptions[key] = def;
+    else {
+      const merged = new Set([...(fieldOptions[key].opties || []), ...def.opties]);
+      fieldOptions[key].opties = Array.from(merged);
+      fieldOptions[key].multi = !!fieldOptions[key].multi || !!def.multi;
+    }
+  });
 }
 
 async function loadVoorraadInStock() {
@@ -1023,11 +947,9 @@ async function loadVoorraadInStock() {
     showToast('Fout bij laden voorraad: ' + e.message, 'error');
   }
 }
-
 async function loadVoorraadOutOfStock() {
   if (voorraadNulLaden) return;
   voorraadNulLaden = true;
-
   try {
     const rows = await fetchAll('v_voorraad_pim', 'ean, voorraad_totaal', { filter: q => q.eq('voorraad_totaal', 0) });
     rows.forEach(r => { if (r.ean && voorraadData[r.ean] === undefined) voorraadData[r.ean] = 0; });
@@ -1037,54 +959,39 @@ async function loadVoorraadOutOfStock() {
     showToast('Fout bij laden voorraad 0: ' + e.message, 'error');
   }
 }
-
 async function getTemplateFields(marketplace, categorieNaam) {
   const cacheKey = `${marketplace}::${categorieNaam}`;
   if (templateFieldsCache[cacheKey]) return templateFieldsCache[cacheKey];
-
   const template = (allTemplates[marketplace] || []).find(t => t.categorie_naam === categorieNaam);
   if (!template) return [];
-
   const { data, error } = await sb.from('category_template_fields')
     .select('master_veld, verplicht, volgorde, veld_type, opties, standaardwaarde')
     .eq('template_id', template.id)
     .order('volgorde');
-
   if (error) throw error;
   templateFieldsCache[cacheKey] = data || [];
   return data || [];
 }
-
 async function getActiveTemplateFields() {
   const c = currentCats || {};
-  const mpMappings = [
-    { mp: 'bol', catKey: 'cat_bol' },
-    { mp: 'obelink', catKey: 'cat_obelink' },
-    { mp: 'decathlon', catKey: 'cat_decathlon' }
-  ];
-
   const allFields = {};
   let hasAnyTemplate = false;
-
-  for (const { mp, catKey } of mpMappings) {
-    const cat = c[catKey];
+  for (const mp of MARKETPLACES) {
+    const cat = c[mp.catKey];
     if (!cat) continue;
-    const fields = await getTemplateFields(mp, cat);
+    const fields = await getTemplateFields(mp.key, cat);
     if (fields.length) hasAnyTemplate = true;
     fields.forEach(f => {
       if (!allFields[f.master_veld]) allFields[f.master_veld] = { verplicht: f.verplicht, volgorde: f.volgorde };
       else if (f.verplicht) allFields[f.master_veld].verplicht = true;
     });
   }
-
   return { fields: allFields, hasAnyTemplate };
 }
-
 document.getElementById('searchInput').addEventListener('input', () => {
   clearTimeout(searchTimer);
   searchTimer = setTimeout(applyFilters, 150);
 });
-
 document.getElementById('productList').addEventListener('click', e => {
   if (e.target.classList.contains('product-select-box')) {
     const id = e.target.dataset.productId;
@@ -1093,37 +1000,30 @@ document.getElementById('productList').addEventListener('click', e => {
     updateBulkCountInfo();
     return;
   }
-
   const item = e.target.closest('.product-item');
   if (!item) return;
   const id = item.dataset.productId;
   if (id) selectProduct(id);
 });
-
 document.getElementById('loginPassword').addEventListener('keydown', e => {
   if (e.key === 'Enter') handleLogin();
 });
-
 document.addEventListener('keydown', e => {
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
     e.preventDefault();
     if (isDirty) saveProduct();
   }
 });
-
 function applyFilters() {
   const q = document.getElementById('searchInput').value.toLowerCase().trim();
   const cat = document.getElementById('categoryFilter').value;
   const voorraad = document.getElementById('voorraadFilter').value;
-
   filteredProducts = allProducts.filter(p => {
     const ean = normalizeEan(p.ean);
     const matchText = !q || (p.naam_nl || '').toLowerCase().includes(q) || ean.includes(q) || (p.mpn || '').toLowerCase().includes(q);
-
     let matchCat = true;
     if (cat === 'UNASSIGNED') matchCat = (p._categories || []).length === 0;
     else if (cat) matchCat = (p._categories || []).includes(cat);
-
     let matchVoorraad = true;
     if (voorraad === 'IN_STOCK') matchVoorraad = ean && voorraadData[ean] !== undefined && voorraadData[ean] > 0;
     else if (voorraad === 'OUT_OF_STOCK') {
@@ -1133,37 +1033,29 @@ function applyFilters() {
       }
       matchVoorraad = ean && voorraadData[ean] !== undefined && voorraadData[ean] === 0;
     } else if (voorraad === 'NOT_IN_EXACT') matchVoorraad = !ean || voorraadData[ean] === undefined;
-
     return matchText && matchCat && matchVoorraad;
   });
-
   document.getElementById('statLoaded').textContent = filteredProducts.length;
   renderProductList(filteredProducts);
 }
-
 function renderProductList(products) {
   const list = document.getElementById('productList');
-
   if (!products.length) {
     list.innerHTML = '<div style="padding:16px;color:var(--text3);font-size:13px;text-align:center;">Geen producten gevonden</div>';
     return;
   }
-
   const maxVisible = 300;
   const visible = products.slice(0, maxVisible);
-
   list.innerHTML = visible.map(p => {
     const ean = normalizeEan(p.ean);
     const stock = ean && voorraadData[ean] !== undefined ? voorraadData[ean] : null;
     const stockBadge = stock === null ? '' : stock > 0
       ? `<span style="color:var(--green);font-size:10px;font-family:'DM Mono',monospace;">${escHtml(stock)} st.</span>`
       : '<span style="color:var(--text3);font-size:10px;font-family:\'DM Mono\',monospace;">0 st.</span>';
-
     const completeness = getProductCompleteness(p.id);
     const completenessHtml = completeness.complete
       ? '<span class="completeness-dot complete" title="Alle verplichte data gevuld">✓</span>'
       : `<span class="completeness-dot incomplete" title="${escapeAttr(completeness.missing.length ? 'Mist: ' + completeness.missing.join(', ') : 'Nog niet te bepalen')}">•</span>`;
-
     return `<div class="product-item ${currentProduct?.id === p.id ? 'active' : ''}" data-product-id="${escapeAttr(p.id)}">
       <div class="product-item-name"><input class="product-select-box" type="checkbox" data-product-id="${escapeAttr(p.id)}" ${selectedProductIds.has(String(p.id)) ? 'checked' : ''}>${completenessHtml}<span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(p.naam_nl || p.naam_de || p.naam_en || ean || '—')}</span></div>
       <div class="product-item-meta"><span>${escHtml(p.mpn || ean || '—')}</span>${stockBadge}</div>
@@ -1172,56 +1064,47 @@ function renderProductList(products) {
     ? `<div style="padding:12px 16px;color:var(--text3);font-size:12px;text-align:center;">Toon ${maxVisible} van ${products.length} resultaten. Verfijn je zoekopdracht.</div>`
     : '');
 }
-
 function getProductCompleteness(productId) {
   const p = allProducts.find(x => x.id === productId) || {};
   const a = productAttrsMap[productId] || {};
   const c = productCatsMap[productId] || {};
   const required = new Set(['naam_nl', 'beschrijving_nl', 'ean']);
-
-  [['bol', c.cat_bol], ['obelink', c.cat_obelink], ['decathlon', c.cat_decathlon]].forEach(([mp, cat]) => {
+  MARKETPLACES.forEach(mpObj => {
+    const mp = mpObj.key;
+    const cat = c[mpObj.catKey];
     if (!cat) return;
     (templateRequiredByCat[`${mp}::${cat}`] || []).forEach(f => required.add(f));
   });
-
   const missing = [];
   required.forEach(fieldName => {
     const val = p[fieldName] ?? a[fieldName] ?? c[fieldName];
     if (val === null || val === undefined || String(val).trim() === '') missing.push(fieldName);
   });
-
   return { complete: missing.length === 0, missing };
 }
-
 async function selectProduct(id) {
   if (isDirty && !confirm('Je hebt onopgeslagen wijzigingen. Doorgaan?')) return;
-
   isDirty = false;
   pendingChanges = {};
   renderToken++;
-
   try {
     const [pRes, aRes, cRes] = await Promise.all([
       sb.from('products').select('*').eq('id', id).single(),
       sb.from('product_attributes').select('*').eq('product_id', id).maybeSingle(),
       sb.from('product_categories').select('*').eq('product_id', id).maybeSingle()
     ]);
-
     if (pRes.error) throw pRes.error;
     if (aRes.error) throw aRes.error;
     if (cRes.error) throw cRes.error;
-
     currentProduct = pRes.data;
     currentProduct.ean = normalizeEan(currentProduct.ean);
     currentAttrs = aRes.data || {};
     currentCats = cRes.data || {};
-
     document.getElementById('noProduct').style.display = 'none';
     document.getElementById('productEditor').style.display = 'flex';
     document.getElementById('editorTitle').textContent = currentProduct.naam_nl || '—';
     document.getElementById('editorEan').textContent = `EAN: ${currentProduct.ean || '—'} · MPN: ${currentProduct.mpn || '—'}`;
     document.getElementById('saveStatus').textContent = '';
-
     renderProductList(filteredProducts.length ? filteredProducts : allProducts);
     switchTab(currentTab, document.querySelector(`.tab[data-tab="${currentTab}"]`));
   } catch (e) {
@@ -1229,18 +1112,14 @@ async function selectProduct(id) {
     showToast('Product laden mislukt: ' + e.message, 'error');
   }
 }
-
 async function saveProduct() {
   if (!currentProduct) return;
-
   const btn = document.getElementById('saveBtn');
   btn.disabled = true;
   btn.textContent = 'Opslaan...';
-
   try {
     const updates = pendingChanges;
     const now = new Date().toISOString();
-
     if (updates.product && Object.keys(updates.product).length) {
       await logPendingChanges('product', updates.product, currentProduct.id, currentProduct, 'product_update');
       const { data, error } = await sb.from('products')
@@ -1251,7 +1130,6 @@ async function saveProduct() {
       if (error) throw error;
       currentProduct = { ...currentProduct, ...data, ean: normalizeEan(data.ean) };
     }
-
     if (updates.attrs && Object.keys(updates.attrs).length) {
       await logPendingChanges('attrs', updates.attrs, currentProduct.id, currentAttrs, 'attribute_update');
       const { data, error } = await sb.from('product_attributes')
@@ -1261,7 +1139,6 @@ async function saveProduct() {
       if (error) throw error;
       currentAttrs = data || { ...currentAttrs, ...updates.attrs };
     }
-
     if (updates.cats && Object.keys(updates.cats).length) {
       await logPendingChanges('cats', updates.cats, currentProduct.id, currentCats, 'category_update');
       const { data, error } = await sb.from('product_categories')
@@ -1272,13 +1149,11 @@ async function saveProduct() {
       currentCats = data || { ...currentCats, ...updates.cats };
       templateFieldsCache = {};
     }
-
     isDirty = false;
     pendingChanges = {};
     document.getElementById('saveStatus').textContent = '✓ Opgeslagen';
     document.getElementById('editorTitle').textContent = currentProduct.naam_nl || '—';
     document.getElementById('editorEan').textContent = `EAN: ${currentProduct.ean || '—'} · MPN: ${currentProduct.mpn || '—'}`;
-
     const idx = allProducts.findIndex(p => p.id === currentProduct.id);
     if (idx >= 0) {
       allProducts[idx] = {
@@ -1291,12 +1166,11 @@ async function saveProduct() {
         mpn: currentProduct.mpn,
         merk: currentProduct.merk,
         serie: currentProduct.serie,
-        _categories: [currentCats.cat_bol, currentCats.cat_obelink, currentCats.cat_decathlon].filter(Boolean)
+        _categories: MARKETPLACES.map(mp => currentCats[mp.catKey]).filter(Boolean)
       };
       productAttrsMap[currentProduct.id] = currentAttrs || {};
       productCatsMap[currentProduct.id] = currentCats || {};
     }
-
     applyFilters();
     showToast('Product opgeslagen', 'success');
   } catch (e) {
@@ -1307,7 +1181,6 @@ async function saveProduct() {
     btn.textContent = 'Opslaan';
   }
 }
-
 async function logPendingChanges(source, changes, productId, oldObject = {}, action = 'update') {
   const logs = Object.entries(changes).map(([fieldName, newValue]) => ({
     product_id: productId,
@@ -1317,18 +1190,15 @@ async function logPendingChanges(source, changes, productId, oldObject = {}, act
     oude_waarde: stringifyLogValue(oldObject?.[fieldName]),
     nieuwe_waarde: stringifyLogValue(newValue)
   })).filter(log => log.oude_waarde !== log.nieuwe_waarde);
-
   if (!logs.length) return;
   const { error } = await sb.from('pim_audit_log').insert(logs);
   if (error) console.warn('Audit log kon niet worden opgeslagen:', error.message);
 }
-
 function stringifyLogValue(value) {
   if (value === null || value === undefined) return '';
   if (typeof value === 'object') return JSON.stringify(value);
   return String(value);
 }
-
 function discardChanges() {
   if (!isDirty || confirm('Wijzigingen weggooien?')) {
     isDirty = false;
@@ -1337,14 +1207,12 @@ function discardChanges() {
     renderTab();
   }
 }
-
 function switchTab(tab, el) {
   currentTab = tab;
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   if (el) el.classList.add('active');
   renderTab();
 }
-
 function renderTab() {
   const content = document.getElementById('tabContent');
   if (!currentProduct) return;
@@ -1353,7 +1221,6 @@ function renderTab() {
   else if (currentTab === 'marketplaces') renderMarketplaces(content);
   else if (currentTab === 'amazon') renderAmazon(content);
 }
-
 function parseSettingsOptions(raw) {
   if (Array.isArray(raw)) return raw;
   return String(raw || '')
@@ -1363,46 +1230,42 @@ function parseSettingsOptions(raw) {
     .map(s => s.trim())
     .filter(Boolean);
 }
-
 function getFieldOptionsForKey(key) {
   if (fieldOptions[key]) return fieldOptions[key];
-
   const currentFields = [];
   const c = currentCats || {};
-  [['bol', c.cat_bol], ['obelink', c.cat_obelink], ['decathlon', c.cat_decathlon]].forEach(([mp, cat]) => {
-    const template = (allTemplates[mp] || []).find(t => t.categorie_naam === cat);
+  MARKETPLACES.forEach(mp => {
+    const cat = c[mp.catKey];
+    const template = (allTemplates[mp.key] || []).find(t => t.categorie_naam === cat);
     if (!template) return;
     (templateFieldsByTemplateId[template.id] || []).forEach(f => {
       if (f.master_veld === key) currentFields.push(f);
     });
   });
-
   const optionField = currentFields.find(f => ['dropdown', 'multi'].includes(f.veld_type) && parseSettingsOptions(f.opties).length);
   if (!optionField) return null;
   return { opties: parseSettingsOptions(optionField.opties), multi: optionField.veld_type === 'multi' };
 }
-
 function getDefaultValueForKey(key) {
+  if (key === 'garantie_jaar') return '2';
   const c = currentCats || {};
-  for (const [mp, cat] of [['bol', c.cat_bol], ['obelink', c.cat_obelink], ['decathlon', c.cat_decathlon]]) {
-    const template = (allTemplates[mp] || []).find(t => t.categorie_naam === cat);
+  for (const mp of MARKETPLACES) {
+    const cat = c[mp.catKey];
+    const template = (allTemplates[mp.key] || []).find(t => t.categorie_naam === cat);
     if (!template) continue;
     const fieldDef = (templateFieldsByTemplateId[template.id] || []).find(f => f.master_veld === key && f.standaardwaarde);
     if (fieldDef) return fieldDef.standaardwaarde;
   }
   return '';
 }
-
 function field(key, label, value, type = 'text', source = 'product', required = false, fullWidth = false) {
   const val = value ?? getDefaultValueForKey(key) ?? '';
   const fw = fullWidth ? ' field-full' : '';
   const reqHtml = required ? ' <span class="field-required">●</span>' : '';
   const opts = getFieldOptionsForKey(key);
-
   if (opts && opts.multi) {
     const selected = val ? String(val).split(' | ').map(s => s.trim()).filter(Boolean) : [];
     const uid = 'ms_' + key + '_' + source;
-
     if ((opts.opties || []).length <= 6) {
       const checkboxes = opts.opties.map(o => {
         const checked = selected.includes(o) ? 'checked' : '';
@@ -1412,7 +1275,6 @@ function field(key, label, value, type = 'text', source = 'product', required = 
       }).join('');
       return `<div class="field${fw}"><label class="field-label">${escHtml(label)}${reqHtml}</label><div style="padding:6px 0;line-height:1.8;">${checkboxes}</div></div>`;
     }
-
     const tagsHtml = selected.map(s => `<span class="ms-tag">${escHtml(s)}<span class="ms-tag-remove" onclick="msRemoveTag(event,this,'${escapeAttr(uid)}')" data-val="${escapeAttr(s)}">×</span></span>`).join('');
     return `<div class="field${fw} ms-wrap" id="${escapeAttr(uid)}_wrap">
       <label class="field-label">${escHtml(label)}${reqHtml}</label>
@@ -1423,19 +1285,15 @@ function field(key, label, value, type = 'text', source = 'product', required = 
       <div class="ms-dropdown" id="${escapeAttr(uid)}_dd"></div>
     </div>`;
   }
-
   if (opts && !opts.multi) {
     const options = (opts.opties || []).map(o => `<option value="${escapeAttr(o)}" ${o === val ? 'selected' : ''}>${escHtml(o)}</option>`).join('');
     return `<div class="field${fw}"><label class="field-label">${escHtml(label)}${reqHtml}</label><select data-key="${escapeAttr(key)}" data-source="${escapeAttr(source)}" onchange="markDirty(this)"><option value="">— Kies —</option>${options}</select></div>`;
   }
-
   if (type === 'textarea') {
     return `<div class="field${fw}"><label class="field-label">${escHtml(label)}${reqHtml}</label><textarea rows="4" data-key="${escapeAttr(key)}" data-source="${escapeAttr(source)}" onchange="markDirty(this)">${escHtml(val)}</textarea></div>`;
   }
-
   return `<div class="field${fw}"><label class="field-label">${escHtml(label)}${reqHtml}</label><input type="${escapeAttr(type)}" data-key="${escapeAttr(key)}" data-source="${escapeAttr(source)}" value="${escapeAttr(val)}" oninput="markDirty(this)" placeholder="—"></div>`;
 }
-
 function renderBasis(content) {
   const p = currentProduct;
   const imgs = (p.afbeeldingen || '').split(',').map(s => s.trim()).filter(Boolean);
@@ -1459,27 +1317,22 @@ function renderBasis(content) {
       <div style="margin-top:8px;">${field('afbeeldingen', 'Afbeelding URLs (komma gescheiden)', p.afbeeldingen, 'text', 'product', false, true)}</div>
     </div>`;
 }
-
 async function renderAttributen(content) {
   const token = ++renderToken;
   content.innerHTML = '<div class="loading">Velden laden...</div>';
-
   try {
     const a = currentAttrs || {};
     const { fields: templateFields, hasAnyTemplate } = await getActiveTemplateFields();
     if (token !== renderToken || currentTab !== 'attributen') return;
-
     const showAll = document.getElementById('showAllToggle')?.checked || !hasAnyTemplate;
     const isVisible = key => showAll || !hasAnyTemplate || !!templateFields[key];
     const isRequired = key => templateFields[key]?.verplicht || false;
     const groepen = getAttributeGroups();
     const visibleGroepen = groepen.map(g => ({ ...g, velden: g.velden.filter(([key]) => isVisible(key)) })).filter(g => g.velden.length > 0);
-
     const toggleHtml = hasAnyTemplate ? `<div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;padding:10px 12px;background:var(--surface2);border-radius:var(--radius);border:1px solid var(--border);">
       <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text2);"><input type="checkbox" id="showAllToggle" ${showAll ? 'checked' : ''} onchange="renderAttributen(document.getElementById('tabContent'))">Alle velden tonen</label>
       <span style="margin-left:auto;font-size:11px;color:var(--text3);">${showAll ? 'Alle velden' : Object.keys(templateFields).length + ' template velden'}</span>
     </div>` : `<div style="padding:10px 12px;background:var(--surface2);border-radius:var(--radius);border:1px solid var(--border);font-size:12px;color:var(--text3);margin-bottom:16px;">ℹ️ Koppel eerst een marketplace categorie om alleen relevante velden te zien.</div>`;
-
     const groepenHtml = visibleGroepen.length ? visibleGroepen.map(g => `<div class="section"><div class="section-title">${escHtml(g.titel)}</div><div class="fields-grid">${g.velden.map(([key, label]) => field(key, label, a[key], 'text', 'attrs', isRequired(key))).join('')}</div></div>`).join('') : '<div style="color:var(--text3);font-size:13px;padding:20px 0;">Geen velden gevonden voor de gekoppelde categorieën.</div>';
     content.innerHTML = toggleHtml + groepenHtml + renderKenmerkenSection();
   } catch (e) {
@@ -1488,14 +1341,13 @@ async function renderAttributen(content) {
     showToast('Attributen laden mislukt: ' + e.message, 'error');
   }
 }
-
 function getAttributeGroups() {
   return [
     { titel: 'Kleur & Materiaal', velden: [['kleur_primair','Kleur primair'], ['kleur_secundair','Kleur secundair'], ['kleur_tafelblad','Kleur tafelblad'], ['materiaal','Materiaal'], ['materiaal_frame','Materiaal frame'], ['materiaal_zitting','Materiaal zitting'], ['materiaal_blad','Materiaal blad'], ['materiaal_grill','Materiaal grill'], ['materiaal_buitentent','Materiaal buitentent'], ['materiaal_binnentent','Materiaal binnentent'], ['materiaal_grondzeil','Materiaal grondzeil'], ['materiaal_voering','Materiaal voering'], ['materiaal_vulling','Materiaal vulling'], ['materiaal_dak','Materiaal dak'], ['materiaal_zijwand','Materiaal zijwand'], ['materiaal_voorwand','Materiaal voorwand'], ['materiaal_bovenzijde','Materiaal bovenzijde'], ['materiaal_onderzijde','Materiaal onderzijde'], ['materiaal_binnentijk','Materiaal binnentijk'], ['materiaal_buitentijk','Materiaal buitentijk']] },
     { titel: 'Afmetingen product', velden: [['product_lengte_cm','Lengte (cm)'], ['product_breedte_cm','Breedte (cm)'], ['product_hoogte_cm','Hoogte (cm)'], ['product_gewicht_kg','Gewicht (kg)'], ['maat','Maat'], ['maat_open','Maat open'], ['gevouwen_lengte_cm','Gevouwen lengte (cm)'], ['gevouwen_breedte_cm','Gevouwen breedte (cm)'], ['gevouwen_hoogte_cm','Gevouwen hoogte (cm)'], ['gevouwen_afmeting','Gevouwen afmeting'], ['tafelblad_afmeting','Tafelblad afmeting'], ['afmeting','Afmeting algemeen']] },
     { titel: 'Afmetingen verpakking', velden: [['verpakking_lengte_cm','Verpakking lengte (cm)'], ['verpakking_breedte_cm','Verpakking breedte (cm)'], ['verpakking_hoogte_cm','Verpakking hoogte (cm)'], ['verpakking_gewicht_kg','Verpakking gewicht (kg)'], ['stuks_per_verpakking','Stuks per verpakking']] },
     { titel: 'Stoel / Meubel', velden: [['zithoogte_cm','Zithoogte (cm)'], ['zitdiepte_cm','Zitdiepte (cm)'], ['zitbreedte_cm','Zitbreedte (cm)'], ['ruglengte_cm','Ruglengte (cm)'], ['draagvermogen_kg','Draagvermogen (kg)'], ['aantal_standen','Aantal standen'], ['type_stoel','Type stoel'], ['bekleding_ademend','Bekleding ademend'], ['bekleding_waterbestendig','Bekleding waterbestendig'], ['bekleding_sneldrogend','Bekleding sneldrogend'], ['bekleding_gepolsterd','Bekleding gepolsterd']] },
-    { titel: 'Tafel', velden: [['blad_hittebestendig','Hittebestendig blad'], ['blad_vochtbestendig','Vochtbestendig blad'], ['krasbestendig_blad','Krasbestendig blad'], ['tafel_lichtgewicht','Lichtgewicht tafel']] },
+    { titel: 'Tafel', velden: [['blad_hittebestendig','Hittebestendig blad'], ['blad_vochtbestendig','Vochtbestendig blad'], ['krasbestendig_blad','Krasbestendig blad'], ['tafel_lichtgewicht','Lichtgewicht tafel <8kg']] },
     { titel: 'Tent / Slaap', velden: [['stahoogte_cm','Stahoogte (cm)'], ['binnenbreedte_cm','Binnenbreedte (cm)'], ['binnenlengte_cm','Binnenlengte (cm)'], ['binnentent_afmeting','Binnentent afmeting'], ['palen_materiaal','Palen materiaal'], ['cabines','Cabines'], ['aantal_personen','Aantal personen'], ['raam_afdekking','Raam afdekking'], ['insectengaas','Insectengaas'], ['afdekking','Afdekking'], ['afgedekte_ykk_ritsen','Afgedekte YKK ritsen'], ['doekkwaliteit','Doekkwaliteit'], ['seizoensgebruik','Seizoensgebruik'], ['temp_min_graden','Min. temperatuur (°C)'], ['temp_max_graden','Max. temperatuur (°C)'], ['temperatuurbereik','Temperatuurbereik']] },
     { titel: 'BBQ / Koken', velden: [['type_barbecue','Type barbecue'], ['type_grill','Type grill'], ['grilloppervlak','Grilloppervlak'], ['aantal_branders','Aantal branders'], ['geschikte_warmtebronnen','Geschikte warmtebronnen'], ['gasverbruik_g_per_uur','Gasverbruik (g/u)']] },
     { titel: 'Servies / Keuken', velden: [['type_servies','Type servies'], ['diner_bord','Diner bord'], ['ontbijt_bord','Ontbijt bord'], ['diep_bord','Diep bord'], ['mok','Mok'], ['glas','Glas'], ['type_glas','Type glas'], ['saladekom','Saladekom'], ['kom_maat','Kom maat'], ['bestek_stuks','Bestek (stuks)'], ['type_pan','Type pan'], ['aantal_pannen','Aantal pannen'], ['pannenset_inhoud','Pannenset inhoud'], ['type_pannenset','Type pannenset'], ['antikleeflaag','Antikleeflaag'], ['type_antikleeflaag','Type antikleeflaag'], ['inclusief_deksel','Inclusief deksel']] },
@@ -1504,13 +1356,11 @@ function getAttributeGroups() {
     { titel: 'Overige eigenschappen', velden: [['opvouwbaar','Opvouwbaar'], ['verstelbaar','Verstelbaar'], ['oprolbaar','Oprolbaar'], ['uitbreidbaar','Uitbreidbaar'], ['inbouw','Inbouw'], ['inclusief_draagtas','Inclusief draagtas'], ['inclusief_opbergbox','Inclusief opbergbox'], ['draagtas_maat','Draagtas maat'], ['lagen','Lagen'], ['uitvoering','Uitvoering'], ['versie','Versie'], ['type_montage','Type montage'], ['garantie_jaar','Garantie (jaar)'], ['doelgroep','Doelgroep'], ['geschikt_voor','Geschikt voor'], ['geschikt_voor_campinggebruik','Geschikt voor campinggebruik'], ['geschikt_voor_voertuig','Geschikt voor voertuig'], ['geschikt_voor_type_camper','Geschikt voor type camper'], ['geschikt_voor_fiat_ducato','Geschikt voor Fiat Ducato'], ['geschikt_voor_vw_t5_of_t6','Geschikt voor VW T5/T6'], ['geschikt_voor_luifellengte','Geschikt voor luifellengte'], ['geschikt_als_zitplek','Geschikt als zitplek'], ['aanbevolen_voor','Aanbevolen voor'], ['vorm','Vorm'], ['producttype','Producttype'], ['keurmerk','Keurmerk'], ['bandenmaat','Bandenmaat'], ['bevestigingsmogelijkheden','Bevestigingsmogelijkheden']] }
   ];
 }
-
 function getKenmerkenVoorCategorie() {
   const obelinkCat = currentCats?.cat_obelink;
   if (!obelinkCat) return [];
   return catKenmerken[obelinkCat] || [];
 }
-
 function getKenmerkenWaardes() {
   const raw = currentAttrs?.kenmerken;
   if (!raw) return {};
@@ -1525,7 +1375,6 @@ function getKenmerkenWaardes() {
   }
   return {};
 }
-
 function setKenmerkWaarde(kenmerk, waarde) {
   const huidig = getKenmerkenWaardes();
   if (waarde === '') delete huidig[kenmerk];
@@ -1533,52 +1382,87 @@ function setKenmerkWaarde(kenmerk, waarde) {
   setDirty('attrs', 'kenmerken', huidig);
   if (currentAttrs) currentAttrs.kenmerken = huidig;
 }
-
 function renderKenmerkenSection() {
   const kenmerkenLijst = getKenmerkenVoorCategorie();
   const kenmerkenWaardes = getKenmerkenWaardes();
   if (!kenmerkenLijst.length) return '';
-
   const kenmerkenVelden = kenmerkenLijst.map(k => {
     const val = kenmerkenWaardes[k] || '';
     return `<div class="field"><label class="field-label">${escHtml(k)}</label><select onchange="setKenmerkWaarde(this.dataset.k, this.value)" data-k="${escapeAttr(k)}"><option value="" ${val === '' ? 'selected' : ''}>— N.v.t. —</option><option value="Ja" ${val === 'Ja' ? 'selected' : ''}>Ja</option><option value="Nee" ${val === 'Nee' ? 'selected' : ''}>Nee</option></select></div>`;
   }).join('');
-
   return `<div class="section"><div class="section-title">Kenmerken (Obelink)</div><div class="fields-grid">${kenmerkenVelden}</div></div>`;
+}
+function renderCategoryOptions(mpKey, currentCat) {
+  const templates = allTemplates[mpKey] || [];
+  return templates.map(t => `<option value="${escapeAttr(t.categorie_naam)}" ${t.categorie_naam === currentCat ? 'selected' : ''}>${escHtml(t.categorie_naam)}</option>`).join('');
+}
+
+function getMarketplaceSuggestion(mpKey) {
+  if (!currentProduct || mpKey === 'woocommerce') return null;
+  const wooCat = (currentCats?.cat_woocommerce || '').trim();
+  if (!wooCat) return null;
+  const candidateCounts = {};
+  Object.entries(productCatsMap || {}).forEach(([productId, cats]) => {
+    if (String(productId) === String(currentProduct.id)) return;
+    if ((cats?.cat_woocommerce || '').trim() !== wooCat) return;
+    const val = (cats?.[`cat_${mpKey}`] || '').trim();
+    if (!val) return;
+    const idVal = (cats?.[`cat_${mpKey}_id`] || '').trim();
+    const key = `${val}|||${idVal}`;
+    candidateCounts[key] = (candidateCounts[key] || 0) + 1;
+  });
+  const best = Object.entries(candidateCounts).sort((a, b) => b[1] - a[1])[0];
+  if (!best) return null;
+  const [cat, id] = best[0].split('|||');
+  return { cat, id, count: best[1] };
+}
+
+function applyMarketplaceSuggestion(mpKey, cat, catId = '') {
+  const catKey = `cat_${mpKey}`;
+  const idKey = `cat_${mpKey}_id`;
+  setDirty('cats', catKey, cat);
+  if (currentCats) currentCats[catKey] = cat;
+  if (idKey) {
+    setDirty('cats', idKey, catId || '');
+    if (currentCats) currentCats[idKey] = catId || '';
+  }
+  renderMarketplaces(document.getElementById('tabContent'));
 }
 
 function renderMarketplaces(content) {
   const c = currentCats || {};
-  const marketplaces = [
-    { key: 'bol', label: 'BOL.com', badge: 'badge-bol' },
-    { key: 'obelink', label: 'Obelink', badge: 'badge-obelink' },
-    { key: 'decathlon', label: 'Decathlon', badge: 'badge-decathlon' },
-    { key: 'amazon', label: 'Amazon', badge: 'badge-amazon' }
-  ];
-
-  const amazonCodes = ['CAMPING_EQUIPMENT', 'OUTDOOR_FURNITURE', 'COOKWARE', 'TABLEWARE', 'KITCHEN_STORAGE', 'OUTDOOR_COOKING', 'SLEEPING_BAGS', 'TENTS', 'BACKPACKS', 'LIGHTING', 'COOLERS', 'HEATING'];
-
-  content.innerHTML = marketplaces.map(mp => {
-    const catKey = `cat_${mp.key}`;
-    const currentCat = c[catKey] || '';
-
-    if (mp.key === 'amazon') {
-      return `<div class="section"><div class="section-title"><span class="badge ${mp.badge}">${mp.label}</span></div><div class="fields-grid"><div class="field field-full"><label class="field-label">Amazon categorie code</label><select data-key="cat_amazon" data-source="cats" onchange="onAmazonCatDropdown(this)"><option value="">— Kies een categorie —</option>${amazonCodes.map(code => `<option value="${escapeAttr(code)}" ${code === currentCat ? 'selected' : ''}>${escHtml(code)}</option>`).join('')}${currentCat && !amazonCodes.includes(currentCat) ? `<option value="${escapeAttr(currentCat)}" selected>${escHtml(currentCat)}</option>` : ''}</select></div><div class="field field-full"><label class="field-label">Of voer zelf een code in</label><input type="text" value="${escapeAttr(currentCat)}" placeholder="bijv. CAMPING_EQUIPMENT" onchange="overrideAmazonCat(this.value)" style="font-family:'DM Mono',monospace;font-size:12px;"></div></div></div>`;
-    }
-
-    const templates = allTemplates[mp.key] || [];
-    const currentId = c[`cat_${mp.key}_id`] || '';
-
-    return `<div class="section"><div class="section-title"><span class="badge ${mp.badge}">${mp.label}</span></div><div class="cat-select-wrap"><span class="cat-select-label">Categorie:</span><select data-key="${escapeAttr(catKey)}" data-source="cats" onchange="onCatChange(this, '${escapeAttr(mp.key)}')"><option value="">— Geen categorie —</option>${templates.map(t => `<option value="${escapeAttr(t.categorie_naam)}" ${t.categorie_naam === currentCat ? 'selected' : ''}>${escHtml(t.categorie_naam)}</option>`).join('')}</select></div><div class="fields-grid" style="margin-top:8px;"><div class="field"><label class="field-label">Categorie ID</label><input type="text" value="${escapeAttr(currentId)}" readonly data-key="cat_${escapeAttr(mp.key)}_id" data-source="cats" style="font-family:'DM Mono',monospace;font-size:12px;opacity:.7;"></div></div></div>`;
+  content.innerHTML = MARKETPLACES.map(mp => {
+    const currentCat = c[mp.catKey] || '';
+    const currentId = c[mp.idKey] || '';
+    const suggestion = getMarketplaceSuggestion(mp.key);
+    const suggestionHtml = suggestion
+      ? `<div style="margin-top:10px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);font-size:12px;color:var(--text2);">
+          Suggestie op basis van WooCommerce categorie: <strong style="color:var(--text);">${escHtml(suggestion.cat)}</strong>
+          <span style="color:var(--text3);">(${suggestion.count}x eerder gebruikt)</span>
+          <button class="btn btn-ghost" style="margin-left:8px;padding:4px 8px;font-size:11px;" onclick="applyMarketplaceSuggestion('${escapeAttr(mp.key)}','${escapeAttr(suggestion.cat)}','${escapeAttr(suggestion.id || '')}')">Gebruik suggestie</button>
+        </div>`
+      : (mp.key !== 'woocommerce' && (c.cat_woocommerce || '').trim()
+        ? `<div style="margin-top:10px;font-size:12px;color:var(--text3);">Geen eerdere koppeling gevonden voor deze WooCommerce categorie.</div>`
+        : '');
+    return `<div class="section"><div class="section-title"><span class="badge ${mp.badge}">${mp.label}</span></div>
+      <div class="cat-select-wrap">
+        <span class="cat-select-label">Categorie:</span>
+        <select data-key="${escapeAttr(mp.catKey)}" data-source="cats" onchange="onCatChange(this, '${escapeAttr(mp.key)}')">
+          <option value="">— Geen categorie —</option>
+          ${renderCategoryOptions(mp.key, currentCat)}
+          ${currentCat && !(allTemplates[mp.key] || []).some(t => t.categorie_naam === currentCat) ? `<option value="${escapeAttr(currentCat)}" selected>${escHtml(currentCat)}</option>` : ''}
+        </select>
+      </div>
+      ${mp.key !== 'woocommerce' ? suggestionHtml : '<div style="font-size:12px;color:var(--text3);margin-top:8px;">Deze categorie wordt gebruikt als basis voor marketplace-suggesties.</div>'}
+      <div class="fields-grid" style="margin-top:8px;"><div class="field"><label class="field-label">Categorie ID</label><input type="text" value="${escapeAttr(currentId)}" readonly data-key="${escapeAttr(mp.idKey)}" data-source="cats" style="font-family:'DM Mono',monospace;font-size:12px;opacity:.7;"></div></div>
+    </div>`;
   }).join('');
 }
-
 function onCatChange(el, mp) {
   const catNaam = el.value;
   const catKey = `cat_${mp}`;
   setDirty('cats', catKey, catNaam);
   if (currentCats) currentCats[catKey] = catNaam;
-
   const idKey = `cat_${mp}_id`;
   const template = (allTemplates[mp] || []).find(t => t.categorie_naam === catNaam);
   const catId = template?.categorie_id || '';
@@ -1588,21 +1472,17 @@ function onCatChange(el, mp) {
   if (idInput) idInput.value = catId;
   templateFieldsCache = {};
 }
-
 function onAmazonCatDropdown(el) { setDirty('cats', 'cat_amazon', el.value); if (currentCats) currentCats.cat_amazon = el.value; }
 function overrideAmazonCat(val) { setDirty('cats', 'cat_amazon', val); if (currentCats) currentCats.cat_amazon = val; const sel = document.querySelector('select[data-key="cat_amazon"]'); if (sel) sel.value = val; }
-
 function renderAmazon(content) {
   const p = currentProduct;
   content.innerHTML = `<div class="section"><div class="section-title">Amazon bulletpoints</div><div class="fields-grid">${[1,2,3,4,5].map(i => field(`amazon_bulletpoint_${i}`, `Bulletpoint ${i}`, p[`amazon_bulletpoint_${i}`], 'text', 'product', false, true)).join('')}</div></div><div class="section"><div class="section-title">Zoektrefwoorden</div><div class="fields-grid">${field('amazon_zoektrefwoorden', 'Zoektrefwoorden (puntkomma gescheiden)', p.amazon_zoektrefwoorden, 'textarea', 'product', false, true)}</div></div>`;
 }
-
 function markMulti(el, key, source) {
   const allCheckboxes = document.querySelectorAll(`input[type=checkbox][data-key="${CSS.escape(key)}"][data-source="${CSS.escape(source)}"]`);
   const selected = Array.from(allCheckboxes).filter(cb => cb.checked).map(cb => cb.closest('label').textContent.trim());
   setDirty(source, key, selected.join(' | '));
 }
-
 function msOpen(uid) {
   const dd = document.getElementById(uid + '_dd');
   const search = document.getElementById(uid + '_search');
@@ -1648,11 +1528,9 @@ function msToggle(uid, val) {
   msRender(uid, search.value);
 }
 function msRemoveTag(e, el, uid) { e.stopPropagation(); msToggle(uid, el.dataset.val); }
-
 function openSettings() { document.getElementById('settingsModal').style.display = 'flex'; settingsSelectMarketplace(settingsCurrentMarketplace || 'bol'); }
 function closeSettings() { document.getElementById('settingsModal').style.display = 'none'; }
 function settingsSelectMarketplace(mp) { settingsCurrentMarketplace = mp; settingsCurrentTemplate = null; settingsCurrentFields = []; document.getElementById('settingsMarketplace').value = mp; renderSettingsCategoryList(); renderSettingsEditor(); }
-
 function renderSettingsCategoryList() {
   const list = document.getElementById('settingsCategoryList');
   if (!list) return;
@@ -1660,7 +1538,6 @@ function renderSettingsCategoryList() {
   const templates = (allTemplates[settingsCurrentMarketplace] || []).filter(t => !q || (t.categorie_naam || '').toLowerCase().includes(q) || (t.categorie_id || '').toLowerCase().includes(q)).sort((a, b) => String(a.categorie_naam || '').localeCompare(String(b.categorie_naam || '')));
   list.innerHTML = templates.length ? templates.map(t => `<div class="settings-cat-item ${settingsCurrentTemplate?.id === t.id ? 'active' : ''}" onclick="selectSettingsCategory('${escapeAttr(t.id)}')"><div style="font-weight:500;">${escHtml(t.categorie_naam || '—')}</div><div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);margin-top:2px;">${escHtml(t.categorie_id || t.id || '')}</div></div>`).join('') : '<div style="color:var(--text3);font-size:12px;padding:8px;">Geen categorieën gevonden.</div>';
 }
-
 async function selectSettingsCategory(templateId) {
   const template = (allTemplates[settingsCurrentMarketplace] || []).find(t => String(t.id) === String(templateId));
   if (!template) return;
@@ -1668,14 +1545,12 @@ async function selectSettingsCategory(templateId) {
   await reloadSettingsFields();
   renderSettingsCategoryList();
 }
-
 function newSettingsCategory() {
   settingsCurrentTemplate = { id: null, marketplace: settingsCurrentMarketplace, categorie_naam: '', categorie_id: '' };
   settingsCurrentFields = [];
   renderSettingsCategoryList();
   renderSettingsEditor();
 }
-
 function renderSettingsEditor() {
   const empty = document.getElementById('settingsEditorEmpty');
   const editor = document.getElementById('settingsEditor');
@@ -1686,43 +1561,33 @@ function renderSettingsEditor() {
   document.getElementById('settingsCatId').value = settingsCurrentTemplate.categorie_id || '';
   renderSettingsFieldsTable();
 }
-
 function hydrateSettingsFieldFromGlobalOptions(f) {
   if (!f || !f.master_veld) return f;
-
   const currentOptions = parseSettingsOptions(f.opties);
   if (currentOptions.length) return f;
-
   const global = fieldOptions[f.master_veld];
   if (!global || !Array.isArray(global.opties) || !global.opties.length) return f;
-
   // Als de categorie-template nog geen opties heeft, neem de globale field_options over.
   // Na 'Velden opslaan' worden ze vastgelegd in category_template_fields.
   f.opties = [...global.opties];
-
   if (!f.veld_type || f.veld_type === 'text') {
     f.veld_type = global.multi ? 'multi' : 'dropdown';
   }
-
   f._optionsFromGlobal = true;
   return f;
 }
-
 function renderSettingsFieldsTable() {
   const body = document.getElementById('settingsFieldsBody');
   if (!settingsCurrentFields.length) {
     body.innerHTML = '<tr><td colspan="7" style="color:var(--text3);padding:14px 6px;">Nog geen velden toegevoegd.</td></tr>';
     return;
   }
-
   settingsCurrentFields = settingsCurrentFields.map(hydrateSettingsFieldFromGlobalOptions);
-
   body.innerHTML = settingsCurrentFields.map((f, i) => {
     const optionsText = Array.isArray(f.opties) ? f.opties.join(' | ') : (f.opties || '');
     const sourceHint = f._optionsFromGlobal
       ? '<div style="font-size:10px;color:var(--accent);margin-top:4px;">overgenomen uit globale veldopties</div>'
       : '';
-
     return `<tr data-index="${i}">
     <td><input value="${escapeAttr(f.master_veld || '')}" onchange="settingsUpdateField(${i}, 'master_veld', this.value); hydrateSettingsFieldAfterNameChange(${i});" placeholder="bijv. kleur_primair"></td>
     <td style="text-align:center;"><input type="checkbox" ${f.verplicht ? 'checked' : ''} onchange="settingsUpdateField(${i}, 'verplicht', this.checked)"></td>
@@ -1734,7 +1599,6 @@ function renderSettingsFieldsTable() {
   </tr>`;
   }).join('');
 }
-
 function hydrateSettingsFieldAfterNameChange(index) {
   if (!settingsCurrentFields[index]) return;
   settingsCurrentFields[index]._optionsFromGlobal = false;
@@ -1744,7 +1608,6 @@ function hydrateSettingsFieldAfterNameChange(index) {
 function settingsUpdateField(index, key, value) { if (settingsCurrentFields[index]) settingsCurrentFields[index][key] = value; }
 function addSettingsFieldRow() { settingsCurrentFields.push({ id: null, template_id: settingsCurrentTemplate?.id || null, master_veld: '', verplicht: false, volgorde: settingsCurrentFields.length + 1, veld_type: 'text', opties: [], standaardwaarde: '' }); renderSettingsFieldsTable(); }
 function removeSettingsFieldRow(index) { const field = settingsCurrentFields[index]; if (!field) return; if (field.id) field._delete = true; else settingsCurrentFields.splice(index, 1); settingsCurrentFields = settingsCurrentFields.filter(f => !(!f.id && f._delete)); renderSettingsFieldsTable(); }
-
 async function reloadSettingsFields() {
   if (!settingsCurrentTemplate?.id) { settingsCurrentFields = []; renderSettingsEditor(); return; }
   try {
@@ -1754,11 +1617,22 @@ async function reloadSettingsFields() {
     renderSettingsEditor();
   } catch (e) { console.error(e); showToast('Velden laden mislukt: ' + e.message, 'error'); }
 }
-
 async function saveSettingsCategory() {
   const naam = document.getElementById('settingsCatName').value.trim();
   const catId = document.getElementById('settingsCatId').value.trim();
   if (!naam) { showToast('Vul een categorienaam in', 'error'); return; }
+
+  const duplicate = (allTemplates[settingsCurrentMarketplace] || []).find(t =>
+    String(t.id) !== String(settingsCurrentTemplate?.id || '') &&
+    String(t.categorie_naam || '').trim().toLowerCase() === naam.toLowerCase()
+  );
+  if (duplicate) {
+    showToast('Deze categorie bestaat al voor deze marketplace. Dubbele categorieën zijn niet toegestaan.', 'error');
+    settingsCurrentTemplate = duplicate;
+    await reloadSettingsFields();
+    renderSettingsCategoryList();
+    return;
+  }
 
   try {
     const payload = { marketplace: settingsCurrentMarketplace, categorie_naam: naam, categorie_id: catId };
@@ -1773,19 +1647,39 @@ async function saveSettingsCategory() {
     showToast('Categorie opgeslagen', 'success');
   } catch (e) { console.error(e); showToast('Categorie opslaan mislukt: ' + e.message, 'error'); }
 }
+function syncSettingsFieldsFromDom() {
+  document.querySelectorAll('#settingsFieldsBody tr[data-index]').forEach(row => {
+    const i = Number(row.dataset.index);
+    const f = settingsCurrentFields[i];
+    if (!f) return;
+    const inputs = row.querySelectorAll('input, select, textarea');
+    f.master_veld = inputs[0]?.value?.trim() || '';
+    f.verplicht = !!inputs[1]?.checked;
+    f.veld_type = inputs[2]?.value || 'text';
+    f.opties = inputs[3]?.value || '';
+    f.standaardwaarde = inputs[4]?.value || '';
+    f.volgorde = Number(inputs[5]?.value || i + 1);
+  });
+}
 
 async function saveSettingsFields() {
+  syncSettingsFieldsFromDom();
   if (!settingsCurrentTemplate?.id) {
     await saveSettingsCategory();
     if (!settingsCurrentTemplate?.id) return;
   }
-
   try {
+    const seen = new Set();
     for (const f of settingsCurrentFields) {
       if (f._delete && f.id) { const { error } = await sb.from('category_template_fields').delete().eq('id', f.id); if (error) throw error; continue; }
       if (f._delete || !String(f.master_veld || '').trim()) continue;
-      const payload = { template_id: settingsCurrentTemplate.id, master_veld: String(f.master_veld).trim(), verplicht: !!f.verplicht, volgorde: Number(f.volgorde || 0), veld_type: f.veld_type || 'text', opties: parseSettingsOptions(f.opties), standaardwaarde: f.standaardwaarde || null };
-      const result = f.id ? await sb.from('category_template_fields').update(payload).eq('id', f.id) : await sb.from('category_template_fields').insert(payload);
+      const fieldKey = String(f.master_veld).trim();
+      if (seen.has(fieldKey)) continue;
+      seen.add(fieldKey);
+      const payload = { template_id: settingsCurrentTemplate.id, master_veld: fieldKey, verplicht: !!f.verplicht, volgorde: Number(f.volgorde || 0), veld_type: f.veld_type || 'text', opties: parseSettingsOptions(f.opties), standaardwaarde: f.standaardwaarde || null };
+      const result = f.id
+        ? await sb.from('category_template_fields').update(payload).eq('id', f.id).select().single()
+        : await sb.from('category_template_fields').upsert(payload, { onConflict: 'template_id,master_veld' }).select().single();
       if (result.error) throw result.error;
     }
     await loadTemplates();
@@ -1795,7 +1689,6 @@ async function saveSettingsFields() {
     showToast('Templatevelden opgeslagen', 'success');
   } catch (e) { console.error(e); showToast('Velden opslaan mislukt: ' + e.message, 'error'); }
 }
-
 async function loadFieldOptionsFromTemplateFields() {
   const rows = await fetchAll('category_template_fields', 'master_veld, veld_type, opties');
   rows.forEach(r => {
@@ -1808,22 +1701,18 @@ async function loadFieldOptionsFromTemplateFields() {
     if (r.veld_type === 'multi') fieldOptions[r.master_veld].multi = true;
   });
 }
-
 function openBulkEdit() {
   document.getElementById('bulkModal').style.display = 'flex';
   updateBulkCountInfo();
 }
-
 function closeBulkEdit() {
   document.getElementById('bulkModal').style.display = 'none';
 }
-
 function clearBulkSelection() {
   selectedProductIds.clear();
   renderProductList(filteredProducts.length ? filteredProducts : allProducts);
   updateBulkCountInfo();
 }
-
 function updateBulkCountInfo() {
   const el = document.getElementById('bulkCountInfo');
   if (!el) return;
@@ -1831,40 +1720,32 @@ function updateBulkCountInfo() {
   const count = scope === 'filtered' ? filteredProducts.length : selectedProductIds.size;
   el.textContent = `${count} producten geselecteerd voor bulkbewerking.`;
 }
-
 document.addEventListener('change', e => {
   if (e.target && e.target.id === 'bulkScope') updateBulkCountInfo();
 });
-
 async function applyBulkEdit() {
   const scope = document.getElementById('bulkScope').value;
   const source = document.getElementById('bulkSource').value;
   const fieldName = document.getElementById('bulkField').value.trim();
   const value = document.getElementById('bulkValue').value;
-
   if (!fieldName) {
     showToast('Vul een veldnaam in', 'error');
     return;
   }
-
   const ids = scope === 'filtered' ? filteredProducts.map(p => String(p.id)) : Array.from(selectedProductIds);
   if (!ids.length) {
     showToast('Geen producten geselecteerd', 'error');
     return;
   }
-
   if (!confirm(`Weet je zeker dat je ${ids.length} producten wilt aanpassen?`)) return;
-
   try {
     const now = new Date().toISOString();
     const table = source === 'product' ? 'products' : source === 'attrs' ? 'product_attributes' : 'product_categories';
     const payload = { [fieldName]: value, bijgewerkt_op: now };
-
     for (const productId of ids) {
       const oldProduct = allProducts.find(p => String(p.id) === String(productId)) || {};
       const oldObj = source === 'product' ? oldProduct : source === 'attrs' ? (productAttrsMap[productId] || {}) : (productCatsMap[productId] || {});
       await logPendingChanges(source, { [fieldName]: value }, productId, oldObj, 'bulk_update');
-
       if (source === 'product') {
         const { error } = await sb.from(table).update(payload).eq('id', productId);
         if (error) throw error;
@@ -1880,7 +1761,6 @@ async function applyBulkEdit() {
         else productCatsMap[productId] = data || { ...(productCatsMap[productId] || {}), [fieldName]: value };
       }
     }
-
     if (source === 'cats') {
       await loadProducts();
       templateFieldsCache = {};
@@ -1893,15 +1773,12 @@ async function applyBulkEdit() {
     showToast('Bulkbewerking mislukt: ' + e.message, 'error');
   }
 }
-
 function openImportModal() {
   document.getElementById('importModal').style.display = 'flex';
 }
-
 function closeImportModal() {
   document.getElementById('importModal').style.display = 'none';
 }
-
 function downloadExampleCSV() {
   const csv = [
     'ean,naam_nl,beschrijving_nl,merk,mpn,cat_bol,cat_obelink,kleur_primair,materiaal,product_gewicht_kg',
@@ -1909,7 +1786,6 @@ function downloadExampleCSV() {
   ].join(String.fromCharCode(10));
   downloadCSV(csv, 'pim_import_voorbeeld.csv');
 }
-
 function handleImportFile(input) {
   const file = input.files?.[0];
   if (!file) return;
@@ -1920,13 +1796,11 @@ function handleImportFile(input) {
   };
   reader.readAsText(file);
 }
-
 function parseCSV(text) {
   const rows = [];
   let row = [];
   let value = '';
   let inQuotes = false;
-
   for (let i = 0; i < text.length; i++) {
     const char = text[i];
     const next = text[i + 1];
@@ -1942,11 +1816,9 @@ function parseCSV(text) {
       row = []; value = '';
     } else value += char;
   }
-
   row.push(value);
   if (row.some(cell => String(cell).trim() !== '')) rows.push(row);
   if (!rows.length) return [];
-
   const headers = rows[0].map(h => String(h).trim());
   return rows.slice(1).map(r => {
     const obj = {};
@@ -1954,21 +1826,17 @@ function parseCSV(text) {
     return obj;
   });
 }
-
 function previewImportCsv() {
   const text = document.getElementById('importCsvText').value;
   importRows = parseCSV(text);
   const preview = document.getElementById('importPreview');
-
   if (!importRows.length) {
     preview.innerHTML = 'Geen geldige rijen gevonden.';
     return;
   }
-
   const headers = Object.keys(importRows[0]);
   preview.innerHTML = `<div style="margin-bottom:8px;">${importRows.length} rijen gevonden.</div><table class="preview-table"><thead><tr>${headers.map(h => `<th>${escHtml(h)}</th>`).join('')}</tr></thead><tbody>${importRows.slice(0, 10).map(row => `<tr>${headers.map(h => `<td>${escHtml(row[h])}</td>`).join('')}</tr>`).join('')}</tbody></table>${importRows.length > 10 ? '<div style="margin-top:8px;color:var(--text3);">Alleen de eerste 10 rijen worden getoond.</div>' : ''}`;
 }
-
 function resetImportStatus() {
   const wrap = document.getElementById('importProgressWrap');
   const fill = document.getElementById('importProgressFill');
@@ -1983,7 +1851,6 @@ function resetImportStatus() {
     result.innerHTML = '';
   }
 }
-
 function setImportProgress(done, total, message = '') {
   const wrap = document.getElementById('importProgressWrap');
   const fill = document.getElementById('importProgressFill');
@@ -1993,7 +1860,6 @@ function setImportProgress(done, total, message = '') {
   if (fill) fill.style.width = pct + '%';
   if (text) text.textContent = message || `Importeren: ${done} van ${total} regels (${pct}%)`;
 }
-
 function showImportResult(type, html) {
   const result = document.getElementById('importResult');
   if (!result) return;
@@ -2001,7 +1867,6 @@ function showImportResult(type, html) {
   result.className = `import-result ${type}`;
   result.innerHTML = html;
 }
-
 async function runImportCsv() {
   if (!importRows.length) previewImportCsv();
   if (!importRows.length) {
@@ -2009,32 +1874,25 @@ async function runImportCsv() {
     showImportResult('error', 'Geen importregels gevonden. Controleer of de CSV een headerregel en minimaal één productregel bevat.');
     return;
   }
-
   if (!confirm(`Weet je zeker dat je ${importRows.length} regels wilt importeren?`)) return;
-
   resetImportStatus();
   setImportProgress(0, importRows.length, 'Import voorbereiden...');
-
   const btn = document.getElementById('importRunBtn');
   if (btn) {
     btn.disabled = true;
     btn.textContent = 'Importeren...';
   }
-
   const productFields = ['ean','naam_nl','naam_de','naam_en','beschrijving_nl','beschrijving_de','merk','mpn','serie','afbeeldingen','bol_custom_titel','amazon_bulletpoint_1','amazon_bulletpoint_2','amazon_bulletpoint_3','amazon_bulletpoint_4','amazon_bulletpoint_5','amazon_zoektrefwoorden'];
   const catFields = ['cat_bol','cat_bol_id','cat_obelink','cat_obelink_id','cat_decathlon','cat_decathlon_id','cat_amazon'];
-
   let created = 0;
   let updated = 0;
   let skipped = 0;
   let firstImportedEan = '';
   const errors = [];
-
   try {
     for (let index = 0; index < importRows.length; index++) {
       const row = importRows[index];
       const lineNumber = index + 2;
-
       try {
         const ean = normalizeEan(row.ean || row.EAN || '');
         if (!ean) {
@@ -2044,17 +1902,14 @@ async function runImportCsv() {
           continue;
         }
         if (!firstImportedEan) firstImportedEan = ean;
-
         const productPayload = {};
         productFields.forEach(f => {
           if (row[f] !== undefined && String(row[f]).trim() !== '') productPayload[f] = f === 'ean' ? ean : row[f];
         });
         productPayload.ean = ean;
         productPayload.bijgewerkt_op = new Date().toISOString();
-
         const existing = await sb.from('products').select('id').eq('ean', ean).maybeSingle();
         if (existing.error) throw existing.error;
-
         let productId;
         if (existing.data?.id) {
           productId = existing.data.id;
@@ -2070,7 +1925,6 @@ async function runImportCsv() {
           await logPendingChanges('product', productPayload, productId, {}, 'csv_import_create');
           created++;
         }
-
         const catsPayload = {};
         catFields.forEach(f => {
           if (row[f] !== undefined && String(row[f]).trim() !== '') catsPayload[f] = row[f];
@@ -2080,7 +1934,6 @@ async function runImportCsv() {
           const { error } = await sb.from('product_categories').upsert({ product_id: productId, ...catsPayload, bijgewerkt_op: new Date().toISOString() }, { onConflict: 'product_id' });
           if (error) throw error;
         }
-
         const attrsPayload = {};
         Object.entries(row).forEach(([key, val]) => {
           if (!key || productFields.includes(key) || catFields.includes(key)) return;
@@ -2095,26 +1948,21 @@ async function runImportCsv() {
         skipped++;
         errors.push(`Regel ${lineNumber}: ${rowError.message || rowError}`);
       }
-
       setImportProgress(index + 1, importRows.length);
       await new Promise(resolve => setTimeout(resolve, 0));
     }
-
     if (firstImportedEan) {
       document.getElementById('voorraadFilter').value = '';
       document.getElementById('categoryFilter').value = '';
       document.getElementById('searchInput').value = firstImportedEan;
     }
-
     setImportProgress(importRows.length, importRows.length, 'Productlijst opnieuw laden...');
     await loadProducts();
     await loadAllProductAttributesForCompleteness();
     applyFilters();
-
     const errorHtml = errors.length
       ? `<div class="error-list">${errors.slice(0, 30).map(e => `<div>${escHtml(e)}</div>`).join('')}${errors.length > 30 ? `<div>... en nog ${errors.length - 30} meldingen</div>` : ''}</div>`
       : '';
-
     const resultType = errors.length ? 'warning' : 'success';
     showImportResult(resultType, `<strong>Import voltooid.</strong><br>Nieuw: ${created} · Bijgewerkt: ${updated} · Overgeslagen/fout: ${skipped}${firstImportedEan ? `<br>Zoekfilter is gezet op eerste geïmporteerde EAN: ${escHtml(firstImportedEan)}` : ''}${errorHtml}`);
     showToast(`Import voltooid: ${created} nieuw, ${updated} bijgewerkt, ${skipped} overgeslagen`, errors.length ? 'error' : 'success');
@@ -2130,7 +1978,6 @@ async function runImportCsv() {
     }
   }
 }
-
 function openHistoryModal() {
   if (!currentProduct) {
     showToast('Selecteer eerst een product', 'error');
@@ -2140,15 +1987,12 @@ function openHistoryModal() {
   document.getElementById('historySubtitle').textContent = currentProduct.naam_nl || currentProduct.ean || currentProduct.id;
   loadHistory();
 }
-
 function closeHistoryModal() {
   document.getElementById('historyModal').style.display = 'none';
 }
-
 async function loadHistory() {
   const list = document.getElementById('historyList');
   list.innerHTML = 'Historie laden...';
-
   try {
     const { data, error } = await sb.from('pim_audit_log')
       .select('*')
@@ -2156,19 +2000,16 @@ async function loadHistory() {
       .order('aangemaakt_op', { ascending: false })
       .limit(100);
     if (error) throw error;
-
     if (!data || !data.length) {
       list.innerHTML = 'Nog geen wijzigingen gevonden.';
       return;
     }
-
     list.innerHTML = data.map(item => `<div class="history-item"><div class="history-meta">${escHtml(new Date(item.aangemaakt_op).toLocaleString('nl-NL'))} · ${escHtml(item.actie || '')} · ${escHtml(item.bron || '')}</div><div><strong>${escHtml(item.veld || '')}</strong></div><div style="margin-top:4px;color:var(--text3);">Oud: ${escHtml(item.oude_waarde || '—')}</div><div>Nieuw: ${escHtml(item.nieuwe_waarde || '—')}</div></div>`).join('');
   } catch (e) {
     console.error(e);
     list.innerHTML = '<span style="color:var(--red);">Historie laden mislukt: ' + escHtml(e.message) + '</span>';
   }
 }
-
 async function exportChannable() {
   showToast('Channable CSV wordt voorbereid...', 'success');
   try {
@@ -2194,23 +2035,19 @@ async function exportChannable() {
     showToast(`${allProds.length} producten geëxporteerd`, 'success');
   } catch (e) { console.error(e); showToast('Export mislukt: ' + e.message, 'error'); }
 }
-
 function showWooExport() {
   const weekAgo = new Date();
   weekAgo.setDate(weekAgo.getDate() - 7);
   document.getElementById('wooExportDate').value = weekAgo.toISOString().slice(0,10);
   document.getElementById('wooModal').style.display = 'flex';
 }
-
 async function exportWooCommerce() {
   const datumStr = document.getElementById('wooExportDate').value;
   document.getElementById('wooModal').style.display = 'none';
   showToast('WooCommerce CSV wordt voorbereid...', 'success');
-
   try {
     let query = sb.from('products').select('id,ean,naam_nl,beschrijving_nl,merk,mpn,afbeeldingen,bijgewerkt_op');
     if (datumStr) query = query.gte('bijgewerkt_op', datumStr);
-
     let allProds = [];
     let from = 0;
     while (true) {
@@ -2221,9 +2058,7 @@ async function exportWooCommerce() {
       if (data.length < 1000) break;
       from += 1000;
     }
-
     if (!allProds.length) { showToast('Geen producten gevonden voor deze periode', 'error'); return; }
-
     const ids = allProds.map(p => p.id);
     const allAttrs = {};
     for (let i = 0; i < ids.length; i += 100) {
@@ -2232,7 +2067,6 @@ async function exportWooCommerce() {
       if (error) throw error;
       (data || []).forEach(a => { allAttrs[a.product_id] = a; });
     }
-
     const headers = ['ID','SKU','Name','Description','Images','Attribute 1 name','Attribute 1 value(s)','Attribute 2 name','Attribute 2 value(s)','Attribute 3 name','Attribute 3 value(s)','Attribute 4 name','Attribute 4 value(s)'];
     const rows = allProds.map(p => {
       const a = allAttrs[p.id] || {};
