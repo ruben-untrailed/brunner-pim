@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brunner PIM Tools</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
+:root {
+  --bg: #101010;
+  --surface: #181818;
+  --surface2: #232323;
+  --border: #333;
+  --text: #f0ede8;
+  --text2: #a6a29a;
+  --text3: #6f6a62;
+  --accent: #e8c547;
+  --green: #4caf7d;
+  --red: #e05252;
+  --radius: 6px;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; }
+button, input, select, textarea { font-family: inherit; }
+.login-screen { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: var(--bg); z-index: 20; }
+.login-box { width: min(380px, calc(100vw - 32px)); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; display: grid; gap: 12px; }
+.shell { min-height: 100vh; display: grid; grid-template-columns: 250px minmax(0, 1fr); }
+aside { background: var(--surface); border-right: 1px solid var(--border); padding: 20px; display: flex; flex-direction: column; gap: 18px; }
+.logo { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+.nav { display: grid; gap: 7px; }
+.nav button, .btn { border: 1px solid var(--border); background: transparent; color: var(--text2); border-radius: var(--radius); padding: 8px 10px; cursor: pointer; font-size: 13px; text-align: left; text-decoration: none; }
+.nav button.active, .nav button:hover, .btn:hover { color: var(--text); border-color: var(--accent); }
+.btn.primary { background: var(--accent); color: #111; border-color: var(--accent); text-align: center; font-weight: 600; }
+.btn.danger { color: var(--red); }
+main { min-width: 0; display: flex; flex-direction: column; }
+header { padding: 18px 24px; border-bottom: 1px solid var(--border); background: var(--surface); display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+h1 { margin: 0; font-size: 18px; font-weight: 600; }
+.subtitle { color: var(--text3); font-family: 'DM Mono', monospace; font-size: 11px; margin-top: 3px; }
+.content { padding: 24px; overflow: auto; }
+.panel { border: 1px solid var(--border); background: var(--surface); border-radius: var(--radius); padding: 16px; margin-bottom: 18px; }
+.panel-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--text3); margin-bottom: 12px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+.kpi { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; }
+.kpi-value { font-family: 'DM Mono', monospace; font-size: 24px; color: var(--accent); }
+.kpi-label { color: var(--text2); margin-top: 4px; }
+.field { display: grid; gap: 5px; }
+label { color: var(--text2); font-size: 12px; }
+input, select, textarea { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); padding: 8px 10px; outline: none; font-size: 13px; }
+textarea { min-height: 140px; resize: vertical; line-height: 1.45; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+th, td { border-bottom: 1px solid var(--border); padding: 8px; text-align: left; vertical-align: top; }
+th { color: var(--text3); text-transform: uppercase; letter-spacing: .06em; font-size: 10px; }
+.toast { position: fixed; right: 20px; bottom: 20px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; color: var(--text); opacity: 0; transform: translateY(20px); transition: all .2s; z-index: 30; max-width: 460px; }
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast.error { border-color: var(--red); color: var(--red); }
+.toast.success { border-color: var(--green); color: var(--green); }
+.hidden { display: none !important; }
+@media (max-width: 850px) { .shell { grid-template-columns: 1fr; } aside { border-right: 0; border-bottom: 1px solid var(--border); } }
+</style>
+</head>
+<body>
+<div class="login-screen" id="loginScreen">
+  <div class="login-box">
+    <div>
+      <div class="logo">Brunner PIM Tools</div>
+      <div class="subtitle">Inloggen vereist</div>
+    </div>
+    <div class="field"><label>E-mailadres</label><input id="loginEmail" type="email" autocomplete="email"></div>
+    <div class="field"><label>Wachtwoord</label><input id="loginPassword" type="password" autocomplete="current-password"></div>
+    <button class="btn primary" onclick="handleLogin()">Inloggen</button>
+  </div>
+</div>
+<div class="shell hidden" id="appShell">
+  <aside>
+    <div>
+      <div class="logo">Brunner PIM Tools</div>
+      <div class="subtitle">Kwaliteit, mappings, exports</div>
+    </div>
+    <div class="nav" id="nav">
+      <button class="active" data-view="quality" onclick="switchView('quality')">Datakwaliteit</button>
+      <button data-view="mappings" onclick="switchView('mappings')">WooCommerce mapping</button>
+      <button data-view="suggestions" onclick="switchView('suggestions')">Categorie suggesties</button>
+      <button data-view="exports" onclick="switchView('exports')">Exportprofielen</button>
+      <button data-view="import" onclick="switchView('import')">Import preview</button>
+      <button data-view="templates" onclick="switchView('templates')">Template tools</button>
+      <button data-view="audit" onclick="switchView('audit')">Audit herstel</button>
+    </div>
+    <button class="btn" onclick="refreshCurrentView()">Ververs</button>
+    <button class="btn danger" onclick="handleLogout()">Uitloggen</button>
+  </aside>
+  <main>
+    <header>
+      <div><h1 id="viewTitle">Datakwaliteit</h1><div class="subtitle" id="viewSubtitle">Actuele PIM-controles uit Supabase</div></div>
+      <a class="btn" href="./index.html">Terug naar PIM</a>
+    </header>
+    <div class="content" id="content"></div>
+  </main>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+const SUPABASE_URL = 'https://furblfnwplmpnqlbxbcm.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ1cmJsZm53cGxtcG5xbGJ4YmNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3NTUzNTUsImV4cCI6MjA5MjMzMTM1NX0.tRbB2rbkjUm0Fsi0xP0eZXZZ379o6a0Dy3SKipTlEy4';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+let currentView = 'quality';
+let templates = [];
+function escHtml(s) { return String(s ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'", '&#39;'); }
+function showToast(msg, type = 'success') { const el = document.getElementById('toast'); el.textContent = msg; el.className = 'toast ' + type + ' show'; setTimeout(() => el.classList.remove('show'), 3500); }
+async function handleLogin() { const email = document.getElementById('loginEmail').value.trim(); const password = document.getElementById('loginPassword').value; const { error } = await sb.auth.signInWithPassword({ email, password }); if (error) showToast(error.message, 'error'); }
+async function handleLogout() { await sb.auth.signOut(); }
+sb.auth.onAuthStateChange((_event, session) => { document.getElementById('loginScreen').classList.toggle('hidden', !!session); document.getElementById('appShell').classList.toggle('hidden', !session); if (session) refreshCurrentView(); });
+document.getElementById('loginPassword').addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin(); });
+function switchView(view) { currentView = view; document.querySelectorAll('#nav button').forEach(btn => btn.classList.toggle('active', btn.dataset.view === view)); refreshCurrentView(); }
+async function refreshCurrentView() {
+  const titles = { quality: ['Datakwaliteit','Actuele PIM-controles uit Supabase'], mappings: ['WooCommerce mapping','Bulk mappings per WooCommerce categorie'], suggestions: ['Categorie suggesties','Meest gebruikte marketplace-koppelingen'], exports: ['Exportprofielen','Beheerbare exportvelden'], import: ['Import preview','CSV eerst controleren voordat je importeert'], templates: ['Template tools','Templates sneller dupliceren'], audit: ['Audit herstel','Waarden herstellen vanuit wijzigingshistorie'] };
+  document.getElementById('viewTitle').textContent = titles[currentView][0];
+  document.getElementById('viewSubtitle').textContent = titles[currentView][1];
+  document.getElementById('content').innerHTML = '<div class="panel">Laden...</div>';
+  try {
+    if (currentView === 'quality') await renderQuality();
+    if (currentView === 'mappings') await renderMappings();
+    if (currentView === 'suggestions') await renderSuggestions();
+    if (currentView === 'exports') await renderExports();
+    if (currentView === 'import') renderImportPreview();
+    if (currentView === 'templates') await renderTemplates();
+    if (currentView === 'audit') renderAudit();
+  } catch (e) {
+    console.error(e);
+    document.getElementById('content').innerHTML = '<div class="panel" style="color:var(--red);">' + escHtml(e.message) + '</div>';
+  }
+}
+async function renderQuality() {
+  const [summary, issues] = await Promise.all([
+    sb.from('v_pim_data_quality_summary').select('*'),
+    sb.from('v_pim_data_quality_issues').select('*').order('prioriteit', { ascending: false }).limit(150)
+  ]);
+  if (summary.error) throw summary.error;
+  if (issues.error) throw issues.error;
+  const totalIssues = (summary.data || []).reduce((sum, row) => sum + Number(row.aantal || 0), 0);
+  const high = (summary.data || []).filter(row => Number(row.prioriteit) >= 2).reduce((sum, row) => sum + Number(row.aantal || 0), 0);
+  document.getElementById('content').innerHTML = `<div class="grid"><div class="kpi"><div class="kpi-value">${totalIssues}</div><div class="kpi-label">open punten</div></div><div class="kpi"><div class="kpi-value">${high}</div><div class="kpi-label">prioriteit 2+</div></div><div class="kpi"><div class="kpi-value">${summary.data.length}</div><div class="kpi-label">controletypes</div></div></div><div class="panel"><div class="panel-title">Samenvatting</div>${table(summary.data, ['prioriteit','groep','veld','melding','aantal'])}</div><div class="panel"><div class="panel-title">Eerste 150 issues</div>${table(issues.data, ['prioriteit','ean','naam_nl','groep','veld','melding'])}</div>`;
+}
+async function renderMappings() {
+  const { data, error } = await sb.from('marketplace_category_mappings').select('*').order('woocommerce_categorie');
+  if (error) throw error;
+  const rows = (data || []).map(r => ({ ...r, actie: `<button class="btn" onclick="applyMapping('${encodeURIComponent(r.woocommerce_categorie)}')">Toepassen</button>` }));
+  document.getElementById('content').innerHTML = `<div class="panel"><div class="panel-title">Nieuwe of aangepaste mapping</div><div class="grid">${mappingInput('woocommerce_categorie','WooCommerce categorie')}${mappingInput('cat_bol','BOL')}${mappingInput('cat_bol_id','BOL ID')}${mappingInput('cat_obelink','Obelink')}${mappingInput('cat_obelink_id','Obelink ID')}${mappingInput('cat_decathlon','Decathlon')}${mappingInput('cat_decathlon_id','Decathlon ID')}${mappingInput('cat_amazon','Amazon')}${mappingInput('cat_amazon_id','Amazon ID')}</div><div style="margin-top:12px;"><button class="btn primary" onclick="saveMapping()">Mapping opslaan</button></div></div><div class="panel"><div class="panel-title">Bestaande mappings</div>${table(rows, ['woocommerce_categorie','cat_bol','cat_obelink','cat_decathlon','cat_amazon','actie'])}</div>`;
+}
+function mappingInput(id, label) { return `<div class="field"><label>${label}</label><input id="map_${id}"></div>`; }
+async function saveMapping() {
+  const payload = ['woocommerce_categorie','cat_bol','cat_bol_id','cat_obelink','cat_obelink_id','cat_decathlon','cat_decathlon_id','cat_amazon','cat_amazon_id'].reduce((obj, key) => { obj[key] = document.getElementById('map_' + key).value.trim() || null; return obj; }, {});
+  if (!payload.woocommerce_categorie) return showToast('Vul een WooCommerce categorie in', 'error');
+  payload.bijgewerkt_op = new Date().toISOString();
+  const { error } = await sb.from('marketplace_category_mappings').upsert(payload, { onConflict: 'woocommerce_categorie' });
+  if (error) return showToast(error.message, 'error');
+  showToast('Mapping opgeslagen');
+  renderMappings();
+}
+async function applyMapping(encodedCat) {
+  const cat = decodeURIComponent(encodedCat);
+  if (!confirm('Mapping toepassen op alle producten in: ' + cat + '?')) return;
+  const { data, error } = await sb.rpc('apply_marketplace_category_mapping', { p_woocommerce_categorie: cat });
+  if (error) return showToast(error.message, 'error');
+  showToast(`${data} producten bijgewerkt`);
+}
+async function renderSuggestions() {
+  const { data, error } = await sb.from('v_pim_category_suggestions').select('*').order('woocommerce_categorie');
+  if (error) throw error;
+  document.getElementById('content').innerHTML = `<div class="panel"><div class="panel-title">Suggesties uit bestaande data</div>${table(data, ['woocommerce_categorie','suggestion_marketplace','suggested_category','suggested_category_id','product_count'])}</div>`;
+}
+async function renderExports() {
+  const [profiles, fields] = await Promise.all([sb.from('export_profiles').select('*').order('naam'), sb.from('export_profile_fields').select('*, export_profiles(naam)').order('volgorde')]);
+  if (profiles.error) throw profiles.error;
+  if (fields.error) throw fields.error;
+  document.getElementById('content').innerHTML = `<div class="panel"><div class="panel-title">Profielen</div>${table(profiles.data, ['naam','omschrijving','actief','bijgewerkt_op'])}</div><div class="panel"><div class="panel-title">Velden</div>${table(fields.data.map(f => ({ profiel: f.export_profiles?.naam, ...f })), ['profiel','volgorde','bron','veld','export_naam','verplicht'])}</div>`;
+}
+function renderImportPreview() {
+  document.getElementById('content').innerHTML = `<div class="panel"><div class="panel-title">CSV preview</div><div class="field"><label>CSV-data</label><textarea id="importText" placeholder="ean,naam_nl,beschrijving_nl"></textarea></div><div style="margin-top:12px;"><button class="btn primary" onclick="runImportPreview()">Controleer CSV</button></div></div><div id="importPreviewResult"></div>`;
+}
+async function runImportPreview() {
+  const rows = parseCSV(document.getElementById('importText').value);
+  if (!rows.length) return showToast('Geen geldige CSV-rijen gevonden', 'error');
+  const { data, error } = await sb.rpc('preview_pim_import_rows', { p_rows: rows });
+  if (error) return showToast(error.message, 'error');
+  const counts = data.reduce((acc, r) => { acc[r.status] = (acc[r.status] || 0) + 1; return acc; }, {});
+  document.getElementById('importPreviewResult').innerHTML = `<div class="grid"><div class="kpi"><div class="kpi-value">${counts.create || 0}</div><div class="kpi-label">nieuw</div></div><div class="kpi"><div class="kpi-value">${counts.update || 0}</div><div class="kpi-label">bijwerken</div></div><div class="kpi"><div class="kpi-value">${counts.skip_missing_ean || 0}</div><div class="kpi-label">zonder EAN</div></div></div><div class="panel"><div class="panel-title">Previewregels</div>${table(data, ['row_number','ean','status','unknown_columns','warnings'])}</div>`;
+}
+async function renderTemplates() {
+  const { data, error } = await sb.from('category_templates').select('*').order('marketplace').order('categorie_naam');
+  if (error) throw error;
+  templates = data || [];
+  const options = templates.map(t => `<option value="${escHtml(t.id)}">${escHtml(t.marketplace)} - ${escHtml(t.categorie_naam)}</option>`).join('');
+  document.getElementById('content').innerHTML = `<div class="panel"><div class="panel-title">Template dupliceren</div><div class="grid"><div class="field"><label>Bron-template</label><select id="templateSource">${options}</select></div><div class="field"><label>Nieuwe naam</label><input id="templateNewName"></div><div class="field"><label>Nieuwe categorie ID</label><input id="templateNewId"></div></div><div style="margin-top:12px;"><button class="btn primary" onclick="duplicateTemplate()">Dupliceren</button></div></div><div class="panel"><div class="panel-title">Templates</div>${table(templates, ['marketplace','categorie_naam','categorie_id'])}</div>`;
+}
+async function duplicateTemplate() {
+  const p_template_id = document.getElementById('templateSource').value;
+  const p_new_name = document.getElementById('templateNewName').value.trim();
+  const p_new_category_id = document.getElementById('templateNewId').value.trim() || null;
+  if (!p_template_id || !p_new_name) return showToast('Kies een template en vul een nieuwe naam in', 'error');
+  const { error } = await sb.rpc('duplicate_category_template', { p_template_id, p_new_name, p_new_category_id });
+  if (error) return showToast(error.message, 'error');
+  showToast('Template gedupliceerd');
+  renderTemplates();
+}
+function renderAudit() {
+  document.getElementById('content').innerHTML = `<div class="panel"><div class="panel-title">Historie zoeken</div><div class="grid"><div class="field"><label>Product UUID</label><input id="auditProductId"></div><div class="field"><label>EAN</label><input id="auditEan"></div></div><div style="margin-top:12px;"><button class="btn primary" onclick="loadAudit()">Zoeken</button></div></div><div id="auditResult"></div>`;
+}
+async function loadAudit() {
+  let productId = document.getElementById('auditProductId').value.trim();
+  const ean = document.getElementById('auditEan').value.trim();
+  if (!productId && ean) {
+    const product = await sb.from('products').select('id').eq('ean', ean).maybeSingle();
+    if (product.error) return showToast(product.error.message, 'error');
+    productId = product.data?.id || '';
+  }
+  if (!productId) return showToast('Vul product UUID of EAN in', 'error');
+  const { data, error } = await sb.from('pim_audit_log').select('*').eq('product_id', productId).order('aangemaakt_op', { ascending: false }).limit(100);
+  if (error) return showToast(error.message, 'error');
+  const rows = data.map(r => ({ ...r, herstel: `<button class="btn" onclick="restoreAudit('${r.id}')">Herstel oud</button>` }));
+  document.getElementById('auditResult').innerHTML = `<div class="panel"><div class="panel-title">Laatste wijzigingen</div>${table(rows, ['aangemaakt_op','actie','bron','veld','oude_waarde','nieuwe_waarde','herstel'])}</div>`;
+}
+async function restoreAudit(id) {
+  if (!confirm('Oude waarde uit deze auditregel terugzetten?')) return;
+  const { error } = await sb.rpc('restore_pim_audit_value', { p_audit_log_id: id, p_restore_old_value: true });
+  if (error) return showToast(error.message, 'error');
+  showToast('Waarde hersteld');
+  loadAudit();
+}
+function table(rows, cols) {
+  if (!rows || !rows.length) return '<div style="color:var(--text3);">Geen data.</div>';
+  return `<div style="overflow:auto;"><table><thead><tr>${cols.map(c => `<th>${escHtml(c)}</th>`).join('')}</tr></thead><tbody>${rows.map(row => `<tr>${cols.map(c => `<td>${formatCell(row[c])}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+}
+function formatCell(value) {
+  if (value === null || value === undefined || value === '') return '<span style="color:var(--text3);">-</span>';
+  if (typeof value === 'boolean') return value ? 'ja' : 'nee';
+  if (Array.isArray(value)) return escHtml(value.join(', '));
+  const s = String(value);
+  if (s.startsWith('<button')) return s;
+  return escHtml(s.length > 180 ? s.slice(0, 180) + '...' : s);
+}
+function parseCSV(text) {
+  const rows = [];
+  let row = [];
+  let value = '';
+  let inQuotes = false;
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    const next = text[i + 1];
+    if (char === '"') {
+      if (inQuotes && next === '"') { value += '"'; i++; }
+      else inQuotes = !inQuotes;
+    } else if (char === ',' && !inQuotes) {
+      row.push(value); value = '';
+    } else if ((char === '\n' || char === '\r') && !inQuotes) {
+      if (char === '\r' && next === '\n') i++;
+      row.push(value);
+      if (row.some(cell => String(cell).trim() !== '')) rows.push(row);
+      row = []; value = '';
+    } else value += char;
+  }
+  row.push(value);
+  if (row.some(cell => String(cell).trim() !== '')) rows.push(row);
+  if (!rows.length) return [];
+  const headers = rows[0].map(h => String(h).trim());
+  return rows.slice(1).map(r => {
+    const obj = {};
+    headers.forEach((h, i) => { obj[h] = r[i] ?? ''; });
+    return obj;
+  });
+}
+</script>
+</body>
+</html>
